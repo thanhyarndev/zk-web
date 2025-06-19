@@ -23,7 +23,7 @@ config = get_config()
 
 app = Flask(__name__)
 app.config.from_object(config)
-socketio = SocketIO(app, cors_allowed_origins=config.SOCKETIO_CORS_ALLOWED_ORIGINS)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading', logger=True, engineio_logger=True)
 
 # Global variables
 reader: Optional[serial.Serial] = None
@@ -31,6 +31,7 @@ inventory_thread: Optional[threading.Thread] = None
 stop_inventory_flag = False
 detected_tags = []
 inventory_stats = {"read_rate": 0, "total_count": 0}
+connected_clients = set()
 
 # Configure logging
 logging.basicConfig(
@@ -111,37 +112,42 @@ class RFIDWebController:
             inventory_stats = {"read_rate": 0, "total_count": 0}
             
             def tag_callback(tag: RFIDTag):
-                if not stop_inventory_flag:
-                    logger.info(f"🔍 Tag callback called: EPC={tag.epc}, RSSI={tag.rssi}, Antenna={tag.antenna}")
-                    tag_data = {
-                        "epc": tag.epc,
-                        "rssi": tag.rssi,
-                        "antenna": tag.antenna,
-                        "timestamp": time.strftime("%H:%M:%S")
-                    }
-                    detected_tags.append(tag_data)
-                    
-                    # Giới hạn số lượng tags hiển thị
-                    if len(detected_tags) > config.MAX_TAGS_DISPLAY:
-                        detected_tags.pop(0)
-                    
-                    logger.info(f"📡 Emitting tag_detected via WebSocket: {tag_data}")
+                logger.info(f"🔍 Tag callback called: EPC={tag.epc}, RSSI={tag.rssi}, Antenna={tag.antenna}")
+                tag_data = {
+                    "epc": tag.epc,
+                    "rssi": tag.rssi,
+                    "antenna": tag.antenna,
+                    "timestamp": time.strftime("%H:%M:%S")
+                }
+                detected_tags.append(tag_data)
+                
+                # Giới hạn số lượng tags hiển thị
+                if len(detected_tags) > config.MAX_TAGS_DISPLAY:
+                    detected_tags.pop(0)
+                
+                logger.info(f"📡 Emitting tag_detected via WebSocket: {tag_data}")
+                try:
+                    # Thử emit với broadcast=True
+                    socketio.emit('tag_detected', tag_data, broadcast=True)
+                    logger.info("✅ WebSocket emit successful with broadcast")
+                except Exception as e:
+                    logger.error(f"❌ WebSocket emit failed: {e}")
+                    # Thử emit không có broadcast
                     try:
                         socketio.emit('tag_detected', tag_data)
-                        logger.info("✅ WebSocket emit successful")
-                    except Exception as e:
-                        logger.error(f"❌ WebSocket emit failed: {e}")
+                        logger.info("✅ WebSocket emit successful without broadcast")
+                    except Exception as e2:
+                        logger.error(f"❌ WebSocket emit failed again: {e2}")
             
             def stats_callback(read_rate: int, total_count: int):
-                if not stop_inventory_flag:
-                    logger.info(f"📊 Stats callback called: read_rate={read_rate}, total_count={total_count}")
-                    inventory_stats["read_rate"] = read_rate
-                    inventory_stats["total_count"] = total_count
-                    try:
-                        socketio.emit('stats_update', inventory_stats)
-                        logger.info("✅ Stats WebSocket emit successful")
-                    except Exception as e:
-                        logger.error(f"❌ Stats WebSocket emit failed: {e}")
+                logger.info(f"📊 Stats callback called: read_rate={read_rate}, total_count={total_count}")
+                inventory_stats["read_rate"] = read_rate
+                inventory_stats["total_count"] = total_count
+                try:
+                    socketio.emit('stats_update', inventory_stats)
+                    logger.info("✅ Stats WebSocket emit successful")
+                except Exception as e:
+                    logger.error(f"❌ Stats WebSocket emit failed: {e}")
             
             # Tạo thread mới với logic cải thiện
             def inventory_worker():
@@ -449,93 +455,82 @@ def api_get_tags():
 @app.route('/api/config', methods=['GET'])
 def api_get_config():
     """API lấy cấu hình"""
-    return jsonify({
-        "success": True,
-        "data": {
-            "max_antennas": config.MAX_ANTENNAS,
-            "min_power": config.MIN_POWER,
-            "max_power": config.MAX_POWER,
-            "min_session": config.MIN_SESSION,
-            "max_session": config.MAX_SESSION,
-            "min_q_value": config.MIN_Q_VALUE,
-            "max_q_value": config.MAX_Q_VALUE,
-            "min_scan_time": config.MIN_SCAN_TIME,
-            "max_scan_time": config.MAX_SCAN_TIME,
-            "profile_configs": config.PROFILE_CONFIGS,
+    try:
+        config_data = {
             "default_port": config.DEFAULT_PORT,
-            "default_baudrate": config.DEFAULT_BAUDRATE
+            "default_baudrate": config.DEFAULT_BAUDRATE,
+            "max_power": config.MAX_POWER,
+            "min_power": config.MIN_POWER,
+            "max_antennas": config.MAX_ANTENNAS,
+            "profiles": config.PROFILE_CONFIGS,
+            "max_tags_display": config.MAX_TAGS_DISPLAY
         }
-    })
+        return {"success": True, "data": config_data}
+    except Exception as e:
+        logger.error(f"Config API error: {e}")
+        return {"success": False, "message": f"Lỗi: {str(e)}"}
 
 @app.route('/api/debug', methods=['GET'])
 def api_debug():
-    """API để debug trạng thái hệ thống"""
-    return jsonify({
-        "success": True,
-        "data": {
+    """API debug info"""
+    try:
+        data = {
             "is_connected": rfid_controller.is_connected,
             "inventory_thread_alive": inventory_thread.is_alive() if inventory_thread else False,
             "stop_inventory_flag": stop_inventory_flag,
             "detected_tags_count": len(detected_tags),
             "inventory_stats": inventory_stats,
-            "socketio_connected": True,  # Giả sử luôn connected
-            "recent_tags": detected_tags[-5:] if detected_tags else []  # 5 tags gần nhất
+            "recent_tags": detected_tags[-10:] if detected_tags else []  # 10 tags gần nhất
         }
-    })
-
-@app.route('/api/test_websocket', methods=['POST'])
-def api_test_websocket():
-    """API để test WebSocket"""
-    try:
-        test_data = {
-            "epc": "TEST123456",
-            "rssi": -50,
-            "antenna": 1,
-            "timestamp": time.strftime("%H:%M:%S")
-        }
-        socketio.emit('tag_detected', test_data)
-        return jsonify({"success": True, "message": "Test WebSocket emit successful"})
+        return {"success": True, "data": data}
     except Exception as e:
-        return jsonify({"success": False, "message": f"Test WebSocket failed: {str(e)}"})
+        logger.error(f"Debug API error: {e}")
+        return {"success": False, "message": f"Lỗi: {str(e)}"}
 
 @app.route('/api/reset_reader', methods=['POST'])
 def api_reset_reader():
-    """API để reset reader state"""
+    """API reset reader"""
     try:
+        # Dừng inventory nếu đang chạy
+        if inventory_thread and inventory_thread.is_alive():
+            rfid_controller.stop_inventory()
+        
+        # Clear data
+        detected_tags.clear()
+        inventory_stats = {"read_rate": 0, "total_count": 0}
+        
+        # Reset reader nếu đã kết nối
         if rfid_controller.is_connected and rfid_controller.reader:
-            # Stop inventory nếu đang chạy
-            if inventory_thread and inventory_thread.is_alive():
-                rfid_controller.stop_inventory()
-                time.sleep(0.5)
-            
-            # Clear buffer
-            rfid_controller.reader.reset_input_buffer()
-            rfid_controller.reader.reset_output_buffer()
-            
-            # Clear global variables
-            global detected_tags, inventory_stats, stop_inventory_flag
-            detected_tags.clear()
-            inventory_stats = {"read_rate": 0, "total_count": 0}
-            stop_inventory_flag = False
-            
-            logger.info("Reader state reset successfully")
-            return jsonify({"success": True, "message": "Reader state đã được reset"})
-        else:
-            return jsonify({"success": False, "message": "Reader chưa kết nối"})
+            try:
+                rfid_controller.reader.reset_input_buffer()
+                rfid_controller.reader.reset_output_buffer()
+                time.sleep(0.1)
+            except Exception as e:
+                logger.warning(f"Reader reset warning: {e}")
+        
+        logger.info("Reader reset completed")
+        return {"success": True, "message": "Đã reset reader thành công"}
     except Exception as e:
         logger.error(f"Reset reader error: {e}")
-        return jsonify({"success": False, "message": f"Lỗi reset reader: {str(e)}"})
+        return {"success": False, "message": f"Lỗi: {str(e)}"}
 
 @socketio.on('connect')
 def handle_connect():
-    """Xử lý kết nối WebSocket"""
-    logger.info("Client connected via WebSocket")
-    emit('status', {'message': 'Đã kết nối WebSocket'})
+    """Xử lý khi client kết nối WebSocket"""
+    logger.info(f"🔌 WebSocket client connected: {request.sid}")
+    socketio.emit('status', {'message': 'Connected to server'})
+    connected_clients.add(request.sid)
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    """Xử lý ngắt kết nối WebSocket"""
-    logger.info("Client disconnected from WebSocket")
+    """Xử lý khi client ngắt kết nối WebSocket"""
+    logger.info(f"🔌 WebSocket client disconnected: {request.sid}")
+    connected_clients.remove(request.sid)
+
+@socketio.on('message')
+def handle_message(message):
+    """Xử lý message từ client"""
+    logger.info(f"📨 Received WebSocket message: {message}")
 
 if __name__ == '__main__':
     logger.info(f"Starting RFID Web Control Panel on {config.HOST}:{config.PORT}")

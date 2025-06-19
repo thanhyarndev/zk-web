@@ -176,6 +176,7 @@
             font-family: 'Courier New', monospace;
             font-weight: bold;
             color: var(--primary-color);
+            font-size: 0.9em;
         }
 
         .antenna-badge {
@@ -254,6 +255,31 @@
             .stats-number {
                 font-size: 2em;
             }
+        }
+
+        #tagsTable {
+            font-size: 0.9em;
+        }
+
+        #tagsTable th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8em;
+            letter-spacing: 0.5px;
+        }
+
+        #tagsTable td {
+            vertical-align: middle;
+            padding: 12px 8px;
+        }
+
+        #tagsTable tbody tr:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        .badge {
+            font-size: 0.8em;
+            padding: 6px 10px;
         }
     </style>
 </head>
@@ -470,12 +496,6 @@
                         <div class="card-header">
                             <i class="fas fa-tags"></i> Detected Tags
                             <div class="float-end">
-                                <button class="btn btn-sm btn-outline-info me-2" onclick="testWebSocket()">
-                                    <i class="fas fa-bug"></i> Test WebSocket
-                                </button>
-                                <button class="btn btn-sm btn-outline-secondary me-2" onclick="getDebugInfo()">
-                                    <i class="fas fa-info-circle"></i> Debug Info
-                                </button>
                                 <button class="btn btn-sm btn-outline-warning me-2" onclick="resetReader()">
                                     <i class="fas fa-redo"></i> Reset Reader
                                 </button>
@@ -485,8 +505,23 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <div id="tagsContainer">
-                                <p class="text-muted">Chưa có tags được phát hiện</p>
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="tagsTable">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>EPC</th>
+                                            <th>Count</th>
+                                            <th>Antenna</th>
+                                            <th>RSSI (dBm)</th>
+                                            <th>Last Seen</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tagsTableBody">
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted">Chưa có tags được phát hiện</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -508,8 +543,11 @@
         const connectionStatus = document.getElementById('connectionStatus');
         const connectBtn = document.getElementById('connectBtn');
         const disconnectBtn = document.getElementById('disconnectBtn');
-        const tagsContainer = document.getElementById('tagsContainer');
+        const tagsTableBody = document.getElementById('tagsTableBody');
         const alertContainer = document.getElementById('alertContainer');
+
+        // Tags storage
+        let tagsData = new Map(); // Map to store tag data: EPC -> {count, antenna, rssi, lastSeen}
 
         // Update connection status
         function updateConnectionStatus(connected) {
@@ -747,52 +785,8 @@
 
         // Clear tags
         function clearTags() {
-            tagsContainer.innerHTML = '<p class="text-muted">Chưa có tags được phát hiện</p>';
-        }
-
-        // Test WebSocket
-        async function testWebSocket() {
-            try {
-                const response = await fetch('/api/test_websocket', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
-                const result = await response.json();
-                if (result.success) {
-                    showAlert('Test WebSocket thành công - kiểm tra xem tag TEST123456 có xuất hiện không', 'success');
-                } else {
-                    showAlert(`Test WebSocket thất bại: ${result.message}`, 'danger');
-                }
-            } catch (error) {
-                showAlert(`Lỗi test WebSocket: ${error}`, 'danger');
-            }
-        }
-
-        // Get debug info
-        async function getDebugInfo() {
-            try {
-                const response = await fetch('/api/debug');
-                const result = await response.json();
-                if (result.success) {
-                    const data = result.data;
-                    const debugInfo = `
-                        <strong>Connection Status:</strong> ${data.is_connected ? 'Connected' : 'Disconnected'}<br>
-                        <strong>Inventory Thread:</strong> ${data.inventory_thread_alive ? 'Running' : 'Stopped'}<br>
-                        <strong>Stop Flag:</strong> ${data.stop_inventory_flag ? 'True' : 'False'}<br>
-                        <strong>Detected Tags Count:</strong> ${data.detected_tags_count}<br>
-                        <strong>Read Rate:</strong> ${data.inventory_stats.read_rate}<br>
-                        <strong>Total Count:</strong> ${data.inventory_stats.total_count}<br>
-                        <strong>Recent Tags:</strong> ${data.recent_tags.length > 0 ? data.recent_tags.map(t => t.epc).join(', ') : 'None'}
-                    `;
-                    showAlert(debugInfo, 'info');
-                } else {
-                    showAlert('Không thể lấy debug info', 'warning');
-                }
-            } catch (error) {
-                showAlert(`Lỗi debug: ${error}`, 'danger');
-            }
+            tagsData.clear();
+            updateTagsTable();
         }
 
         // Reset reader
@@ -843,37 +837,80 @@
 
         // Socket.IO events
         socket.on('connect', function() {
-            console.log('Connected to server');
+            console.log('🔌 Connected to server via WebSocket');
+        });
+
+        socket.on('disconnect', function() {
+            console.log('🔌 Disconnected from server');
         });
 
         socket.on('tag_detected', function(tagData) {
-            const tagElement = document.createElement('div');
-            tagElement.className = 'tag-item';
-            tagElement.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="tag-epc">${tagData.epc}</span>
-                        <span class="antenna-badge">Ant ${tagData.antenna}</span>
-                        <span class="rssi-badge">${tagData.rssi} dBm</span>
-                    </div>
-                    <div class="timestamp">${tagData.timestamp}</div>
-                </div>
-            `;
+            console.log('🔍 WebSocket tag_detected received:', tagData);
             
-            if (tagsContainer.querySelector('.text-muted')) {
-                tagsContainer.innerHTML = '';
+            // Update tags data
+            const epc = tagData.epc;
+            if (tagsData.has(epc)) {
+                // Update existing tag
+                const existing = tagsData.get(epc);
+                existing.count++;
+                existing.lastSeen = tagData.timestamp;
+                // Update RSSI if new one is stronger
+                if (tagData.rssi > existing.rssi) {
+                    existing.rssi = tagData.rssi;
+                }
+                // Update antenna if different
+                if (existing.antenna !== tagData.antenna) {
+                    existing.antenna = `${existing.antenna}, ${tagData.antenna}`;
+                }
+            } else {
+                // Add new tag
+                tagsData.set(epc, {
+                    count: 1,
+                    antenna: tagData.antenna,
+                    rssi: tagData.rssi,
+                    lastSeen: tagData.timestamp
+                });
             }
             
-            tagsContainer.insertBefore(tagElement, tagsContainer.firstChild);
+            // Update table display
+            updateTagsTable();
         });
 
+        // Update tags table
+        function updateTagsTable() {
+            if (tagsData.size === 0) {
+                tagsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Chưa có tags được phát hiện</td></tr>';
+                return;
+            }
+            
+            // Clear table
+            tagsTableBody.innerHTML = '';
+            
+            // Sort tags by count (descending)
+            const sortedTags = Array.from(tagsData.entries()).sort((a, b) => b[1].count - a[1].count);
+            
+            // Add rows
+            sortedTags.forEach(([epc, data]) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><span class="tag-epc">${epc}</span></td>
+                    <td><span class="badge bg-primary">${data.count}</span></td>
+                    <td><span class="antenna-badge">Ant ${data.antenna}</span></td>
+                    <td><span class="rssi-badge">${data.rssi} dBm</span></td>
+                    <td><span class="timestamp">${data.lastSeen}</span></td>
+                `;
+                tagsTableBody.appendChild(row);
+            });
+        }
+
         socket.on('stats_update', function(stats) {
+            console.log('📊 Stats update received:', stats);
             document.getElementById('readRate').textContent = stats.read_rate;
             document.getElementById('totalCount').textContent = stats.total_count;
         });
 
         socket.on('status', function(data) {
-            console.log('Status:', data.message);
+            console.log('📡 Status message received:', data.message);
         });
 
         // Initialize
