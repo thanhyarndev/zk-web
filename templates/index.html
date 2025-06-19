@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFID Reader Control Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #ecf0f1;
+            --dark-bg: #34495e;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            padding: 30px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--secondary-color);
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 15px 20px;
+            font-weight: bold;
+        }
+
+        .btn {
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--secondary-color), #2980b9);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color), #229954);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning-color), #e67e22);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color), #c0392b);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-connected {
+            background-color: var(--success-color);
+            box-shadow: 0 0 10px var(--success-color);
+        }
+
+        .status-disconnected {
+            background-color: var(--danger-color);
+            box-shadow: 0 0 10px var(--danger-color);
+        }
+
+        .tag-item {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stats-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stats-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+            padding: 15px 20px;
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .tag-epc {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .antenna-badge {
+            background: var(--secondary-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+
+        .rssi-badge {
+            background: var(--warning-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+
+        .timestamp {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .profile-option {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .profile-option:hover {
+            border-color: var(--secondary-color);
+            background: #e3f2fd;
+        }
+
+        .profile-option.selected {
+            border-color: var(--success-color);
+            background: #e8f5e8;
+        }
+
+        .antenna-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .antenna-item {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .antenna-item.active {
+            border-color: var(--success-color);
+            background: #e8f5e8;
+        }
+
+        .antenna-item.inactive {
+            border-color: var(--danger-color);
+            background: #fde8e8;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            .stats-number {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="main-container">
+            <!-- Header -->
+            <div class="header">
+                <h1><i class="fas fa-rfid"></i> RFID Reader Control Panel</h1>
+                <p>Điều khiển RFID Reader Ex10 Series qua giao diện web</p>
+                <div class="connection-status">
+                    <span class="status-indicator" id="statusIndicator"></span>
+                    <span id="connectionStatus">Chưa kết nối</span>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Connection Panel -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-plug"></i> Kết nối
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="portInput" class="form-label">Serial Port:</label>
+                                <input type="text" class="form-control" id="portInput" value="COM1" placeholder="Nhập serial port">
+                            </div>
+                            <div class="mb-3">
+                                <label for="baudrateInput" class="form-label">Baudrate:</label>
+                                <select class="form-select" id="baudrateInput">
+                                    <option value="9600">9600</option>
+                                    <option value="19200">19200</option>
+                                    <option value="38400">38400</option>
+                                    <option value="57600" selected>57600</option>
+                                    <option value="115200">115200</option>
+                                </select>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-success" id="connectBtn" onclick="connectReader()">
+                                    <span class="loading"><span class="spinner-border spinner-border-sm"></span></span>
+                                    <i class="fas fa-link"></i> Kết nối
+                                </button>
+                                <button class="btn btn-danger" id="disconnectBtn" onclick="disconnectReader()" disabled>
+                                    <i class="fas fa-unlink"></i> Ngắt kết nối
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reader Info -->
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-info-circle"></i> Thông tin Reader
+                        </div>
+                        <div class="card-body">
+                            <div id="readerInfo">
+                                <p class="text-muted">Kết nối để xem thông tin reader</p>
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="getReaderInfo()" id="infoBtn" disabled>
+                                <i class="fas fa-sync-alt"></i> Làm mới
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventory Control -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-search"></i> Inventory Control
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2 mb-3">
+                                <button class="btn btn-primary" onclick="startInventory(0)" id="startTargetABtn" disabled>
+                                    <i class="fas fa-play"></i> Start Inventory (Target A)
+                                </button>
+                                <button class="btn btn-primary" onclick="startInventory(1)" id="startTargetBBtn" disabled>
+                                    <i class="fas fa-play"></i> Start Inventory (Target B)
+                                </button>
+                                <button class="btn btn-warning" onclick="stopInventory()" id="stopBtn" disabled>
+                                    <i class="fas fa-stop"></i> Stop Inventory
+                                </button>
+                            </div>
+                            
+                            <!-- Stats -->
+                            <div class="stats-card">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="stats-number" id="readRate">0</div>
+                                        <div class="stats-label">Tags/sec</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="stats-number" id="totalCount">0</div>
+                                        <div class="stats-label">Total Tags</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configuration -->
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-cogs"></i> Cấu hình
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="powerInput" class="form-label">RF Power (dBm):</label>
+                                <input type="range" class="form-range" id="powerInput" min="0" max="30" value="20">
+                                <div class="text-center">
+                                    <span id="powerValue">20</span> dBm
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="preserveConfig" checked>
+                                    <label class="form-check-label" for="preserveConfig">
+                                        Lưu cấu hình khi tắt nguồn
+                                    </label>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="setPower()" id="powerBtn" disabled>
+                                <i class="fas fa-bolt"></i> Thiết lập Power
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Antenna & Profile -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-broadcast-tower"></i> Antenna Control
+                        </div>
+                        <div class="card-body">
+                            <div class="antenna-grid" id="antennaGrid">
+                                <div class="antenna-item" data-antenna="1">
+                                    <i class="fas fa-satellite-dish fa-2x"></i>
+                                    <div>Ant 1</div>
+                                    <div class="power-level">-- dBm</div>
+                                </div>
+                                <div class="antenna-item" data-antenna="2">
+                                    <i class="fas fa-satellite-dish fa-2x"></i>
+                                    <div>Ant 2</div>
+                                    <div class="power-level">-- dBm</div>
+                                </div>
+                                <div class="antenna-item" data-antenna="3">
+                                    <i class="fas fa-satellite-dish fa-2x"></i>
+                                    <div>Ant 3</div>
+                                    <div class="power-level">-- dBm</div>
+                                </div>
+                                <div class="antenna-item" data-antenna="4">
+                                    <i class="fas fa-satellite-dish fa-2x"></i>
+                                    <div>Ant 4</div>
+                                    <div class="power-level">-- dBm</div>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <button class="btn btn-success btn-sm" onclick="getAntennaPower()" id="powerInfoBtn" disabled>
+                                    <i class="fas fa-sync-alt"></i> Làm mới Power
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-sliders-h"></i> Profile Management
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="profileSelect" class="form-label">Profile:</label>
+                                <select class="form-select" id="profileSelect">
+                                    <option value="11">11: 640kHz, FM0, Tari 7.5μs</option>
+                                    <option value="1">1: 640kHz, Miller2, Tari 7.5μs</option>
+                                    <option value="15">15: 640kHz, Miller4, Tari 7.5μs</option>
+                                    <option value="12">12: 320kHz, Miller2, Tari 15μs</option>
+                                    <option value="3">3: 320kHz, Miller2, Tari 20μs</option>
+                                    <option value="5">5: 320kHz, Miller4, Tari 20μs</option>
+                                    <option value="7">7: 250kHz, Miller4, Tari 20μs</option>
+                                    <option value="13">13: 160kHz, Miller8, Tari 20μs</option>
+                                    <option value="50">50: 640kHz, FM0, Tari 6.25μs</option>
+                                    <option value="51">51: 640kHz, Miller2, Tari 6.25μs</option>
+                                    <option value="52">52: 426kHz, FM0, Tari 15μs</option>
+                                    <option value="53">53: 640kHz, Miller4, Tari 7.5μs</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="saveProfile" checked>
+                                    <label class="form-check-label" for="saveProfile">
+                                        Lưu khi tắt nguồn
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary" onclick="setProfile()" id="profileBtn" disabled>
+                                    <i class="fas fa-save"></i> Thiết lập Profile
+                                </button>
+                                <button class="btn btn-info" onclick="getProfile()" id="getProfileBtn" disabled>
+                                    <i class="fas fa-info"></i> Lấy Profile hiện tại
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tags Display -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-tags"></i> Detected Tags
+                            <div class="float-end">
+                                <button class="btn btn-sm btn-outline-info me-2" onclick="testWebSocket()">
+                                    <i class="fas fa-bug"></i> Test WebSocket
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary me-2" onclick="getDebugInfo()">
+                                    <i class="fas fa-info-circle"></i> Debug Info
+                                </button>
+                                <button class="btn btn-sm btn-outline-warning me-2" onclick="resetReader()">
+                                    <i class="fas fa-redo"></i> Reset Reader
+                                </button>
+                                <button class="btn btn-sm btn-outline-light" onclick="clearTags()">
+                                    <i class="fas fa-trash"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="tagsContainer">
+                                <p class="text-muted">Chưa có tags được phát hiện</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerts -->
+            <div id="alertContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // Socket.IO connection
+        const socket = io();
+        let isConnected = false;
+
+        // DOM elements
+        const statusIndicator = document.getElementById('statusIndicator');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const tagsContainer = document.getElementById('tagsContainer');
+        const alertContainer = document.getElementById('alertContainer');
+
+        // Update connection status
+        function updateConnectionStatus(connected) {
+            isConnected = connected;
+            if (connected) {
+                statusIndicator.className = 'status-indicator status-connected';
+                connectionStatus.textContent = 'Đã kết nối';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                enableControls();
+            } else {
+                statusIndicator.className = 'status-indicator status-disconnected';
+                connectionStatus.textContent = 'Chưa kết nối';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                disableControls();
+            }
+        }
+
+        // Enable/disable controls
+        function enableControls() {
+            document.getElementById('infoBtn').disabled = false;
+            document.getElementById('startTargetABtn').disabled = false;
+            document.getElementById('startTargetBBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('powerBtn').disabled = false;
+            document.getElementById('powerInfoBtn').disabled = false;
+            document.getElementById('profileBtn').disabled = false;
+            document.getElementById('getProfileBtn').disabled = false;
+        }
+
+        function disableControls() {
+            document.getElementById('infoBtn').disabled = true;
+            document.getElementById('startTargetABtn').disabled = true;
+            document.getElementById('startTargetBBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('powerBtn').disabled = true;
+            document.getElementById('powerInfoBtn').disabled = true;
+            document.getElementById('profileBtn').disabled = true;
+            document.getElementById('getProfileBtn').disabled = true;
+        }
+
+        // Show alert
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            alertContainer.appendChild(alertDiv);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // API functions
+        async function apiCall(url, method = 'GET', data = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+                
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+                
+                const response = await fetch(url, options);
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                return { success: false, message: 'Network error' };
+            }
+        }
+
+        // Connect to reader
+        async function connectReader() {
+            const port = document.getElementById('portInput').value;
+            const baudrate = parseInt(document.getElementById('baudrateInput').value);
+            
+            showLoading(connectBtn, true);
+            
+            const result = await apiCall('/api/connect', 'POST', { port, baudrate });
+            
+            showLoading(connectBtn, false);
+            
+            if (result.success) {
+                updateConnectionStatus(true);
+                showAlert(result.message, 'success');
+                getReaderInfo();
+                getAntennaPower();
+            } else {
+                showAlert(result.message, 'danger');
+            }
+        }
+
+        // Disconnect from reader
+        async function disconnectReader() {
+            const result = await apiCall('/api/disconnect', 'POST');
+            
+            if (result.success) {
+                updateConnectionStatus(false);
+                showAlert(result.message, 'success');
+                document.getElementById('readerInfo').innerHTML = '<p class="text-muted">Kết nối để xem thông tin reader</p>';
+            } else {
+                showAlert(result.message, 'danger');
+            }
+        }
+
+        // Get reader info
+        async function getReaderInfo() {
+            const result = await apiCall('/api/reader_info');
+            
+            if (result.success) {
+                const info = result.data;
+                document.getElementById('readerInfo').innerHTML = `
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Firmware:</strong> ${info.firmware_version}<br>
+                            <strong>Type:</strong> ${info.reader_type}<br>
+                            <strong>Power:</strong> ${info.rf_power} dBm<br>
+                            <strong>Inventory Time:</strong> ${info.inventory_time} ms
+                        </div>
+                        <div class="col-6">
+                            <strong>Protocols:</strong><br>
+                            ${info.supported_protocols.map(p => `<span class="badge bg-primary">${p}</span>`).join(' ')}<br>
+                            <strong>Antenna Check:</strong> ${info.antenna_check}<br>
+                            <strong>Antenna Config:</strong> 0x${info.antenna_config.toString(16).toUpperCase()}
+                        </div>
+                    </div>
+                `;
+            } else {
+                showAlert(result.message, 'warning');
+            }
+        }
+
+        // Start inventory
+        async function startInventory(target) {
+            const result = await apiCall('/api/start_inventory', 'POST', { target });
+            
+            if (result.success) {
+                showAlert(result.message, 'success');
+                document.getElementById('stopBtn').disabled = false;
+            } else {
+                showAlert(result.message, 'danger');
+            }
+        }
+
+        // Stop inventory
+        async function stopInventory() {
+            const result = await apiCall('/api/stop_inventory', 'POST');
+            
+            if (result.success) {
+                showAlert(result.message, 'success');
+            } else {
+                showAlert(result.message, 'danger');
+            }
+        }
+
+        // Set power
+        async function setPower() {
+            const power = parseInt(document.getElementById('powerInput').value);
+            const preserveConfig = document.getElementById('preserveConfig').checked;
+            
+            const result = await apiCall('/api/set_power', 'POST', { power, preserve_config: preserveConfig });
+            
+            if (result.success) {
+                showAlert(result.message, 'success');
+            } else {
+                showAlert(result.message, 'danger');
+            }
+        }
+
+        // Get antenna power
+        async function getAntennaPower() {
+            const result = await apiCall('/api/get_antenna_power');
+            
+            if (result.success) {
+                const powerLevels = result.data;
+                const antennaItems = document.querySelectorAll('.antenna-item');
+                
+                antennaItems.forEach((item, index) => {
+                    const antennaNum = index + 1;
+                    const powerLevel = item.querySelector('.power-level');
+                    
+                    if (powerLevels[antennaNum]) {
+                        powerLevel.textContent = `${powerLevels[antennaNum]} dBm`;
+                        item.className = 'antenna-item active';
+                    } else {
+                        powerLevel.textContent = 'Disabled';
+                        item.className = 'antenna-item inactive';
+                    }
+                });
+            } else {
+                showAlert(result.message, 'warning');
+            }
+        }
+
+        // Set profile
+        async function setProfile() {
+            const profileNum = parseInt(document.getElementById('profileSelect').value);
+            const saveOnPowerDown = document.getElementById('saveProfile').checked;
+            
+            const result = await apiCall('/api/set_profile', 'POST', { 
+                profile_num: profileNum, 
+                save_on_power_down: saveOnPowerDown 
+            });
+            
+            if (result.success) {
+                showAlert(result.message, 'success');
+            } else {
+                showAlert(result.message, 'danger');
+            }
+        }
+
+        // Get profile
+        async function getProfile() {
+            const result = await apiCall('/api/get_profile');
+            
+            if (result.success) {
+                const profile = result.data.profile;
+                document.getElementById('profileSelect').value = profile;
+                showAlert(`Profile hiện tại: ${profile}`, 'info');
+            } else {
+                showAlert(result.message, 'warning');
+            }
+        }
+
+        // Clear tags
+        function clearTags() {
+            tagsContainer.innerHTML = '<p class="text-muted">Chưa có tags được phát hiện</p>';
+        }
+
+        // Test WebSocket
+        async function testWebSocket() {
+            try {
+                const response = await fetch('/api/test_websocket', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('Test WebSocket thành công - kiểm tra xem tag TEST123456 có xuất hiện không', 'success');
+                } else {
+                    showAlert(`Test WebSocket thất bại: ${result.message}`, 'danger');
+                }
+            } catch (error) {
+                showAlert(`Lỗi test WebSocket: ${error}`, 'danger');
+            }
+        }
+
+        // Get debug info
+        async function getDebugInfo() {
+            try {
+                const response = await fetch('/api/debug');
+                const result = await response.json();
+                if (result.success) {
+                    const data = result.data;
+                    const debugInfo = `
+                        <strong>Connection Status:</strong> ${data.is_connected ? 'Connected' : 'Disconnected'}<br>
+                        <strong>Inventory Thread:</strong> ${data.inventory_thread_alive ? 'Running' : 'Stopped'}<br>
+                        <strong>Stop Flag:</strong> ${data.stop_inventory_flag ? 'True' : 'False'}<br>
+                        <strong>Detected Tags Count:</strong> ${data.detected_tags_count}<br>
+                        <strong>Read Rate:</strong> ${data.inventory_stats.read_rate}<br>
+                        <strong>Total Count:</strong> ${data.inventory_stats.total_count}<br>
+                        <strong>Recent Tags:</strong> ${data.recent_tags.length > 0 ? data.recent_tags.map(t => t.epc).join(', ') : 'None'}
+                    `;
+                    showAlert(debugInfo, 'info');
+                } else {
+                    showAlert('Không thể lấy debug info', 'warning');
+                }
+            } catch (error) {
+                showAlert(`Lỗi debug: ${error}`, 'danger');
+            }
+        }
+
+        // Reset reader
+        async function resetReader() {
+            try {
+                const response = await fetch('/api/reset_reader', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    // Clear tags display
+                    clearTags();
+                    // Reset stats
+                    document.getElementById('readRate').textContent = '0';
+                    document.getElementById('totalCount').textContent = '0';
+                } else {
+                    showAlert(result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert(`Lỗi reset reader: ${error}`, 'danger');
+            }
+        }
+
+        // Show loading state
+        function showLoading(button, loading) {
+            const loadingSpan = button.querySelector('.loading');
+            const icon = button.querySelector('i');
+            
+            if (loading) {
+                loadingSpan.style.display = 'inline-block';
+                icon.style.display = 'none';
+                button.disabled = true;
+            } else {
+                loadingSpan.style.display = 'none';
+                icon.style.display = 'inline-block';
+                button.disabled = false;
+            }
+        }
+
+        // Event listeners
+        document.getElementById('powerInput').addEventListener('input', function() {
+            document.getElementById('powerValue').textContent = this.value;
+        });
+
+        // Socket.IO events
+        socket.on('connect', function() {
+            console.log('Connected to server');
+        });
+
+        socket.on('tag_detected', function(tagData) {
+            const tagElement = document.createElement('div');
+            tagElement.className = 'tag-item';
+            tagElement.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="tag-epc">${tagData.epc}</span>
+                        <span class="antenna-badge">Ant ${tagData.antenna}</span>
+                        <span class="rssi-badge">${tagData.rssi} dBm</span>
+                    </div>
+                    <div class="timestamp">${tagData.timestamp}</div>
+                </div>
+            `;
+            
+            if (tagsContainer.querySelector('.text-muted')) {
+                tagsContainer.innerHTML = '';
+            }
+            
+            tagsContainer.insertBefore(tagElement, tagsContainer.firstChild);
+        });
+
+        socket.on('stats_update', function(stats) {
+            document.getElementById('readRate').textContent = stats.read_rate;
+            document.getElementById('totalCount').textContent = stats.total_count;
+        });
+
+        socket.on('status', function(data) {
+            console.log('Status:', data.message);
+        });
+
+        // Initialize
+        updateConnectionStatus(false);
+    </script>
+</body>
+</html> 
