@@ -1582,7 +1582,7 @@ def print_tag_frame_details(frame: bytes):
         logger.warning(f"   ⚠️  Parse error: {e}")
 
 def start_tags_inventory(serial_port: serial.Serial, address: int = 0x00, 
-                   q_value: int = 4, session: int = 2, antenna: int = 4, scan_time: int = 20,
+                   q_value: int = 4, session: int = 2, target: int = 0, antenna: int = 4, scan_time: int = 20,
                    tag_callback: Optional[Callable[[RFIDTag], None]] = None,
                    stats_callback: Optional[Callable[[int, int], None]] = None) -> bool:
     """Start inventory operation with enhanced parsing.
@@ -1592,6 +1592,7 @@ def start_tags_inventory(serial_port: serial.Serial, address: int = 0x00,
         address (int, optional): Reader address. Defaults to 0x00.
         q_value (int, optional): Q-value for inventory. Defaults to 4.
         session (int, optional): Session (0-3). Defaults to 0.
+        target (int, optional): Target (A-B). Defaults to A.
         antenna (int, optional): Antenna number (1-16). Defaults to 1.
         scan_time (int, optional): Scan time in 100ms units. Defaults to 20 (2s).
         tag_callback (Optional[Callable[[RFIDTag], None]], optional): Callback function for tag data.
@@ -1616,7 +1617,11 @@ def start_tags_inventory(serial_port: serial.Serial, address: int = 0x00,
         q_byte = q_value & 0x0F  # Only use lower 4 bits
         session_byte = session & 0xFF
         
-        target_byte = 0x00  # Target A
+        if target == 0:
+            target_byte = 0x00  # Target A
+        else: 
+            target_byte = 0x01 # Target B
+
         antenna_byte = 0x80 + (antenna - 1)  # Convert to antenna format
         scantime_byte = scan_time & 0xFF
         
