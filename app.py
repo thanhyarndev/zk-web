@@ -663,6 +663,7 @@ def api_tags_inventory():
         # Thread worker: loop liên tục cho đến khi stop_inventory_flag = True
         def inventory_worker():
             cycle_count = 0
+            switch_target = 0
             try:
                 while not stop_inventory_flag:
                     cycle_count += 1
@@ -676,16 +677,31 @@ def api_tags_inventory():
                         logger.warning(f"Buffer clear warning in cycle {cycle_count}: {e}")
                     
                     # Thực hiện 1 lượt scan
-                    start_tags_inventory(
+                    if session < 2:
+                        start_tags_inventory(
                         rfid_controller.reader,
                         address=config.DEFAULT_ADDRESS,
                         q_value=q_value,
                         session=session,
+                        target=0,
                         antenna=antenna,
                         scan_time=scan_time,
                         tag_callback=tag_callback,
                         stats_callback=stats_callback
                     )
+                    else:
+                        start_tags_inventory(
+                        rfid_controller.reader,
+                        address=config.DEFAULT_ADDRESS,
+                        q_value=q_value,
+                        session=session,
+                        target=switch_target,
+                        antenna=antenna,
+                        scan_time=scan_time,
+                        tag_callback=tag_callback,
+                        stats_callback=stats_callback
+                        )
+                    switch_target = abs(switch_target-1)
                     
                     # Nếu đã được yêu cầu dừng, break
                     if stop_inventory_flag:

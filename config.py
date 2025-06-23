@@ -13,7 +13,7 @@ class Config:
     
     # Server Configuration
     HOST = os.environ.get('HOST', '0.0.0.0')
-    PORT = int(os.environ.get('PORT', 5000))
+    PORT = int(os.environ.get('PORT', 3000))
     
     # Serial Configuration
     DEFAULT_PORT = os.environ.get('DEFAULT_SERIAL_PORT', 'COM1')
