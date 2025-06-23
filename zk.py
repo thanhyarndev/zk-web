@@ -1603,9 +1603,11 @@ def start_tags_inventory(serial_port: serial.Serial, address: int = 0x00,
     try:
         epc_tag_list.clear()    
 
-        # Clear any pending data
+        # Clear any pending data and wait for reader to stabilize
         serial_port.reset_input_buffer()
-        logger.info("🧹 Input buffer cleared")
+        serial_port.reset_output_buffer()
+        time.sleep(0.3)  # Tăng thời gian chờ để reader ổn định
+        logger.info("🧹 Input/Output buffer cleared")
         
         # Build and send inventory command
         logger.info("\n--- Sending Inventory command ---")
@@ -1633,12 +1635,16 @@ def start_tags_inventory(serial_port: serial.Serial, address: int = 0x00,
         serial_port.write(full_command)
         serial_port.flush()
         
+        # Wait a bit for reader to process command
+        time.sleep(0.1)
+        
         # Initialize data buffer and counters
         buffer = b''
         frame_count = 0
         tag_count = 0
         unique_tag_count = 0
         start_time = time.time()
+        last_data_time = time.time()
         
         logger.info("\n--- Listening for responses ---")
         logger.info("Press Ctrl+C to stop...")
@@ -1649,6 +1655,7 @@ def start_tags_inventory(serial_port: serial.Serial, address: int = 0x00,
                 # Read available data and add to buffer
                 new_data = serial_port.read(serial_port.in_waiting)
                 buffer += new_data
+                last_data_time = time.time()  # Update last data time
                 
                 logger.info(f"\n📨 Raw data: {' '.join(f'{b:02X}' for b in new_data)}")
                 
@@ -1678,10 +1685,40 @@ def start_tags_inventory(serial_port: serial.Serial, address: int = 0x00,
                         # Check if inventory is complete
                         if result.is_complete and result.status == 0x01:
                             logger.info("✅ Inventory completed successfully")
-                            break
+                            # Print summary before returning
+                            duration = time.time() - start_time
+                            logger.info(f"\n📊 Session Summary:")
+                            logger.info(f"   Total frames processed: {frame_count}")
+                            logger.info(f"   Total tags detected: {tag_count}")
+                            logger.info(f"   Unique tags detected: {len(epc_tag_list)}")
+                            logger.info(f"   Session duration: {duration:.1f} seconds")
+                            if epc_tag_list:
+                                logger.info(f"   EPCs found:")
+                                for i, epc in enumerate(epc_tag_list, 1):
+                                    logger.info(f"     {i}. {epc}")
+                            return True  # Return True when inventory completes successfully
                             
                     except Exception as e:
                         logger.warning(f"⚠️  Error processing frame: {e}")
+            else:
+                # Check for timeout - if no data for more than scan_time + 1 second, consider it complete
+                current_time = time.time()
+                if current_time - last_data_time > (scan_time * 0.1) + 1.0:  # scan_time in 100ms units + 1 second buffer
+                    logger.info(f"⏰ Timeout reached ({scan_time * 0.1 + 1.0:.1f}s without data), considering inventory complete")
+                    duration = time.time() - start_time
+                    logger.info(f"\n📊 Session Summary:")
+                    logger.info(f"   Total frames processed: {frame_count}")
+                    logger.info(f"   Total tags detected: {tag_count}")
+                    logger.info(f"   Unique tags detected: {len(epc_tag_list)}")
+                    logger.info(f"   Session duration: {duration:.1f} seconds")
+                    if epc_tag_list:
+                        logger.info(f"   EPCs found:")
+                        for i, epc in enumerate(epc_tag_list, 1):
+                            logger.info(f"     {i}. {epc}")
+                    return True
+                
+                # Small delay to prevent busy waiting
+                time.sleep(0.1)
         
     except KeyboardInterrupt:
         logger.info("\n⚠️  Interrupted by user")
@@ -1888,19 +1925,13 @@ def main() -> None:
                     print(f"   Read Rate: {read_rate} tags/sec")
                     print(f"   Total Count: {total_count}")
                 
-                if inventory_choice == "1":
-                    # Use default values
-                    start_tags_inventory(
-                        serial_port=reader,
-                        address=0x00,
-                        q_value=4,
-                        session=0,
-                        antenna=1,
-                        scan_time=10,
-                        tag_callback=on_tag_detected,
-                        stats_callback=on_stats_update
-                    )
-                elif inventory_choice == "2":
+                # Set default parameters
+                q_value = 4
+                session = 0
+                antenna = 1
+                scan_time = 10
+                
+                if inventory_choice == "2":
                     try:
                         # Get custom values with defaults shown
                         q_value = int(input("Enter Q-value (0-15, default: 4): ") or "4")
@@ -1921,7 +1952,16 @@ def main() -> None:
                         if not (1 <= scan_time <= 255):
                             print("❌ Invalid scan time. Using default (10)")
                             scan_time = 10
-                            
+                    except ValueError:
+                        print("❌ Invalid input. Using default values")
+                
+                print(f"\n🔄 Starting continuous inventory loop...")
+                print(f"   Q-value: {q_value}, Session: S{session}, Antenna: {antenna}, Scan Time: {scan_time}00ms")
+                print("   Press Ctrl+C to stop the loop and return to main menu")
+                
+                try:
+                    while True:
+                        print(f"\n--- Starting new inventory cycle at {time.strftime('%Y-%m-%d %H:%M:%S')} ---")
                         start_tags_inventory(
                             serial_port=reader,
                             address=0x00,
@@ -1932,31 +1972,14 @@ def main() -> None:
                             tag_callback=on_tag_detected,
                             stats_callback=on_stats_update
                         )
-                    except ValueError:
-                        print("❌ Invalid input. Using default values")
-                        start_tags_inventory(
-                            serial_port=reader,
-                            address=0x00,
-                            q_value=4,
-                            session=0,
-                            antenna=1,
-                            scan_time=10,
-                            tag_callback=on_tag_detected,
-                            stats_callback=on_stats_update
-                        )
-                else:
-                    print("❌ Invalid choice. Using default values")
-                    start_tags_inventory(
-                        serial_port=reader,
-                        address=0x00,
-                        q_value=4,
-                        session=0,
-                        antenna=1,
-                        scan_time=10,
-                        tag_callback=on_tag_detected,
-                        stats_callback=on_stats_update
-                    )
-                break
+                        print(f"\n--- Inventory cycle completed at {time.strftime('%Y-%m-%d %H:%M:%S')} ---")
+                        print("🔄 Starting next cycle immediately...")
+                        # Không có delay giữa các cycle để quét nhanh nhất có thể
+                        
+                except KeyboardInterrupt:
+                    print("\n⚠️  Continuous inventory loop stopped by user")
+                    print("Returning to main menu...")
+                    
             elif choice == "11":
                 print("\n👋 Goodbye!")
                 break

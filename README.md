@@ -1,129 +1,180 @@
-# RFID Reader Web Control Panel
+# RFID Web Control Panel
 
-Ứng dụng web để điều khiển RFID Reader Ex10 Series thay thế cho giao diện terminal.
+Ứng dụng web để điều khiển RFID reader Ex10 series với giao diện web và WebSocket real-time.
 
 ## Tính năng
 
-- 🌐 **Giao diện web hiện đại**: Thay thế hoàn toàn giao diện terminal
-- 🔌 **Kết nối serial**: Hỗ trợ kết nối qua serial port
-- 📊 **Real-time monitoring**: Hiển thị tags và thống kê theo thời gian thực
-- ⚙️ **Cấu hình đầy đủ**: Điều khiển power, antenna, profile, buzzer
-- 📱 **Responsive design**: Tương thích với mobile và desktop
-- 🔄 **WebSocket**: Cập nhật dữ liệu real-time qua WebSocket
+- **Kết nối RFID Reader**: Hỗ trợ kết nối qua serial port
+- **Inventory Operations**: 
+  - Start/Stop inventory với Target A/B
+  - Tags inventory với cấu hình tùy chỉnh (Q-value, Session, Antenna, Scan time)
+  - Real-time tag detection qua WebSocket
+- **Reader Configuration**:
+  - Thiết lập RF power
+  - Bật/tắt buzzer
+  - Quản lý profile
+  - Cấu hình antenna
+- **Real-time Monitoring**: WebSocket để hiển thị tags và stats real-time
 
 ## Cài đặt
 
-1. **Clone repository**:
-```bash
-git clone <repository-url>
-cd zk-web-app
-```
-
-2. **Cài đặt dependencies**:
+1. Cài đặt dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. **Chạy ứng dụng**:
+2. Chạy ứng dụng:
 ```bash
 python app.py
 ```
 
-4. **Truy cập web**:
-Mở trình duyệt và truy cập: `http://localhost:5000`
+3. Truy cập web interface tại: `http://localhost:5000`
 
-## Sử dụng
+## Cấu hình
 
-### 1. Kết nối Reader
-- Nhập serial port (mặc định: `/dev/cu.usbserial-10`)
-- Chọn baudrate (mặc định: 57600)
-- Nhấn "Kết nối"
+Chỉnh sửa file `config.py` để thay đổi cấu hình mặc định:
 
-### 2. Inventory Control
-- **Start Inventory (Target A)**: Bắt đầu quét tags với target A
-- **Start Inventory (Target B)**: Bắt đầu quét tags với target B  
-- **Stop Inventory**: Dừng quét tags
-- **Real-time stats**: Hiển thị tốc độ đọc và tổng số tags
-
-### 3. Cấu hình
-- **RF Power**: Điều chỉnh công suất RF (0-30 dBm)
-- **Antenna Control**: Bật/tắt từng antenna
-- **Profile Management**: Chọn profile phù hợp
-- **Buzzer Control**: Bật/tắt buzzer
-
-### 4. Monitoring
-- **Tags Display**: Hiển thị danh sách tags đã phát hiện
-- **Real-time Updates**: Cập nhật thông tin tags theo thời gian thực
-- **Statistics**: Thống kê tốc độ đọc và tổng số tags
+```python
+class Config:
+    DEFAULT_PORT = 'COM3'  # Windows
+    # DEFAULT_PORT = '/dev/ttyUSB0'  # Linux
+    DEFAULT_BAUDRATE = 57600
+    DEFAULT_ADDRESS = 0x00
+    MAX_POWER = 30
+    MIN_POWER = 0
+    MAX_ANTENNAS = 4
+    MAX_TAGS_DISPLAY = 100
+```
 
 ## API Endpoints
 
-### Connection
+### Kết nối
 - `POST /api/connect` - Kết nối reader
 - `POST /api/disconnect` - Ngắt kết nối reader
 
-### Reader Info
-- `GET /api/reader_info` - Lấy thông tin reader
-- `GET /api/get_profile` - Lấy profile hiện tại
-- `GET /api/get_antenna_power` - Lấy công suất antennas
-
-### Inventory Control
-- `POST /api/start_inventory` - Bắt đầu inventory
+### Inventory
+- `POST /api/start_inventory` - Bắt đầu inventory (Target A/B)
 - `POST /api/stop_inventory` - Dừng inventory
-- `GET /api/get_tags` - Lấy danh sách tags
+- `POST /api/tags_inventory` - Bắt đầu tags inventory với cấu hình tùy chỉnh
+- `POST /api/stop_tags_inventory` - Dừng tags inventory
 
-### Configuration
-- `POST /api/set_power` - Thiết lập công suất RF
-- `POST /api/set_buzzer` - Thiết lập buzzer
+### Cấu hình
+- `GET /api/reader_info` - Lấy thông tin reader
+- `POST /api/set_power` - Thiết lập RF power
+- `POST /api/set_buzzer` - Bật/tắt buzzer
+- `GET /api/get_profile` - Lấy profile hiện tại
 - `POST /api/set_profile` - Thiết lập profile
 - `POST /api/enable_antennas` - Bật antennas
 - `POST /api/disable_antennas` - Tắt antennas
+- `GET /api/get_antenna_power` - Lấy công suất antennas
+
+### Dữ liệu
+- `GET /api/get_tags` - Lấy danh sách tags đã phát hiện
+- `GET /api/config` - Lấy cấu hình
+- `GET /api/debug` - Thông tin debug
+
+### Reset
+- `POST /api/reset_reader` - Reset reader hoàn toàn
 
 ## WebSocket Events
 
-- `tag_detected` - Khi phát hiện tag mới
+### Client → Server
+- `connect` - Kết nối WebSocket
+- `disconnect` - Ngắt kết nối WebSocket
+
+### Server → Client
+- `tag_detected` - Tag mới được phát hiện
 - `stats_update` - Cập nhật thống kê
 - `status` - Trạng thái kết nối
 
-## Cấu trúc Project
+## Xử lý vấn đề Session Switching
+
+### Vấn đề thường gặp
+Khi chuyển đổi giữa các session (ví dụ: từ session 2 về session 0), có thể gặp các vấn đề:
+- Reader không phản hồi
+- CRC error
+- Delay khi gọi lệnh đọc
+- Thread không dừng trong thời gian chờ
+
+### Giải pháp đã được cải thiện
+
+1. **Cải thiện hàm stop_inventory**:
+   - Gửi lệnh stop nhiều lần để đảm bảo reader nhận được
+   - Tăng thời gian chờ thread dừng (3 giây)
+   - Clear cả input và output buffer
+   - Force stop nếu thread không dừng
+
+2. **Cải thiện hàm start_inventory**:
+   - Tăng thời gian chờ giữa các lần start (1 giây)
+   - Clear buffer trước khi start
+   - Thêm delay để reader ổn định
+
+3. **Cải thiện hàm start_tags_inventory**:
+   - Thêm timeout để tránh bị treo
+   - Clear cả input và output buffer
+   - Tăng thời gian chờ để reader ổn định
+   - Thêm delay sau khi gửi lệnh
+
+4. **API Reset Reader**:
+   - Reset hoàn toàn reader khi cần thiết
+   - Clear tất cả buffers
+   - Gửi lệnh stop nhiều lần
+   - Đợi reader ổn định
+
+### Cách sử dụng khi gặp vấn đề
+
+1. **Khi chuyển session**:
+   - Dừng inventory hiện tại
+   - Đợi 1-2 giây
+   - Bắt đầu inventory với session mới
+
+2. **Khi gặp CRC error hoặc không phản hồi**:
+   - Gọi API `/api/reset_reader`
+   - Đợi reset hoàn tất
+   - Thử lại inventory
+
+3. **Khi thread không dừng**:
+   - Gọi API `/api/stop_inventory` hoặc `/api/stop_tags_inventory`
+   - Đợi tối đa 3 giây
+   - Nếu vẫn không dừng, gọi `/api/reset_reader`
+
+### Log monitoring
+
+Theo dõi log để phát hiện vấn đề:
+- `Inventory thread không dừng trong thời gian chờ` - Thread timeout
+- `❌ Invalid response or CRC error` - CRC error
+- `❌ No response or incomplete response` - Reader không phản hồi
+
+## Troubleshooting
+
+### Reader không kết nối
+- Kiểm tra port và baudrate
+- Đảm bảo driver đã được cài đặt
+- Thử port khác
+
+### Inventory không hoạt động
+- Kiểm tra kết nối
+- Reset reader
+- Kiểm tra antenna và power settings
+
+### WebSocket không hoạt động
+- Kiểm tra firewall
+- Đảm bảo client hỗ trợ WebSocket
+- Kiểm tra console browser
+
+## Cấu trúc project
 
 ```
 zk-web-app/
 ├── app.py              # Flask application
-├── zk.py               # RFID SDK (original)
-├── requirements.txt    # Python dependencies
-├── README.md          # Documentation
-└── templates/
-    └── index.html     # Web interface
+├── zk.py               # RFID reader SDK
+├── config.py           # Configuration
+├── requirements.txt    # Dependencies
+├── templates/
+│   └── index.html     # Web interface
+└── README.md          # Documentation
 ```
-
-## Troubleshooting
-
-### Lỗi kết nối serial
-- Kiểm tra serial port có đúng không
-- Đảm bảo reader đã được kết nối
-- Kiểm tra quyền truy cập serial port
-
-### Lỗi WebSocket
-- Kiểm tra firewall
-- Đảm bảo port 5000 không bị block
-
-### Performance Issues
-- Giảm tần suất cập nhật nếu có quá nhiều tags
-- Tối ưu hóa network connection
-
-## Contributing
-
-1. Fork repository
-2. Tạo feature branch
-3. Commit changes
-4. Push to branch
-5. Tạo Pull Request
 
 ## License
 
-MIT License - xem file LICENSE để biết thêm chi tiết.
-
-## Support
-
-Nếu gặp vấn đề, vui lòng tạo issue trên GitHub repository. 
+MIT License 

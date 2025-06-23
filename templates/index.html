@@ -111,6 +111,11 @@
             padding: 10px 12px;
         }
 
+        .form-select option {
+            color: var(--secondary-color);
+            background-color: white;
+        }
+
         .form-control:focus, .form-select:focus {
             background: rgba(255,255,255,0.15);
             border-color: var(--primary-color);
@@ -190,6 +195,21 @@
             color: var(--secondary-color);
             margin: 0 0 10px 0;
             font-weight: 600;
+        }
+
+        .modal-body .form-control,
+        .modal-body .form-select {
+            background-color: #ffffff;
+            color: #2c3e50;
+            border: 1px solid #dee2e6;
+        }
+
+        .modal-body .form-control::placeholder {
+            color: #6c757d;
+        }
+
+        .modal-body .form-label {
+            color: #2c3e50;
         }
 
         .stats-row {
@@ -512,8 +532,8 @@
                 <button class="btn btn-primary" onclick="startInventory(0)" id="startTargetABtn" disabled>
                     <i class="fas fa-play"></i> Start Inventory (Target A)
                 </button>
-                <button class="btn btn-primary" onclick="startInventory(1)" id="startTargetBBtn" disabled>
-                    <i class="fas fa-play"></i> Start Inventory (Target B)
+                <button class="btn btn-success" onclick="openTagsInventoryModal()" id="tagsInventoryBtn" disabled>
+                    <i class="fas fa-cogs"></i> Tags Inventory
                 </button>
                 <button class="btn btn-warning" onclick="stopInventory()" id="stopBtn" disabled>
                     <i class="fas fa-stop"></i> Stop Inventory
@@ -549,6 +569,37 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            <!-- Tags Inventory Modal -->
+            <div class="modal fade" id="tagsInventoryModal" tabindex="-1" aria-labelledby="tagsInventoryModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="tagsInventoryModalLabel">Tags Inventory Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="mb-3">
+                      <label for="qValueInput" class="form-label">Q-value (0-15):</label>
+                      <input type="number" class="form-control" id="qValueInput" min="0" max="15" value="4">
+                    </div>
+                    <div class="mb-3">
+                      <label for="sessionInput" class="form-label">Session (0-3):</label>
+                      <input type="number" class="form-control" id="sessionInput" min="0" max="3" value="0">
+                    </div>
+                    <div class="mb-3">
+                      <label for="scanTimeInput" class="form-label">Scan Time (100ms units, 1-255):</label>
+                      <input type="number" class="form-control" id="scanTimeInput" min="1" max="255" value="10">
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-danger" onclick="stopTagsInventory()">Dừng đọc</button>
+                    <button type="button" class="btn btn-success" onclick="startTagsInventory()">Bắt đầu đọc</button>
+                  </div>
+                </div>
+              </div>
             </div>
         </div>
     </div>
@@ -629,7 +680,7 @@
         function enableControls() {
             document.getElementById('infoBtn').disabled = false;
             document.getElementById('startTargetABtn').disabled = false;
-            document.getElementById('startTargetBBtn').disabled = false;
+            document.getElementById('tagsInventoryBtn').disabled = false;
             document.getElementById('stopBtn').disabled = false;
             document.getElementById('powerBtn').disabled = false;
             document.getElementById('powerInfoBtn').disabled = false;
@@ -640,7 +691,7 @@
         function disableControls() {
             document.getElementById('infoBtn').disabled = true;
             document.getElementById('startTargetABtn').disabled = true;
-            document.getElementById('startTargetBBtn').disabled = true;
+            document.getElementById('tagsInventoryBtn').disabled = true;
             document.getElementById('stopBtn').disabled = true;
             document.getElementById('powerBtn').disabled = true;
             document.getElementById('powerInfoBtn').disabled = true;
@@ -964,6 +1015,43 @@
 
         // Initialize
         updateConnectionStatus(false);
+
+        function openTagsInventoryModal() {
+            var modal = new bootstrap.Modal(document.getElementById('tagsInventoryModal'));
+            modal.show();
+        }
+
+        async function startTagsInventory() {
+            const q_value = parseInt(document.getElementById('qValueInput').value);
+            const session = parseInt(document.getElementById('sessionInput').value);
+            const antenna = 1; // Mặc định sử dụng antenna 1
+            const scan_time = parseInt(document.getElementById('scanTimeInput').value);
+
+            const result = await apiCall('/api/tags_inventory', 'POST', {
+                q_value, session, antenna, scan_time
+            });
+            if (result.success) {
+                showAlert(result.message, 'success');
+                document.getElementById('stopBtn').disabled = false;
+                startTimer();
+                // Đóng modal
+                var modal = bootstrap.Modal.getInstance(document.getElementById('tagsInventoryModal'));
+                modal.hide();
+            } else {
+                showAlert(result.message, 'danger');
+            }
+        }
+
+        async function stopTagsInventory() {
+            const result = await apiCall('/api/stop_tags_inventory', 'POST');
+            if (result.success) {
+                showAlert(result.message, 'success');
+                document.getElementById('stopBtn').disabled = true;
+                stopTimer();
+            } else {
+                showAlert(result.message, 'danger');
+            }
+        }
     </script>
 </body>
 </html> 
