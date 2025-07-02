@@ -24,7 +24,7 @@ class Config:
     DEFAULT_Q_VALUE = 4
     DEFAULT_SESSION = 0
     DEFAULT_ANTENNA = 1
-    DEFAULT_SCAN_TIME = 10
+    DEFAULT_SCAN_TIME = 1
     
     # WebSocket Configuration
     SOCKETIO_ASYNC_MODE = 'eventlet'
@@ -55,7 +55,7 @@ class Config:
     }
     
     # Antenna Configuration
-    MAX_ANTENNAS = 4
+    MAX_ANTENNAS = 1
     DEFAULT_ANTENNA_POWER = 20  # dBm
     
     # Power Configuration

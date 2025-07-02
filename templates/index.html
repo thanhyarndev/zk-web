@@ -726,7 +726,7 @@
                     id="scanTimeInput"
                     min="1"
                     max="255"
-                    value="10"
+                    value="1"
                   />
                 </div>
               </div>
@@ -916,6 +916,7 @@
           port,
           baudrate,
         });
+        console.log(result);
 
         showLoading(connectBtn, false);
 
@@ -951,30 +952,23 @@
 
         if (result.success) {
           const info = result.data;
+          console.log(info);
           document.getElementById("readerInfo").innerHTML = `
                     <div class="row">
                         <div class="col-6">
-                            <strong>Firmware:</strong> ${
-                              info.firmware_version
-                            }<br>
-                            <strong>Type:</strong> ${info.reader_type}<br>
-                            <strong>Power:</strong> ${info.rf_power} dBm<br>
+                            <strong>Firmware:</strong> ${info.version_info}<br>
+                            <strong>Type:</strong> ${info.tr_type}<br>
+                            <strong>Power:</strong> ${info.power_dbm} dBm<br>
                             <strong>Inventory Time:</strong> ${
-                              info.inventory_time
+                              info.scan_time
                             } ms
                         </div>
                         <div class="col-6">
-                            <strong>Protocols:</strong><br>
-                            ${info.supported_protocols
-                              .map(
-                                (p) =>
-                                  `<span class="badge bg-primary">${p}</span>`
-                              )
-                              .join(" ")}<br>
+                           
                             <strong>Antenna Check:</strong> ${
-                              info.antenna_check
+                              info.check_ant
                             }<br>
-                            <strong>Antenna Config:</strong> 0x${info.antenna_config
+                            <strong>Antenna Config:</strong> 0x${info.ant
                               .toString(16)
                               .toUpperCase()}
                         </div>
@@ -1013,15 +1007,14 @@
       // Set power (for single antenna)
       async function setPower() {
         const power = parseInt(document.getElementById("powerInput").value);
-        const preserveConfig =
-          document.getElementById("preserveConfig").checked;
         const result = await apiCall("/api/set_power", "POST", {
           power,
-          preserve_config: preserveConfig,
         });
         if (result.success) {
           showAlert(result.message, "success");
-          document.getElementById("currentAntennaPower").textContent = power;
+          document.getElementById(
+            "currentAntennaPower"
+          ).textContent = `Ant1: ${power}`;
         } else {
           showAlert(result.message, "danger");
         }
@@ -1030,11 +1023,15 @@
       // Get antenna power (for single antenna)
       async function getAntennaPower() {
         const result = await apiCall("/api/get_antenna_power");
+        console.log(result);
         if (result.success) {
           const powerLevels = result.data;
-          // Lấy power của antenna 1
-          const power = powerLevels[1] || "--";
-          document.getElementById("currentAntennaPower").textContent = power;
+          // Build a string like 'Ant1: 20 dBm, Ant2: 20 dBm, ...'
+          const powerStr = Object.entries(powerLevels)
+            .map(([ant, power]) => `Ant${ant}: ${power}`)
+            .join(", ");
+          document.getElementById("currentAntennaPower").textContent =
+            powerStr || "--";
         } else {
           showAlert(result.message, "warning");
         }
@@ -1178,8 +1175,8 @@
       socket.on("tag_detected", function (tagData) {
         console.log("🔍 WebSocket tag_detected received:", tagData);
 
-        // Update tags data
-        const epc = tagData.epc;
+        // Use uid as EPC, ant as antenna, rssi as RSSI
+        const epc = tagData.uid;
         if (tagsData.has(epc)) {
           // Update existing tag
           const existing = tagsData.get(epc);
@@ -1190,14 +1187,14 @@
             existing.rssi = tagData.rssi;
           }
           // Update antenna if different
-          if (existing.antenna !== tagData.antenna) {
-            existing.antenna = `${existing.antenna}, ${tagData.antenna}`;
+          if (existing.antenna !== tagData.ant) {
+            existing.antenna = `${existing.antenna}, ${tagData.ant}`;
           }
         } else {
           // Add new tag
           tagsData.set(epc, {
             count: 1,
-            antenna: tagData.antenna,
+            antenna: tagData.ant,
             rssi: tagData.rssi,
             lastSeen: tagData.timestamp,
           });

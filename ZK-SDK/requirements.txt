@@ -1,0 +1,11 @@
+# UHF RFID Reader Python SDK Requirements
+
+# Core dependencies
+pyserial>=3.5
+
+# Development dependencies (optional)
+# pytest>=6.0
+# pytest-cov>=2.0
+# black>=21.0
+# flake8>=3.8
+# mypy>=0.800 

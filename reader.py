@@ -1,0 +1,1185 @@
+"""
+Core Reader class for low-level communication with UHF RFID readers
+"""
+
+import socket
+import serial
+import serial.tools.list_ports
+import struct
+import time
+import threading
+from typing import Optional, Callable, List, Tuple, Dict, Any
+from rfid_tag import RFIDTag
+from exceptions import ConnectionError, TimeoutError, UHFReaderError
+import platform
+
+class Reader:
+    """
+    Low-level reader class that handles communication with UHF RFID readers
+    via serial (COM) and network (TCP) connections.
+    """
+    
+    # CRC polynomial and preset value
+    POLYNOMIAL = 0x8408  # 33800 in decimal
+    PRESET_VALUE = 0xFFFF
+    
+    # Connection types
+    CONNECTION_NONE = -1
+    CONNECTION_SERIAL = 0
+    CONNECTION_TCP = 1
+    
+    def __init__(self):
+        """Initialize the reader"""
+        self.receive_callback: Optional[Callable[[RFIDTag], None]] = None
+        self.recv_callback: Optional[Callable[[bytes], None]] = None
+        self.send_callback: Optional[Callable[[bytes], None]] = None
+        
+        # Serial connection
+        self.serial_port: Optional[serial.Serial] = None
+        
+        # TCP connection
+        self.tcp_client: Optional[socket.socket] = None
+        self.tcp_stream = None
+        
+        # Connection state
+        self.connection_type = self.CONNECTION_NONE
+        self.device_name = ""
+        self.com_addr = 0
+        self.inventory_scan_time = 0
+        
+        # Buffers
+        self.recv_buffer = bytearray(8000)
+        self.send_buffer = bytearray(300)
+        self.recv_length = 0
+    
+    def _get_crc(self, data: bytes, data_len: int) -> bytes:
+        """Calculate CRC for the given data"""
+        crc = self.PRESET_VALUE
+        
+        for i in range(data_len):
+            crc ^= data[i]
+            for j in range(8):
+                if crc & 1:
+                    crc = (crc >> 1) ^ self.POLYNOMIAL
+                else:
+                    crc >>= 1
+        
+        return struct.pack('<H', crc)
+    
+    def _check_crc(self, data: bytes, length: int) -> int:
+        """Check CRC of received data"""
+        if length < 2:
+            return 49  # Invalid data
+        
+        # Extract data without CRC
+        data_without_crc = data[:length-2]
+        
+        # Calculate expected CRC
+        expected_crc = self._get_crc(data_without_crc, len(data_without_crc))
+        
+        # Compare with received CRC
+        received_crc = data[length-2:length]
+        
+        if expected_crc == received_crc:
+            return 0  # Success
+        else:
+            return 49  # CRC error
+    
+    def _hex_string_to_bytes(self, hex_str: str) -> bytes:
+        """Convert hex string to bytes"""
+        hex_str = hex_str.replace(" ", "")
+        return bytes.fromhex(hex_str)
+    
+    def _bytes_to_hex_string(self, data: bytes) -> str:
+        """Convert bytes to hex string"""
+        return data.hex().upper()
+    
+    def _bytes_to_hex_string_spaced(self, data: bytes) -> str:
+        """Convert bytes to hex string with spaces"""
+        return ' '.join(f'{b:02X}' for b in data)
+    
+    def _open_serial(self, port, baud_rate: int) -> int:
+        """Open serial connection. Accepts int (Windows) or str (device path) for port."""
+        try:
+            if self.serial_port and self.serial_port.is_open:
+                self.serial_port.close()
+            
+            # Map baud rate codes to actual baud rates
+            baud_map = {
+                0: 9600,
+                1: 19200,
+                2: 38400,
+                5: 57600,
+                6: 115200
+            }
+            actual_baud = baud_map.get(baud_rate, 57600)
+            
+            # Determine port name
+            port_name = None
+            if isinstance(port, int):
+                if platform.system() == "Windows":
+                    port_name = f"COM{port}"
+                else:
+                    # On macOS/Linux, map 1 -> first available port, 2 -> second, etc.
+                    ports = list(serial.tools.list_ports.comports())
+                    if 0 < port <= len(ports):
+                        port_name = ports[port-1].device
+                    else:
+                        raise ValueError(f"Port index {port} is out of range. Available: {[p.device for p in ports]}")
+            elif isinstance(port, str):
+                port_name = port
+            else:
+                raise ValueError("Port must be an int (index) or str (device path)")
+            
+            self.serial_port = serial.Serial(
+                port=port_name,
+                baudrate=actual_baud,
+                timeout=0.2,
+                bytesize=serial.EIGHTBITS,
+                parity=serial.PARITY_NONE,
+                stopbits=serial.STOPBITS_ONE
+            )
+            
+            self.device_name = port_name
+            return 0
+            
+        except Exception as e:
+            print(f"Serial connection error: {e}")
+            return 48  # Connection error
+    
+    def open_by_com(self, port, com_addr: int, baud: int, skip_verification: bool = False) -> int:
+        """Open connection via COM port. Accepts int (index) or str (device path) for port."""
+        if self._open_serial(port, baud) == 0:
+            self.connection_type = self.CONNECTION_SERIAL
+            
+            if skip_verification:
+                # Skip reader verification for testing
+                self.com_addr = com_addr
+                return 0
+            
+            # Get reader information to verify connection
+            version_info = bytearray(2)
+            reader_type = [0]
+            tr_type = [0]
+            dmax_fre = [0]
+            dmin_fre = [0]
+            power_dbm = [0]
+            scan_time = [0]
+            ant = [0]
+            beep_en = [0]
+            output_rep = [0]
+            check_ant = [0]
+            
+            result = self.get_reader_information(
+                com_addr, version_info, reader_type, tr_type,
+                dmax_fre, dmin_fre, power_dbm, scan_time,
+                ant, beep_en, output_rep, check_ant
+            )
+            
+            if result == 0:
+                self.com_addr = com_addr
+                return 0
+            else:
+                self.serial_port.close()
+                self.connection_type = self.CONNECTION_NONE
+                return 48
+        
+        return 48
+    
+    def close_by_com(self) -> int:
+        """Close COM connection"""
+        try:
+            if self.serial_port and self.serial_port.is_open:
+                self.serial_port.close()
+                self.connection_type = self.CONNECTION_NONE
+                return 0
+            return 48
+        except Exception as e:
+            print(f"Error closing COM connection: {e}")
+            return 48
+    
+    def _open_network(self, ip_addr: str, port: int) -> int:
+        """Open network connection"""
+        try:
+            self.tcp_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.tcp_client.settimeout(2.0)
+            self.tcp_client.connect((ip_addr, port))
+            self.tcp_stream = self.tcp_client.makefile('rwb')
+            return 0
+        except Exception as e:
+            print(f"Network connection error: {e}")
+            return 48
+    
+    def open_by_tcp(self, ip_addr: str, port: int, com_addr: int) -> int:
+        """Open connection via TCP"""
+        if self._open_network(ip_addr, port) == 0:
+            self.connection_type = self.CONNECTION_TCP
+            
+            # Get reader information to verify connection
+            version_info = bytearray(2)
+            reader_type = [0]
+            tr_type = [0]
+            dmax_fre = [0]
+            dmin_fre = [0]
+            power_dbm = [0]
+            scan_time = [0]
+            ant = [0]
+            beep_en = [0]
+            output_rep = [0]
+            check_ant = [0]
+            
+            result = self.get_reader_information(
+                com_addr, version_info, reader_type, tr_type,
+                dmax_fre, dmin_fre, power_dbm, scan_time,
+                ant, beep_en, output_rep, check_ant
+            )
+            
+            if result == 0:
+                self.com_addr = com_addr
+                self.device_name = f"{ip_addr}:{port}"
+                return 0
+            else:
+                self.tcp_client.close()
+                self.connection_type = self.CONNECTION_NONE
+                return 48
+        
+        return 48
+    
+    def close_by_tcp(self) -> int:
+        """Close TCP connection"""
+        try:
+            if self.tcp_client:
+                self.tcp_client.close()
+                self.connection_type = self.CONNECTION_NONE
+                return 0
+            return 48
+        except Exception as e:
+            print(f"Error closing TCP connection: {e}")
+            return 48
+    
+    def _send_data(self, data: bytes, bytes_to_send: int) -> int:
+        """Send data to the connected port (clears buffers before sending)"""
+        try:
+            if self.connection_type == self.CONNECTION_SERIAL:
+                if self.serial_port and self.serial_port.is_open:
+                    # Clear buffers before sending (like C# SendDataToPort)
+                    self.serial_port.reset_input_buffer()
+                    self.serial_port.reset_output_buffer()
+                    self.serial_port.write(data[:bytes_to_send])
+                    self.serial_port.flush()
+                    return 0
+            elif self.connection_type == self.CONNECTION_TCP:
+                if self.tcp_client:
+                    self.tcp_client.send(data[:bytes_to_send])
+                    return 0
+            
+            return 48
+        except Exception as e:
+            print(f"Send data error: {e}")
+            return 48
+
+    def _send_data_noclear(self, data: bytes, bytes_to_send: int) -> int:
+        """Send data to the connected port (does NOT clear buffers before sending - like C# SendDataToPort_Noclear)"""
+        try:
+            if self.connection_type == self.CONNECTION_SERIAL:
+                if self.serial_port and self.serial_port.is_open:
+                    # Do NOT clear buffers before sending (like C# SendDataToPort_Noclear)
+                    self.serial_port.write(data[:bytes_to_send])
+                    self.serial_port.flush()
+                    return 0
+            elif self.connection_type == self.CONNECTION_TCP:
+                if self.tcp_client:
+                    self.tcp_client.send(data[:bytes_to_send])
+                    return 0
+            
+            return 48
+        except Exception as e:
+            print(f"Send data error: {e}")
+            return 48
+    
+    def _read_data(self) -> bytes:
+        """Read data from the connected port"""
+        try:
+            if self.connection_type == self.CONNECTION_SERIAL:
+                if self.serial_port and self.serial_port.is_open:
+                    return self.serial_port.read(1024)
+            elif self.connection_type == self.CONNECTION_TCP:
+                if self.tcp_client:
+                    return self.tcp_client.recv(1024)
+            
+            return b''
+        except Exception as e:
+            print(f"Read data error: {e}")
+            return b''
+    
+    def _get_data_from_port(self, cmd: int, end_time: int) -> int:
+        """Get data from port with timeout"""
+        start_time = time.time()
+        self.recv_length = 0
+        
+        while time.time() - start_time < end_time / 1000.0:
+            data = self._read_data()
+            if data:
+                # Process received data
+                self.recv_buffer[self.recv_length:self.recv_length + len(data)] = data
+                self.recv_length += len(data)
+                
+                # Check if we have a complete packet
+                if self.recv_length >= 4:  # Minimum packet size
+                    # For inventory command (cmd=1), we need to handle multiple responses
+                    if cmd == 1:
+                        # Inventory can return multiple packets, so we accept any data
+                        if self.recv_length >= 4:
+                            return 0  # Success
+                    else:
+                        # For other commands, check for complete packet
+                        if self.recv_length >= 6:
+                            return 0  # Success
+            
+            time.sleep(0.01)  # Small delay
+        
+        return 49  # Timeout
+    
+    def get_reader_information(self, com_addr: int, version_info: bytearray,
+                             reader_type: list, tr_type: list, dmax_fre: list,
+                             dmin_fre: list, power_dbm: list, scan_time: list,
+                             ant: list, beep_en: list, output_rep: list,
+                             check_ant: list) -> int:
+        """Get reader information"""
+        # Command format: [Length][ComAddr][Command][CRC_Low][CRC_High]
+        # Command 0x21 = GetReaderInformation
+        cmd = bytearray([4, com_addr, 0x21])  # Length=4, ComAddr, Command=0x21
+        
+        # Add CRC
+        crc = self._get_crc(cmd, len(cmd))
+        cmd.extend(crc)
+        
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            return result
+        
+        # Wait for response
+        result = self._get_data_from_port(0x21, 1500)
+        if result != 0:
+            return result
+        
+        # Parse response
+        if self.recv_length >= 16:
+            # Check CRC
+            if self._check_crc(self.recv_buffer, self.recv_length) != 0:
+                return 49
+            
+            # Check command response
+            if self.recv_buffer[2] == 0x21 and self.recv_buffer[3] == 0:
+                # Extract information from response
+                com_addr = self.recv_buffer[1]
+                version_info[0:2] = self.recv_buffer[4:6]
+                reader_type[0] = self.recv_buffer[6]
+                tr_type[0] = self.recv_buffer[7]
+                dmax_fre[0] = self.recv_buffer[8]
+                dmin_fre[0] = self.recv_buffer[9]
+                power_dbm[0] = self.recv_buffer[10]
+                scan_time[0] = self.recv_buffer[11]
+                self.inventory_scan_time = self.recv_buffer[11]  # Set inventory scan time like C# SDK
+                ant[0] = self.recv_buffer[12]
+                beep_en[0] = self.recv_buffer[13]
+                output_rep[0] = self.recv_buffer[14]
+                check_ant[0] = self.recv_buffer[15]
+                return 0
+            else:
+                return self.recv_buffer[3] if self.recv_buffer[2] == 0x21 else 49
+        
+        return 49
+    
+    def _get_inventory_g1(self, scan_time: int, epc_list: bytearray, ant: list, total_len: list, card_num: list, cmd: int, rssi_list: list = None) -> int:
+        """Get inventory data (private method like C# GetInventoryG1)"""
+        epcNum = 0
+        dlen = 0
+        start_time = time.time()
+        # C# SDK: GetInventoryG1(Scantime * 100, ...) then uses (Scantime * 2 + 2000) ms
+        # So timeout = (scan_time * 2 + 2000) milliseconds
+        timeout_ms = scan_time * 2 + 2000
+        
+        print(f"[DEBUG] Starting inventory read loop, timeout: {timeout_ms}ms")
+        
+        while time.time() - start_time < timeout_ms / 1000.0:
+            data = self._read_data()
+            if not data:
+                time.sleep(0.001)  # 1ms sleep like C# Thread.Sleep(1)
+                continue
+            print(f"[DEBUG] Raw data received: {data.hex()}")
+            
+            # Process received data like C# GetInventoryG1
+            buf = bytearray(data)
+            idx = 0
+            while idx + 5 < len(buf):
+                pkt_len = buf[idx]
+                if pkt_len < 5 or idx + pkt_len + 1 > len(buf):
+                    idx += 1
+                    continue
+                pkt = buf[idx:idx+pkt_len+1]
+                print(f"[DEBUG] Packet: {pkt.hex()}")
+                
+                if self._check_crc(pkt, len(pkt)) != 0:
+                    print("[DEBUG] CRC check failed for packet")
+                    idx += 1
+                    continue
+                
+                if pkt[2] != cmd:
+                    print(f"[DEBUG] Skipping packet with cmd={pkt[2]}")
+                    idx += pkt_len + 1
+                    continue
+                
+                # Reset timeout timer like C#: num3 = Environment.TickCount
+                start_time = time.time()
+                
+                status = pkt[3]
+                print(f"[DEBUG] Inventory status: {status}")
+                
+                if status in (1, 2, 3, 4):
+                    num_tags = pkt[5]
+                    print(f"[DEBUG] Number of tags in packet: {num_tags}")
+                    if num_tags > 0:
+                        tag_idx = 6
+                        for _ in range(num_tags):
+                            epc_len = pkt[tag_idx] & 0x3F
+                            has_extra = (pkt[tag_idx] & 0x40) > 0
+                            tag_start = tag_idx  # Remember the start position
+                            
+                            if not has_extra:
+                                tag_bytes = pkt[tag_idx:tag_idx+epc_len+2]
+                                epc_list[dlen:dlen+epc_len+2] = tag_bytes
+                                dlen += epc_len + 2
+                                tag_idx += epc_len + 2
+                            else:
+                                tag_bytes = pkt[tag_idx:tag_idx+epc_len+6]
+                                epc_list[dlen:dlen+epc_len+6] = tag_bytes
+                                dlen += epc_len + 6
+                                tag_idx += epc_len + 9
+                            epcNum += 1
+                            ant[0] = pkt[4]
+                            
+                            # Extract RSSI - C# SDK: RSSI = array4[num9 + 1 + num10]
+                            # where num9 = tag_start, num10 = epc_len
+                            rssi_pos = tag_start + 1 + epc_len
+                            if rssi_pos < len(pkt):
+                                rssi = pkt[rssi_pos]
+                            else:
+                                rssi = 0
+                            if rssi_list:
+                                rssi_list.append(rssi)
+                    # else: no tags in this packet
+                
+                idx += pkt_len + 1
+                if status != 3:
+                    total_len[0] = dlen
+                    card_num[0] = epcNum
+                    print(f"[DEBUG] Inventory done. Tags: {epcNum}, TotalLen: {dlen}")
+                    return status
+        
+        total_len[0] = dlen
+        card_num[0] = epcNum
+        print(f"[DEBUG] Inventory timeout. Tags: {epcNum}, TotalLen: {dlen}")
+        return 48  # Timeout
+
+    def inventory_g2(self, com_addr: bytearray, q_value: bytes, session: bytes,
+                    mask_mem: bytes, mask_addr: bytearray, mask_len: bytes,
+                    mask_data: bytearray, mask_flag: bytes, addr_tid: bytes,
+                    len_tid: bytes, tid_flag: bytes, target: bytes, in_ant: bytes,
+                    scan_time: bytes, fast_flag: bytes, epc_list: bytearray,
+                    ant: list, total_len: list, card_num: list, rssi_list: list = None) -> int:
+        """Perform Gen2 inventory operation (C# SDK logic)"""
+        # C# SDK defaults scan_time to 20 if 0 is passed
+        scan_time_val = scan_time[0] if scan_time[0] != 0 else 20
+        print(f"[DEBUG] Inventory parameters: com_addr={com_addr[0]}, q_value={q_value[0]}, session={session[0]}, scan_time={scan_time_val}")
+        
+        # Build command exactly like C# SDK
+        cmd = bytearray()
+        cmd.append(com_addr[0])  # SendBuff[1]
+        cmd.append(1)            # SendBuff[2] = command code
+        cmd.append(q_value[0])   # SendBuff[3]
+        cmd.append(session[0])   # SendBuff[4]
+        
+        if mask_flag[0] == 1:
+            cmd.append(mask_mem[0])  # SendBuff[5]
+            cmd.extend(mask_addr)    # SendBuff[6,7]
+            cmd.append(mask_len[0])  # SendBuff[8]
+            num_bytes = (mask_len[0] + 7) // 8  # Same calculation as C#
+            cmd.extend(mask_data[:num_bytes])
+            
+            if tid_flag[0] == 1:
+                if fast_flag[0] == 1:
+                    cmd.append(addr_tid[0])
+                    cmd.append(len_tid[0])
+                    cmd.append(target[0])
+                    cmd.append(in_ant[0])
+                    cmd.append(scan_time_val)
+                    # SendBuff[0] = 15 + num
+                    cmd.insert(0, 15 + num_bytes)
+                else:
+                    cmd.append(addr_tid[0])
+                    cmd.append(len_tid[0])
+                    # SendBuff[0] = 12 + num
+                    cmd.insert(0, 12 + num_bytes)
+            elif fast_flag[0] == 1:
+                cmd.append(target[0])
+                cmd.append(in_ant[0])
+                cmd.append(scan_time_val)
+                # SendBuff[0] = 13 + num
+                cmd.insert(0, 13 + num_bytes)
+            else:
+                # SendBuff[0] = 10 + num
+                cmd.insert(0, 10 + num_bytes)
+        elif tid_flag[0] == 1:
+            if fast_flag[0] == 1:
+                cmd.append(addr_tid[0])
+                cmd.append(len_tid[0])
+                cmd.append(target[0])
+                cmd.append(in_ant[0])
+                cmd.append(scan_time_val)
+                cmd.insert(0, 11)  # SendBuff[0] = 11
+            else:
+                cmd.append(addr_tid[0])
+                cmd.append(len_tid[0])
+                cmd.insert(0, 8)   # SendBuff[0] = 8
+        elif fast_flag[0] == 1:
+            cmd.append(target[0])
+            cmd.append(in_ant[0])
+            cmd.append(scan_time_val)
+            cmd.insert(0, 9)       # SendBuff[0] = 9
+        else:
+            cmd.insert(0, 6)       # SendBuff[0] = 6
+        
+        print(f"[DEBUG] Command before CRC: {cmd.hex()}")
+        print(f"[DEBUG] Command length: {cmd[0]}")
+        
+        # Add CRC - C# uses GetCRC(SendBuff, SendBuff[0] - 1)
+        crc = self._get_crc(cmd, cmd[0] - 1)
+        cmd.extend(crc)
+        
+        print(f"[DEBUG] Full command with CRC: {cmd.hex()}")
+        
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            print(f"[DEBUG] Send failed: {result}")
+            return result
+        
+        # C# calls GetInventoryG1(Scantime * 100, ...) - scan_time is in 10ms units
+        # So scan_time=20 means 2000ms timeout
+        return self._get_inventory_g1(scan_time_val * 100, epc_list, ant, total_len, card_num, 1, rssi_list)
+    
+    def read_data_g2(self, com_addr: int, epc: bytes, e_num: int,
+                    mem: int, word_ptr: int, num: int, password: bytes,
+                    mask_mem: int, mask_addr: bytes, mask_len: int,
+                    mask_data: bytes, data: bytearray, error_code: list) -> int:
+        """Read data from Gen2 tag (C# SDK format)"""
+        # Command format: [Length][ComAddr][Command][Data...][CRC_Low][CRC_High]
+        # Command 2 = ReadData_G2
+        cmd = bytearray()
+        cmd.append(com_addr)  # SendBuff[1]
+        cmd.append(2)         # SendBuff[2] = command code 2
+        cmd.append(e_num)     # SendBuff[3] = EPC length
+        
+        if e_num == 255:
+            # Special case for EPC length 255
+            cmd.append(mem)       # SendBuff[4]
+            cmd.append(word_ptr)  # SendBuff[5]
+            cmd.append(num)       # SendBuff[6]
+            cmd.extend(password)  # SendBuff[7-10]
+            cmd.append(mask_mem)  # SendBuff[11]
+            cmd.extend(mask_addr) # SendBuff[12-13]
+            cmd.append(mask_len)  # SendBuff[14]
+            num_bytes = (mask_len + 7) // 8 if mask_len % 8 != 0 else mask_len // 8
+            cmd.extend(mask_data[:num_bytes])
+            # SendBuff[0] = 16 + num_bytes (C# SDK)
+            total_len = 16 + num_bytes
+        else:
+            # Normal case: EPC length 0-31
+            cmd.extend(epc)       # SendBuff[4...] = EPC data
+            cmd.append(mem)       # SendBuff[ENum*2+4]
+            cmd.append(word_ptr)  # SendBuff[ENum*2+5]
+            cmd.append(num)       # SendBuff[ENum*2+6]
+            cmd.extend(password)  # SendBuff[ENum*2+7...]
+            # SendBuff[0] = ENum * 2 + 12 (C# SDK)
+            total_len = e_num * 2 + 12
+            
+            # Add padding to ensure the array has the correct length
+            while len(cmd) < total_len - 1:  # -1 because we'll add the length byte
+                cmd.append(0)
+        
+        # Insert length at the beginning
+        cmd.insert(0, total_len)
+        
+        print(f"[DEBUG] Read command before CRC: {cmd.hex()}")
+        print(f"[DEBUG] Read command length: {cmd[0]}")
+        print(f"[DEBUG] Command array length: {len(cmd)}")
+        print(f"[DEBUG] Expected length: {total_len}")
+        
+        # Add CRC - C# uses GetCRC(SendBuff, SendBuff[0] - 1)
+        try:
+            crc = self._get_crc(cmd, cmd[0] - 1)
+            cmd.extend(crc)
+            print(f"[DEBUG] Full read command with CRC: {cmd.hex()}")
+        except Exception as e:
+            print(f"[DEBUG] CRC calculation error: {e}")
+            return 49
+        
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            print(f"[DEBUG] Read send failed: {result}")
+            return result
+        
+        # Wait for response - C# uses GetDataFromPort(2, 3000)
+        result = self._get_data_from_port(2, 3000)
+        if result != 0:
+            print(f"[DEBUG] Read response timeout: {result}")
+            return result
+        
+        print(f"[DEBUG] Read response received: {self.recv_buffer[:self.recv_length].hex()}")
+        
+        # Parse response
+        if self.recv_length >= 4:
+            # Check CRC
+            if self._check_crc(self.recv_buffer, self.recv_length) != 0:
+                print("[DEBUG] Read response CRC check failed")
+                return 49
+            
+            # Check command response
+            if self.recv_buffer[2] == 2:
+                status = self.recv_buffer[3]
+                print(f"[DEBUG] Read status: {status}")
+                if status == 0:
+                    # Success - extract data
+                    data_len = self.recv_length - 6  # Total - header - CRC
+                    if data_len > 0:
+                        data[0:data_len] = self.recv_buffer[4:4+data_len]
+                        print(f"[DEBUG] Read data extracted: {data[:data_len].hex()}")
+                    error_code[0] = 0
+                    return 0
+                elif status == 252:
+                    # Error with error code
+                    error_code[0] = self.recv_buffer[4]
+                    print(f"[DEBUG] Read error code: {error_code[0]}")
+                    return status
+                else:
+                    return status
+            else:
+                print(f"[DEBUG] Read response command mismatch: expected 2, got {self.recv_buffer[2]}")
+                return 49
+        
+        return 49
+    
+    def write_data_g2(self, com_addr: int, epc: bytes, w_num: int,
+                     e_num: int, mem: int, word_ptr: int, wdt: bytes,
+                     password: bytes, mask_mem: int, mask_addr: bytes,
+                     mask_len: int, mask_data: bytes, error_code: int) -> int:
+        """Write data to Gen2 tag (C# SDK format)"""
+        # Command format: [Length][ComAddr][Command][WNum][ENum][Data...][CRC_Low][CRC_High]
+        # Command 3 = WriteData_G2
+        cmd = bytearray()
+        cmd.append(com_addr)  # SendBuff[1]
+        cmd.append(3)         # SendBuff[2] = command code 3
+        cmd.append(w_num)     # SendBuff[3]
+        cmd.append(e_num)     # SendBuff[4]
+        
+        if e_num == 255:
+            # Special case for EPC length 255
+            cmd.append(mem)       # SendBuff[5]
+            cmd.append(word_ptr)  # SendBuff[6]
+            cmd.extend(wdt)       # SendBuff[7...] = WNum * 2 bytes
+            cmd.extend(password)  # SendBuff[7 + WNum*2...] = 4 bytes
+            cmd.append(mask_mem)  # SendBuff[11 + WNum*2]
+            cmd.extend(mask_addr) # SendBuff[12 + WNum*2, 13 + WNum*2]
+            cmd.append(mask_len)  # SendBuff[14 + WNum*2]
+            num_bytes = (mask_len + 7) // 8 if mask_len % 8 != 0 else mask_len // 8
+            cmd.extend(mask_data[:num_bytes])
+            # SendBuff[0] = 16 + WNum * 2 + num_bytes (C# SDK)
+            total_len = 16 + w_num * 2 + num_bytes
+        else:
+            # Normal case: EPC length 0-31
+            cmd.extend(epc)       # SendBuff[5...] = EPC data
+            cmd.append(mem)       # SendBuff[ENum*2+5]
+            cmd.append(word_ptr)  # SendBuff[ENum*2+6]
+            cmd.extend(wdt)       # SendBuff[ENum*2+7...] = WNum * 2 bytes
+            cmd.extend(password)  # SendBuff[WNum*2 + ENum*2+7...] = 4 bytes
+            # SendBuff[0] = ENum * 2 + WNum * 2 + 12 (C# SDK)
+            total_len = e_num * 2 + w_num * 2 + 12
+        
+        # Insert length at the beginning
+        cmd.insert(0, total_len)
+        
+        # Add CRC - C# uses GetCRC(SendBuff, SendBuff[0] - 1)
+        crc = self._get_crc(cmd, cmd[0] - 1)
+        cmd.extend(crc)
+        
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            return result
+        
+        # Wait for response - C# uses GetDataFromPort(3, 3000)
+        result = self._get_data_from_port(3, 3000)
+        if result != 0:
+            return result
+        
+        # Parse response
+        if self.recv_length >= 4:
+            # Check CRC
+            if self._check_crc(self.recv_buffer, self.recv_length) != 0:
+                return 49
+            
+            # Check command response
+            if self.recv_buffer[2] == 3:
+                status = self.recv_buffer[3]
+                if status == 0:
+                    error_code = 0
+                    return 0
+                elif status == 252:
+                    error_code = self.recv_buffer[4]
+                    return status
+                else:
+                    return status
+            else:
+                return 49
+        
+        return 49
+    
+    def set_rf_power(self, com_addr: int, power_dbm) -> int:
+        """Set RF power - supports both single value and array of values for multiple antennas
+        
+        Args:
+            com_addr: Reader address
+            power_dbm: Either bytes (single power for all antennas) or bytes (separate power for each antenna)
+                     Both should be bytes to match C# SDK byte types
+        """
+        if isinstance(power_dbm, (bytes, bytearray)) and len(power_dbm) == 1:
+            # Single power value for all antennas
+            # Command format: [Length][ComAddr][Command][Data][CRC_Low][CRC_High]
+            # Command 47 = SetRfPower
+            cmd = bytearray([5, com_addr, 0x2F, power_dbm[0]])  # Length=5, ComAddr, Command=47, Power
+        elif isinstance(power_dbm, (bytes, bytearray)) and len(power_dbm) > 1:
+            # Multiple power values for different antennas
+            # Command format: [Length][ComAddr][Command][PowerArray][CRC_Low][CRC_High]
+            cmd = bytearray([4 + len(power_dbm), com_addr, 0x2F])  # Length=4+len, ComAddr, Command=47
+            cmd.extend(power_dbm)  # Add power array
+        else:
+            raise ValueError("power_dbm must be bytes/bytearray (single byte for one antenna, multiple bytes for multiple antennas)")
+        
+        # Add CRC
+        crc = self._get_crc(cmd, len(cmd))
+        cmd.extend(crc)
+        
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            return result
+        
+        # Wait for response
+        result = self._get_data_from_port(47, 1500)
+        if result != 0:
+            return result
+        
+        # Parse response
+        if self.recv_length >= 4:
+            # Check CRC
+            if self._check_crc(self.recv_buffer, self.recv_length) != 0:
+                return 49
+            
+            # Check command response
+            if self.recv_buffer[2] == 47:
+                return self.recv_buffer[3]  # Return status code
+            else:
+                return 49
+        
+        return 49
+    
+    def set_baud_rate(self, com_addr: bytearray, baud: bytes) -> int:
+        """Set baud rate (C# SetBaudRate method)
+        
+        Args:
+            com_addr: Reader address as bytearray[0] (will be updated with response value)
+            baud: Baud rate code as bytes (single byte)
+        """
+        if len(baud) != 1:
+            raise ValueError("baud must be a single byte")
+        
+        # Command format: [Length][ComAddr][Command][Baud][CRC_Low][CRC_High]
+        # Command 40 = SetBaudRate (C# SDK)
+        cmd = bytearray([5, com_addr[0], 40, baud[0]])  # Length=5, ComAddr, Command=40, Baud
+        
+        # Add CRC
+        crc = self._get_crc(cmd, len(cmd))
+        cmd.extend(crc)
+        
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            return result
+        
+        # Wait for response - C# uses GetDataFromPort(40, 1500)
+        result = self._get_data_from_port(40, 1500)
+        if result != 0:
+            return result
+        
+        # Parse response
+        if self.recv_length >= 4:
+            # Check CRC
+            if self._check_crc(self.recv_buffer, self.recv_length) != 0:
+                return 49
+            
+            # Check command response
+            if self.recv_buffer[2] == 40:
+                com_addr[0] = self.recv_buffer[1]  # Update com_addr with response value (C# fComAdr = RecvBuff[1])
+                
+                # Reconfigure serial port with new baud rate (C# equivalent)
+                if self.connection_type == self.CONNECTION_SERIAL and self.serial_port:
+                    # Map baud rate codes to actual baud rates (same as C#)
+                    baud_map = {
+                        0: 9600,
+                        1: 19200,
+                        2: 38400,
+                        5: 57600,
+                        6: 115200
+                    }
+                    new_baud = baud_map.get(baud[0], 57600)  # Default to 57600 like C#
+                    
+                    try:
+                        self.serial_port.close()
+                        self.serial_port.baudrate = new_baud
+                        self.serial_port.open()
+                    except Exception as e:
+                        print(f"Warning: Failed to reconfigure serial port: {e}")
+                
+                return self.recv_buffer[3]  # Return status code
+            else:
+                return 49
+        
+        return 49
+    
+    def set_address(self, com_addr: int, new_addr: int) -> int:
+        """Set reader address"""
+        # Command format: [Length][ComAddr][Command][NewAddr][CRC_Low][CRC_High]
+        # Command 36 = SetAddress (C# SDK)
+        cmd = bytearray([5, com_addr, 36, new_addr])  # Length=5, ComAddr, Command=36, NewAddr
+        
+        # Add CRC
+        crc = self._get_crc(cmd, len(cmd))
+        cmd.extend(crc)
+        
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            return result
+        
+        # Wait for response - C# uses GetDataFromPort(36, 1500)
+        result = self._get_data_from_port(36, 1500)
+        if result != 0:
+            return result
+        
+        # Parse response
+        if self.recv_length >= 4:
+            # Check CRC
+            if self._check_crc(self.recv_buffer, self.recv_length) != 0:
+                return 49
+            
+            # Check command response
+            if self.recv_buffer[2] == 36:
+                return self.recv_buffer[3]  # Return status code
+            else:
+                return 49
+        
+        return 49
+    
+    def set_inventory_scan_time(self, com_addr: bytearray, scan_time: bytes) -> int:
+        """Set inventory scan time (C# SetInventoryScanTime method)
+        
+        Args:
+            com_addr: Reader address as bytearray[0] (will be updated with response value)
+            scan_time: Scan time as bytes (single byte)
+        """
+        if len(scan_time) != 1:
+            raise ValueError("scan_time must be a single byte")
+        
+        cmd = bytearray([5, com_addr[0], 37, scan_time[0]])
+        crc = self._get_crc(cmd, len(cmd))
+        cmd.extend(crc)
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            return result
+        result = self._get_data_from_port(37, 1500)
+        if result != 0:
+            return result
+        if self.recv_length >= 4 and self.recv_buffer[2] == 37:
+            com_addr[0] = self.recv_buffer[1]  # Update com_addr with response value (C# fComAdr = RecvBuff[1])
+            return self.recv_buffer[3]
+        return 49
+
+    def buzzer_and_led_control(self, com_addr: bytearray, active_time: bytes, silent_time: bytes, times: bytes) -> int:
+        """Control buzzer and LED (C# command 51)
+        
+        Args:
+            com_addr: Reader address as bytearray[0] (will be updated with response value)
+            active_time: Active time as bytes (single byte)
+            silent_time: Silent time as bytes (single byte) 
+            times: Number of times as bytes (single byte)
+        """
+        # Validate single byte parameters
+        if len(active_time) != 1 or len(silent_time) != 1 or len(times) != 1:
+            raise ValueError("active_time, silent_time, and times must be single bytes")
+        
+        cmd = bytearray([7, com_addr[0], 51, active_time[0], silent_time[0], times[0]])
+        crc = self._get_crc(cmd, len(cmd))
+        cmd.extend(crc)
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            return result
+        result = self._get_data_from_port(51, 1500)
+        if result != 0:
+            return result
+        if self.recv_length >= 4 and self.recv_buffer[2] == 51:
+            com_addr[0] = self.recv_buffer[1]  # Update com_addr with response value (C# fComAdr = RecvBuff[1])
+            return self.recv_buffer[3]
+        return 49
+
+    def set_antenna_multiplexing(self, com_addr: bytearray, ant: bytes) -> int:
+        """Set antenna multiplexing (C# SetAntennaMultiplexing overload 1)
+        
+        Args:
+            com_addr: Reader address as bytearray[0] (will be updated with response value)
+            ant: Antenna value as bytes (single byte)
+        """
+        if len(ant) != 1:
+            raise ValueError("ant must be a single byte")
+        
+        cmd = bytearray([5, com_addr[0], 63, ant[0]])
+        crc = self._get_crc(cmd, len(cmd))
+        cmd.extend(crc)
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            return result
+        result = self._get_data_from_port(63, 1500)
+        if result != 0:
+            return result
+        if self.recv_length >= 4 and self.recv_buffer[2] == 63:
+            com_addr[0] = self.recv_buffer[1]  # Update com_addr with response value (C# fComAdr = RecvBuff[1])
+            return self.recv_buffer[3]
+        return 49
+
+    def set_antenna_multiplexing(self, com_addr: bytearray, set_once: bytes, ant_cfg1: bytes, ant_cfg2: bytes) -> int:
+        """Set antenna multiplexing extended (C# SetAntennaMultiplexing overload 2)
+        
+        Args:
+            com_addr: Reader address as bytearray[0] (will be updated with response value)
+            set_once: Set once flag as bytes (single byte)
+            ant_cfg1: Antenna configuration 1 as bytes (single byte)
+            ant_cfg2: Antenna configuration 2 as bytes (single byte)
+        """
+        if len(set_once) != 1 or len(ant_cfg1) != 1 or len(ant_cfg2) != 1:
+            raise ValueError("set_once, ant_cfg1, and ant_cfg2 must be single bytes")
+        
+        cmd = bytearray([7, com_addr[0], 63, set_once[0], ant_cfg1[0], ant_cfg2[0]])
+        crc = self._get_crc(cmd, len(cmd))
+        cmd.extend(crc)
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            return result
+        result = self._get_data_from_port(63, 1500)
+        if result != 0:
+            return result
+        if self.recv_length >= 4 and self.recv_buffer[2] == 63:
+            com_addr[0] = self.recv_buffer[1]  # Update com_addr with response value (C# fComAdr = RecvBuff[1])
+            return self.recv_buffer[3]
+        return 49
+
+    def write_epc_g2(self, com_addr: bytearray, password: bytes, write_epc: bytes, enum_val: bytes, error_code: list) -> int:
+        """Write EPC to Gen2 tag (C# WriteEPC_G2 method)
+        
+        Args:
+            com_addr: Reader address as bytearray[0] (will be updated with response value)
+            password: Password as bytes (4 bytes)
+            write_epc: EPC data to write as bytes (length = enum_val*2)
+            enum_val: EPC length as bytes (single byte)
+            error_code: Error code as list[0] (will be updated with response value)
+        """
+        if len(enum_val) != 1:
+            raise ValueError("enum_val must be a single byte")
+        if len(password) < 4:
+            raise ValueError("password must be at least 4 bytes")
+        
+        # write_epc: bytes of EPC to write, length = enum_val[0]*2
+        cmd = bytearray()
+        cmd.append(0)  # Placeholder for length
+        cmd.append(com_addr[0])
+        cmd.append(4)
+        cmd.append(enum_val[0])
+        cmd.extend(password[:4])
+        cmd.extend(write_epc[:enum_val[0]*2])
+        cmd[0] = enum_val[0]*2 + 9
+        crc = self._get_crc(cmd, len(cmd))
+        cmd.extend(crc)
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            return result
+        result = self._get_data_from_port(4, 1500)
+        if result != 0:
+            return result
+        if self.recv_length >= 5 and self.recv_buffer[2] == 4:
+            if self.recv_buffer[3] == 0:
+                com_addr[0] = self.recv_buffer[1]  # Update com_addr with response value (C# fComAdr = RecvBuff[1])
+                error_code[0] = 0
+            elif self.recv_buffer[3] == 252:
+                error_code[0] = self.recv_buffer[4]
+            return self.recv_buffer[3]
+        return 49
+
+    def write_rf_power(self, com_addr: int, power_dbm: int) -> int:
+        """Write RF power (C# command 121)"""
+        cmd = bytearray([5, com_addr, 121, power_dbm])
+        crc = self._get_crc(cmd, len(cmd))
+        cmd.extend(crc)
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            return result
+        result = self._get_data_from_port(121, 1500)
+        if result != 0:
+            return result
+        if self.recv_length >= 4 and self.recv_buffer[2] == 121:
+            return self.recv_buffer[3]
+        return 49
+
+    def read_rf_power(self, com_addr: int, power_dbm: list) -> int:
+        """Read RF power (C# command 122)"""
+        cmd = bytearray([4, com_addr, 122])
+        crc = self._get_crc(cmd, len(cmd))
+        cmd.extend(crc)
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            return result
+        result = self._get_data_from_port(122, 1500)
+        if result != 0:
+            return result
+        if self.recv_length >= 5 and self.recv_buffer[2] == 122:
+            power_dbm[0] = self.recv_buffer[4]
+            return self.recv_buffer[3]
+        return 49
+
+    def set_antenna_power(self, com_addr: int, power_dbm: bytes, length: int) -> int:
+        """Set antenna power (C# SetAntennaPower method)
+        
+        Args:
+            com_addr: Reader address
+            power_dbm: Power values for each antenna
+            length: Length of power_dbm array
+        """
+        # Command format: [Length][ComAddr][Command][PowerArray][CRC_Low][CRC_High]
+        # Command 47 = SetAntennaPower
+        cmd = bytearray([4 + length, com_addr, 0x2F])  # Length=4+length, ComAddr, Command=47
+        cmd.extend(power_dbm[:length])  # Add power array up to specified length
+        
+        # Add CRC
+        crc = self._get_crc(cmd, len(cmd))
+        cmd.extend(crc)
+        
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            return result
+        
+        # Wait for response
+        result = self._get_data_from_port(47, 1500)
+        if result != 0:
+            return result
+        
+        # Parse response
+        if self.recv_length >= 4:
+            # Check CRC
+            if self._check_crc(self.recv_buffer, self.recv_length) != 0:
+                return 49
+            
+            # Check command response
+            if self.recv_buffer[2] == 47:
+                return self.recv_buffer[3]  # Return status code
+            else:
+                return 49
+        
+        return 49
+
+    def get_antenna_power(self, com_addr: int, power_dbm: bytearray, length: list) -> int:
+        """Get antenna power (C# command 148)"""
+        cmd = bytearray([4, com_addr, 148])
+        crc = self._get_crc(cmd, len(cmd))
+        cmd.extend(crc)
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            return result
+        result = self._get_data_from_port(148, 1500)
+        if result != 0:
+            return result
+        if self.recv_length >= 5 and self.recv_buffer[2] == 148:
+            length[0] = self.recv_buffer[0] - 5
+            power_dbm[:length[0]] = self.recv_buffer[4:4+length[0]]
+            return self.recv_buffer[3]
+        return 49
+
+    def set_profile(self, com_addr: int, profile: bytearray) -> int:
+        """Set profile (C# command 127)
+        
+        Args:
+            com_addr: Reader address
+            profile: Profile value as bytearray[0] (will be updated with response value if status=0)
+        """
+        cmd = bytearray([5, com_addr, 127, profile[0]])
+        crc = self._get_crc(cmd, len(cmd))
+        cmd.extend(crc)
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            return result
+        result = self._get_data_from_port(127, 1500)
+        if result != 0:
+            return result
+        if self.recv_length >= 5 and self.recv_buffer[2] == 127:
+            if self.recv_buffer[3] == 0:
+                profile[0] = self.recv_buffer[4]  # Update profile with response value (C# Profile = RecvBuff[4])
+            return self.recv_buffer[3]
+        return 49
+
+    def start_read(self, com_addr: bytearray, target: bytes) -> int:
+        """Start read (C# StartRead method)
+        
+        Args:
+            com_addr: Reader address as bytearray[0] (will be updated with response value)
+            target: Target as bytes (single byte)
+        """
+        if len(target) != 1:
+            raise ValueError("target must be a single byte")
+        
+        cmd = bytearray([5, com_addr[0], 80, target[0]])
+        crc = self._get_crc(cmd, len(cmd))
+        cmd.extend(crc)
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            return result
+        result = self._get_data_from_port(80, 1500)
+        if result != 0:
+            return result
+        if self.recv_length >= 4 and self.recv_buffer[2] == 80:
+            com_addr[0] = self.recv_buffer[1]  # Update com_addr with response value (C# ComAdr = RecvBuff[1])
+            return self.recv_buffer[3]
+        return 49
+
+    def stop_read(self, com_addr: bytearray) -> int:
+        """Stop read (C# StopRead method)
+        
+        Args:
+            com_addr: Reader address as bytearray[0] (will be updated with response value)
+        """
+        cmd = bytearray([4, com_addr[0], 81])
+        crc = self._get_crc(cmd, len(cmd))
+        cmd.extend(crc)
+        
+        # Use _send_data_noclear to match C# SendDataToPort_Noclear behavior
+        result = self._send_data_noclear(cmd, len(cmd))
+        if result != 0:
+            return result
+        result = self._get_data_from_port(81, 1500)
+        if result != 0:
+            return result
+        if self.recv_length >= 4 and self.recv_buffer[2] == 81:
+            com_addr[0] = self.recv_buffer[1]  # Update com_addr with response value (C# ComAdr = RecvBuff[1])
+            return self.recv_buffer[3]
+        return 49 

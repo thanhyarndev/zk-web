@@ -6,6 +6,7 @@ import json
 from typing import Optional, Dict, List
 import serial
 import logging
+from uhf_reader import UHFReader
 
 # Import các hàm từ zk.py
 from zk import (
@@ -351,18 +352,25 @@ class RFIDWebController:
             return {"success": False, "message": "Chưa kết nối đến reader"}
         
         try:
-            power_levels = get_power(self.reader)
-            if power_levels:
-                self.antenna_power = power_levels
-                return {"success": True, "data": power_levels}
-            else:
-                return {"success": False, "message": "Không thể lấy công suất antennas"}
+            power_bytes = get_power(self.reader)
+            # Convert bytes to dict: {1: power1, 2: power2, ...}
+            power_levels = {i + 1: b for i, b in enumerate(power_bytes) if b != 0}
+            return {"success": True, "data": power_levels}
         except Exception as e:
             logger.error(f"Get antenna power error: {e}")
             return {"success": False, "message": f"Lỗi: {str(e)}"}
 
 # Khởi tạo controller
-rfid_controller = RFIDWebController()
+reader = UHFReader()
+
+def tag_callback(tag):
+    import time
+    # Convert tag to dict if it's a custom object
+    tag_data = tag.__dict__ if hasattr(tag, '__dict__') else dict(tag)
+    tag_data['timestamp'] = time.strftime("%H:%M:%S")
+    socketio.emit('tag_detected', tag_data)
+
+reader.init_rfid_callback(tag_callback)
 
 @app.route('/')
 def index():
@@ -376,35 +384,45 @@ def api_connect():
     port = data.get('port', config.DEFAULT_PORT)
     baudrate = data.get('baudrate', config.DEFAULT_BAUDRATE)
     
-    result = rfid_controller.connect(port, baudrate)
-    return jsonify(result)
+    result = reader.open_com_port(port=port, com_addr=255, baud=baudrate)
+    if result == 0:
+        return jsonify({'success': True, 'message': 'Connected!'})
+    else:
+        return jsonify({'success': False, 'error': f'Connection failed with code: {result}'}), 400
 
 @app.route('/api/disconnect', methods=['POST'])
 def api_disconnect():
     """API ngắt kết nối reader"""
-    result = rfid_controller.disconnect()
-    return jsonify(result)
+    result = reader.close_com_port()
+    return jsonify({'success': True, 'message': 'Disconnected successfully'})
 
 @app.route('/api/reader_info', methods=['GET'])
 def api_reader_info():
     """API lấy thông tin reader"""
-    result = rfid_controller.get_reader_info()
-    return jsonify(result)
+    result = reader.get_reader_information()
+    return jsonify({'success': True, 'data': result})
 
 @app.route('/api/start_inventory', methods=['POST'])
 def api_start_inventory():
     """API bắt đầu inventory"""
     data = request.get_json()
     target = data.get('target', 0)
-    
-    result = rfid_controller.start_inventory(target)
-    return jsonify(result)
+    result = reader.start_inventory(target)
+    if result == 0:
+        return jsonify({'success': True, 'message': f'Inventory đã bắt đầu (Target {"A" if target == 0 else "B"})'})
+    elif result == 51:
+        return jsonify({'success': False, 'message': 'Inventory is already running'}), 400
+    else:
+        return jsonify({'success': False, 'message': f'Không thể bắt đầu inventory (code: {result})'}), 400
 
 @app.route('/api/stop_inventory', methods=['POST'])
 def api_stop_inventory():
     """API dừng inventory"""
-    result = rfid_controller.stop_inventory()
-    return jsonify(result)
+    result = reader.stop_inventory()
+    if result == 0:
+        return jsonify({'success': True, 'message': 'Đã dừng inventory'})
+    else:
+        return jsonify({'success': False, 'message': f'Không thể dừng inventory (code: {result})'}), 400
 
 @app.route('/api/stop_tags_inventory', methods=['POST'])
 def api_stop_tags_inventory():
@@ -431,10 +449,12 @@ def api_set_power():
     """API thiết lập công suất"""
     data = request.get_json()
     power = data.get('power', config.DEFAULT_ANTENNA_POWER)
-    preserve_config = data.get('preserve_config', True)
-    
-    result = rfid_controller.set_power(power, preserve_config)
-    return jsonify(result)
+    # UHFReader.set_rf_power does not support preserve_config
+    result = reader.set_rf_power(power)
+    if result == 0:
+        return jsonify({'success': True, 'message': f'Đã thiết lập công suất: {power} dBm'})
+    else:
+        return jsonify({'success': False, 'message': f'Không thể thiết lập công suất (code: {result})'})
 
 @app.route('/api/set_buzzer', methods=['POST'])
 def api_set_buzzer():
@@ -484,8 +504,13 @@ def api_disable_antennas():
 @app.route('/api/get_antenna_power', methods=['GET'])
 def api_get_antenna_power():
     """API lấy công suất antennas"""
-    result = rfid_controller.get_antenna_power()
-    return jsonify(result)
+    try:
+        power_bytes = reader.get_antenna_power()
+        # Convert bytes to dict: {1: power1, 2: power2, ...}
+        power_levels = {i + 1: b for i, b in enumerate(power_bytes) if b != 0}
+        return jsonify({'success': True, 'data': power_levels})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/api/get_tags', methods=['GET'])
 def api_get_tags():
@@ -536,9 +561,9 @@ def api_reset_reader():
     """API reset reader"""
     try:
         # Dừng inventory nếu đang chạy
-        if inventory_thread and inventory_thread.is_alive():
+        if hasattr(reader, 'is_scanning') and reader.is_scanning:
             logger.info("Dừng inventory trước khi reset reader")
-            rfid_controller.stop_inventory()
+            reader.stop_inventory()
             time.sleep(1.0)  # Đợi thread dừng hoàn toàn
         
         # Clear data
@@ -546,35 +571,37 @@ def api_reset_reader():
         inventory_stats = {"read_rate": 0, "total_count": 0}
         
         # Reset reader nếu đã kết nối
-        if rfid_controller.is_connected and rfid_controller.reader:
+        if getattr(reader, 'is_connected', False):
             try:
                 logger.info("Đang reset reader...")
-                
-                # Clear buffers
-                rfid_controller.reader.reset_input_buffer()
-                rfid_controller.reader.reset_output_buffer()
-                time.sleep(0.2)
-                
-                # Gửi lệnh stop nhiều lần để đảm bảo reader dừng hoàn toàn
+                # Clear buffers if available
+                if hasattr(reader, 'uhf') and hasattr(reader.uhf, 'serial_port') and reader.uhf.serial_port:
+                    try:
+                        reader.uhf.serial_port.reset_input_buffer()
+                        reader.uhf.serial_port.reset_output_buffer()
+                        time.sleep(0.2)
+                    except Exception as e:
+                        logger.warning(f"Buffer clear warning: {e}")
+                # Gửi lệnh stop inventory nhiều lần để đảm bảo reader dừng hoàn toàn
                 for i in range(3):
                     try:
-                        stop_inventory(rfid_controller.reader)
+                        reader.stop_inventory()
                         time.sleep(0.1)
                     except Exception as e:
                         logger.warning(f"Stop command attempt {i+1} failed: {e}")
-                
                 # Đợi reader ổn định
                 time.sleep(0.5)
-                
                 # Clear buffers một lần nữa
-                rfid_controller.reader.reset_input_buffer()
-                rfid_controller.reader.reset_output_buffer()
-                time.sleep(0.2)
-                
+                if hasattr(reader, 'uhf') and hasattr(reader.uhf, 'serial_port') and reader.uhf.serial_port:
+                    try:
+                        reader.uhf.serial_port.reset_input_buffer()
+                        reader.uhf.serial_port.reset_output_buffer()
+                        time.sleep(0.2)
+                    except Exception as e:
+                        logger.warning(f"Buffer clear warning: {e}")
                 logger.info("Reader reset completed successfully")
             except Exception as e:
                 logger.warning(f"Reader reset warning: {e}")
-        
         logger.info("Reader reset completed")
         return {"success": True, "message": "Đã reset reader thành công"}
     except Exception as e:
@@ -672,7 +699,7 @@ def api_tags_inventory():
                     # Xóa buffer, đợi 0.2s để ổn định
                     try:
                         rfid_controller.reader.reset_input_buffer()
-                        time.sleep(0.2)
+                        #time.sleep(0.2)
                     except Exception as e:
                         logger.warning(f"Buffer clear warning in cycle {cycle_count}: {e}")
                     
