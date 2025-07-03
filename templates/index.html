@@ -15,432 +15,464 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <style>
-      :root {
-        --primary-color: #3498db;
-        --secondary-color: #2c3e50;
-        --success-color: #27ae60;
-        --warning-color: #f39c12;
-        --danger-color: #e74c3c;
-        --dark-bg: #2c3e50;
-        --sidebar-width: 350px;
-      }
-
       body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      }
-
-      .main-layout {
-        display: flex;
-        min-height: 100vh;
-      }
-
-      /* Sidebar */
-      .sidebar {
-        width: var(--sidebar-width);
-        background: var(--dark-bg);
-        color: white;
+        background: #f6f6f7;
+        font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: #222;
+        margin: 0;
         padding: 0;
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .app-container {
+        display: flex;
+        height: 100vh;
+      }
+
+      /* Sidebar Styles */
+      .sidebar {
+        width: 380px;
+        background: #fff;
+        border-right: 1px solid #ececec;
+        display: flex;
+        flex-direction: column;
         overflow-y: auto;
       }
 
       .sidebar-header {
-        background: rgba(0, 0, 0, 0.2);
-        padding: 20px;
-        text-align: center;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f1f1f1;
+        background: #fafafa;
       }
 
-      .sidebar-header h3 {
-        margin: 0;
-        color: white;
+      .sidebar-title {
         font-weight: 600;
-      }
-
-      .sidebar-header p {
-        margin: 5px 0 0 0;
-        opacity: 0.8;
-        font-size: 0.9em;
-      }
-
-      .connection-status {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-top: 15px;
-        padding: 10px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 10px;
-      }
-
-      .status-indicator {
-        display: inline-block;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        margin-right: 8px;
-      }
-
-      .status-connected {
-        background-color: var(--success-color);
-        box-shadow: 0 0 10px var(--success-color);
-      }
-
-      .status-disconnected {
-        background-color: var(--danger-color);
-        box-shadow: 0 0 10px var(--danger-color);
+        font-size: 1.1rem;
+        color: #222;
+        margin: 0;
       }
 
       .sidebar-content {
-        padding: 20px;
+        padding: 1.5rem;
+        flex: 1;
       }
 
       .sidebar-section {
-        margin-bottom: 30px;
+        margin-bottom: 2rem;
       }
 
-      .sidebar-section h5 {
-        color: var(--primary-color);
-        margin-bottom: 15px;
+      .sidebar-section:last-child {
+        margin-bottom: 0;
+      }
+
+      .section-title {
         font-weight: 600;
-        border-bottom: 2px solid var(--primary-color);
-        padding-bottom: 5px;
-      }
-
-      .form-control,
-      .form-select {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: white;
-        border-radius: 8px;
-        padding: 10px 12px;
-      }
-
-      .form-select option {
-        color: var(--secondary-color);
-        background-color: white;
-      }
-
-      .form-control:focus,
-      .form-select:focus {
-        background: rgba(255, 255, 255, 0.15);
-        border-color: var(--primary-color);
-        color: white;
-        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
-      }
-
-      .form-control::placeholder {
-        color: rgba(255, 255, 255, 0.6);
-      }
-
-      .form-label {
-        color: rgba(255, 255, 255, 0.9);
-        font-weight: 500;
-        margin-bottom: 8px;
-      }
-
-      .btn {
-        border-radius: 8px;
-        padding: 10px 20px;
-        font-weight: 500;
-        border: none;
-        transition: all 0.3s ease;
-      }
-
-      .btn-success {
-        background: var(--success-color);
-      }
-
-      .btn-danger {
-        background: var(--danger-color);
-      }
-
-      .btn-primary {
-        background: var(--primary-color);
-      }
-
-      .btn-warning {
-        background: var(--warning-color);
-      }
-
-      .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-      }
-
-      .btn:disabled {
-        opacity: 0.6;
-        transform: none;
-      }
-
-      .loading {
-        display: none;
-      }
-
-      .spinner-border-sm {
-        width: 1rem;
-        height: 1rem;
+        font-size: 0.95rem;
+        color: #555;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
       /* Main Content */
       .main-content {
         flex: 1;
-        padding: 20px;
-        background: #f8f9fa;
-      }
-
-      .main-header {
-        background: white;
-        border-radius: 15px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-      }
-
-      .main-header h2 {
-        color: var(--secondary-color);
-        margin: 0 0 10px 0;
-        font-weight: 600;
-      }
-
-      .modal-body .form-control,
-      .modal-body .form-select {
-        background-color: #ffffff;
-        color: #2c3e50;
-        border: 1px solid #dee2e6;
-      }
-
-      .modal-body .form-control::placeholder {
-        color: #6c757d;
-      }
-
-      .modal-body .form-label {
-        color: #2c3e50;
-      }
-
-      .stats-row {
         display: flex;
-        gap: 20px;
-        margin-top: 15px;
-      }
-
-      .stat-item {
-        text-align: center;
-        flex: 1;
-      }
-
-      .stat-number {
-        font-size: 2em;
-        font-weight: bold;
-        color: var(--primary-color);
-        margin-bottom: 5px;
-      }
-
-      .stat-label {
-        color: #6c757d;
-        font-size: 0.9em;
-        font-weight: 500;
-      }
-
-      .control-buttons {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-      }
-
-      .tags-card {
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        flex-direction: column;
         overflow: hidden;
       }
 
-      .tags-header {
-        background: var(--secondary-color);
-        color: white;
-        padding: 15px 20px;
+      .top-bar {
+        background: #fff;
+        border-bottom: 1px solid #ececec;
+        padding: 1rem 1.5rem;
         display: flex;
-        justify-content: between;
         align-items: center;
+        justify-content: space-between;
       }
 
-      .tags-header h4 {
-        margin: 0;
+      .app-title {
         font-weight: 600;
+        font-size: 1.2rem;
+        color: #222;
+        margin: 0;
       }
 
-      .tags-actions {
+      .connection-status {
         display: flex;
-        gap: 10px;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
       }
 
-      .btn-sm {
-        padding: 6px 12px;
-        font-size: 0.85em;
+      .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #e74c3c;
+      }
+
+      .status-indicator.status-connected {
+        background: #1eae60;
+      }
+
+      .content-area {
+        flex: 1;
+        padding: 1.5rem;
+        overflow-y: auto;
+      }
+
+      /* Form Controls */
+      .form-label {
+        font-size: 0.9rem;
+        color: #555;
+        margin-bottom: 0.4rem;
+        font-weight: 500;
+      }
+
+      .form-control,
+      .form-select {
+        font-size: 0.9rem;
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #e0e0e0;
+        background: #fff;
+        margin-bottom: 1rem;
+      }
+
+      .form-control:focus,
+      .form-select:focus {
+        border-color: #222;
+        box-shadow: 0 0 0 1px #2221;
+      }
+
+      .form-range {
+        margin-bottom: 0.5rem;
+      }
+
+      .range-value {
+        font-size: 0.85rem;
+        color: #888;
+        margin-bottom: 1rem;
+      }
+
+      /* Button Styles */
+      .btn {
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        transition: all 0.15s;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+      }
+
+      .btn-primary {
+        background: #222;
+        color: #fff;
+      }
+
+      .btn-primary:hover {
+        background: #444;
+        color: #fff;
+      }
+
+      .btn-success {
+        background: #1eae60;
+        color: #fff;
+      }
+
+      .btn-success:hover {
+        background: #17914d;
+        color: #fff;
+      }
+
+      .btn-warning {
+        background: #f39c12;
+        color: #fff;
+      }
+
+      .btn-warning:hover {
+        background: #d68910;
+        color: #fff;
+      }
+
+      .btn-danger {
+        background: #e74c3c;
+        color: #fff;
+      }
+
+      .btn-danger:hover {
+        background: #c0392b;
+        color: #fff;
+      }
+
+      .btn-info {
+        background: #3498db;
+        color: #fff;
+      }
+
+      .btn-info:hover {
+        background: #217dbb;
+        color: #fff;
+      }
+
+      .btn-secondary {
+        background: #6c757d;
+        color: #fff;
+      }
+
+      .btn-secondary:hover {
+        background: #5a6268;
+        color: #fff;
+      }
+
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      /* Button Groups */
+      .btn-group {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+      }
+
+      .btn-group .btn {
+        flex: 1;
+        min-width: 80px;
+        justify-content: center;
+      }
+
+      .btn-group-vertical {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .btn-group-vertical .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      /* Cards */
+      .card {
+        border-radius: 10px;
+        border: 1px solid #ececec;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        margin-bottom: 1.5rem;
+        background: #fff;
+      }
+
+      .card-header {
+        background: #fafafa;
+        border-bottom: 1px solid #f1f1f1;
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 1rem 1.25rem;
+        border-radius: 10px 10px 0 0;
+      }
+
+      .card-body {
+        padding: 1.25rem;
+      }
+
+      /* Stats */
+      .stats-row {
+        display: flex;
+        gap: 2rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .stat-item {
+        flex: 1;
+        text-align: center;
+        padding: 1rem;
+        background: #fafafa;
+        border-radius: 8px;
+      }
+
+      .stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #222;
+        margin-bottom: 0.25rem;
+      }
+
+      .stat-label {
+        color: #888;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      /* Table */
+      .table-responsive {
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #ececec;
       }
 
       #tagsTable {
-        font-size: 0.9em;
+        font-size: 0.9rem;
         margin: 0;
+        background: #fff;
+      }
+
+      #tagsTable th,
+      #tagsTable td {
+        padding: 0.75rem;
+        vertical-align: middle;
       }
 
       #tagsTable th {
+        background: #f8f8fa;
         font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.8em;
-        letter-spacing: 0.5px;
-        background: #f8f9fa;
-        border-bottom: 2px solid #dee2e6;
+        color: #555;
+        border-bottom: 1px solid #ececec;
       }
 
-      #tagsTable td {
-        vertical-align: middle;
-        padding: 12px 8px;
-        border-bottom: 1px solid #f1f3f4;
+      #tagsTable tbody tr {
+        border-bottom: 1px solid #f1f1f1;
+      }
+
+      #tagsTable tbody tr:last-child {
+        border-bottom: none;
       }
 
       #tagsTable tbody tr:hover {
-        background-color: rgba(52, 152, 219, 0.1);
+        background: #f8f9fa;
       }
 
       .tag-epc {
-        font-family: "Courier New", monospace;
-        font-weight: bold;
-        color: var(--primary-color);
-        font-size: 0.9em;
+        font-family: "JetBrains Mono", "Courier New", monospace;
+        font-weight: 500;
+        color: #222;
+        font-size: 0.85rem;
+      }
+
+      .antenna-badge,
+      .rssi-badge {
+        font-size: 0.8rem;
+        border-radius: 6px;
+        padding: 0.25rem 0.5rem;
+        font-weight: 500;
       }
 
       .antenna-badge {
-        background: var(--secondary-color);
-        color: white;
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 0.8em;
+        background: #e9ecef;
+        color: #333;
       }
 
       .rssi-badge {
-        background: var(--warning-color);
-        color: white;
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 0.8em;
+        background: #f8d7da;
+        color: #c0392b;
       }
 
       .timestamp {
-        color: #7f8c8d;
-        font-size: 0.9em;
+        color: #888;
+        font-size: 0.85rem;
       }
 
-      .badge {
-        font-size: 0.8em;
-        padding: 6px 10px;
-      }
-
+      /* Alerts */
       .alert {
-        border-radius: 10px;
-        border: none;
-        padding: 15px 20px;
-        margin-bottom: 20px;
+        border-radius: 8px;
+        font-size: 0.9rem;
       }
 
-      .antenna-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        margin-top: 15px;
+      /* Modal */
+      .modal-content {
+        border-radius: 12px;
       }
 
-      .antenna-item {
-        text-align: center;
-        padding: 15px;
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.1);
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
+      .modal-header {
+        border-bottom: 1px solid #f1f1f1;
+        padding: 1.25rem 1.5rem;
       }
 
-      .antenna-item.active {
-        border-color: var(--success-color);
-        background: rgba(39, 174, 96, 0.2);
+      .modal-footer {
+        border-top: 1px solid #f1f1f1;
+        padding: 1.25rem 1.5rem;
       }
 
-      .antenna-item.inactive {
-        border-color: var(--danger-color);
-        background: rgba(231, 76, 60, 0.2);
-      }
-
-      .power-level {
-        font-size: 0.8em;
-        margin-top: 5px;
-        opacity: 0.8;
-      }
-
+      /* Responsive */
       @media (max-width: 768px) {
-        .main-layout {
+        .app-container {
           flex-direction: column;
         }
 
         .sidebar {
           width: 100%;
           height: auto;
+          max-height: 50vh;
         }
 
         .stats-row {
           flex-direction: column;
-          gap: 10px;
+          gap: 1rem;
+        }
+
+        .btn-group {
+          flex-direction: column;
+        }
+
+        .btn-group .btn {
+          width: 100%;
         }
       }
     </style>
   </head>
   <body>
-    <div class="main-layout">
+    <div class="app-container">
       <!-- Sidebar -->
       <div class="sidebar">
         <div class="sidebar-header">
-          <h3><i class="fas fa-rfid"></i> RFID Control</h3>
-          <p>Ex10 Series Reader</p>
-          <div class="connection-status">
-            <span class="status-indicator" id="statusIndicator"></span>
-            <span id="connectionStatus">Chưa kết nối</span>
-          </div>
+          <h1 class="sidebar-title">
+            <i class="fas fa-rfid"></i> RFID Control
+          </h1>
         </div>
 
         <div class="sidebar-content">
           <!-- Connection Section -->
           <div class="sidebar-section">
-            <h5><i class="fas fa-plug"></i> Kết nối</h5>
-            <div class="mb-3">
-              <label for="portInput" class="form-label">Serial Port:</label>
-              <input
-                type="text"
-                class="form-control"
-                id="portInput"
-                value="/dev/cu.usbserial-10"
-                placeholder="Nhập serial port"
-              />
+            <div class="section-title">
+              <i class="fas fa-plug"></i> Connection
             </div>
-            <div class="mb-3">
-              <label for="baudrateInput" class="form-label">Baudrate:</label>
-              <select class="form-select" id="baudrateInput">
-                <option value="9600">9600</option>
-                <option value="19200">19200</option>
-                <option value="38400">38400</option>
-                <option value="57600" selected>57600</option>
-                <option value="115200">115200</option>
-              </select>
-            </div>
-            <div class="d-grid gap-2">
+
+            <label for="portInput" class="form-label">Serial Port</label>
+            <input
+              type="text"
+              class="form-control"
+              id="portInput"
+              value="/dev/cu.usbserial-10"
+              placeholder="Enter serial port"
+            />
+
+            <label for="baudrateInput" class="form-label">Baudrate</label>
+            <select class="form-select" id="baudrateInput">
+              <option value="9600">9600</option>
+              <option value="19200">19200</option>
+              <option value="38400">38400</option>
+              <option value="57600" selected>57600</option>
+              <option value="115200">115200</option>
+            </select>
+
+            <div class="btn-group">
               <button
                 class="btn btn-success"
                 id="connectBtn"
                 onclick="connectReader()"
               >
-                <span class="loading"
-                  ><span class="spinner-border spinner-border-sm"></span
-                ></span>
-                <i class="fas fa-link"></i> Kết nối
+                <i class="fas fa-link"></i> Connect
+                <span class="loading" style="display: none">
+                  <span class="spinner-border spinner-border-sm"></span>
+                </span>
               </button>
               <button
                 class="btn btn-danger"
@@ -448,139 +480,192 @@
                 onclick="disconnectReader()"
                 disabled
               >
-                <i class="fas fa-unlink"></i> Ngắt kết nối
+                <i class="fas fa-unlink"></i> Disconnect
+              </button>
+            </div>
+          </div>
+
+          <!-- Configuration Section -->
+          <div class="sidebar-section">
+            <div class="section-title">
+              <i class="fas fa-cogs"></i> Configuration
+            </div>
+
+            <label for="powerInput" class="form-label">RF Power (dBm)</label>
+            <input
+              type="range"
+              class="form-range"
+              id="powerInput"
+              min="0"
+              max="30"
+              value="20"
+            />
+            <div class="range-value">
+              Current: <span id="powerValue">20</span> dBm
+            </div>
+            <div class="small text-muted mb-2">
+              <span id="currentAntennaPower">--</span>
+            </div>
+
+            <label for="profileSelect" class="form-label">Profile</label>
+            <select class="form-select" id="profileSelect">
+              <option value="11">11 - 640kHz, FM0, Tari 7.5μs</option>
+              <option value="1">1 - 640kHz, Miller2, Tari 7.5μs</option>
+              <option value="15">15 - 640kHz, Miller4, Tari 7.5μs</option>
+              <option value="12">12 - 320kHz, Miller2, Tari 15μs</option>
+              <option value="3">3 - 320kHz, Miller2, Tari 20μs</option>
+              <option value="5">5 - 320kHz, Miller4, Tari 20μs</option>
+              <option value="7">7 - 250kHz, Miller4, Tari 20μs</option>
+              <option value="13">13 - 160kHz, Miller8, Tari 20μs</option>
+            </select>
+            <div class="form-check mt-2">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="saveProfile"
+                checked
+              />
+              <label class="form-check-label" for="saveProfile">
+                Save to EEPROM
+              </label>
+            </div>
+
+            <div class="btn-group">
+              <button
+                class="btn btn-primary"
+                onclick="getReaderInfo()"
+                id="infoBtn"
+                disabled
+                title="Get Reader Info"
+              >
+                <i class="fas fa-info-circle"></i>
+              </button>
+              <button
+                class="btn btn-primary"
+                onclick="getAntennaPower()"
+                id="powerInfoBtn"
+                disabled
+                title="Get Power Info"
+              >
+                <i class="fas fa-bolt"></i>
+              </button>
+              <button
+                class="btn btn-primary"
+                onclick="setPower()"
+                id="powerBtn"
+                disabled
+                title="Set Power"
+              >
+                <i class="fas fa-bolt"></i>
+              </button>
+              <button
+                class="btn btn-primary"
+                onclick="setProfile()"
+                id="profileBtn"
+                disabled
+                title="Set Profile"
+              >
+                <i class="fas fa-save"></i>
+              </button>
+              <button
+                class="btn btn-primary"
+                onclick="getProfile()"
+                id="getProfileBtn"
+                disabled
+                title="Get Profile"
+              >
+                <i class="fas fa-info"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Control Section -->
+          <div class="sidebar-section">
+            <div class="section-title">
+              <i class="fas fa-gamepad"></i> Control
+            </div>
+            <label for="targetSelect" class="form-label">Target</label>
+            <select
+              class="form-select"
+              id="targetSelect"
+              onchange="updateStartButtonText()"
+            >
+              <option value="0">Target A</option>
+              <option value="1">Target B</option>
+            </select>
+
+            <div class="btn-group-vertical">
+              <button
+                class="btn btn-primary"
+                onclick="startInventory()"
+                id="startTargetABtn"
+                disabled
+              >
+                <i class="fas fa-play"></i> Start Inventory (Target A)
+              </button>
+
+              <button
+                class="btn btn-warning"
+                onclick="stopInventory()"
+                id="stopBtn"
+                disabled
+              >
+                <i class="fas fa-stop"></i> Stop
+              </button>
+            </div>
+
+            <div class="btn-group">
+              <button
+                class="btn btn-info"
+                onclick="openParamConfigModal()"
+                id="paramConfigBtn"
+                disabled
+                title="Parameter Config"
+              >
+                <i class="fas fa-sliders-h"></i>
+              </button>
+              <button
+                class="btn btn-success"
+                onclick="openTagsInventoryModal()"
+                id="tagsInventoryBtn"
+                disabled
+                title="Tags Inventory"
+              >
+                <i class="fas fa-cogs"></i>
+              </button>
+              <button
+                class="btn btn-danger"
+                onclick="clearTags()"
+                title="Clear Tags"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
+              <button
+                class="btn btn-secondary"
+                onclick="resetReader()"
+                title="Reset Reader"
+              >
+                <i class="fas fa-redo"></i>
+              </button>
+              <button
+                class="btn btn-outline-secondary btn-sm"
+                onclick="debugConnectionStatus()"
+                title="Debug Connection"
+              >
+                <i class="fas fa-bug"></i>
               </button>
             </div>
           </div>
 
           <!-- Reader Info Section -->
           <div class="sidebar-section">
-            <h5><i class="fas fa-info-circle"></i> Thông tin Reader</h5>
+            <div class="section-title">
+              <i class="fas fa-info-circle"></i> Reader Info
+            </div>
             <div id="readerInfo">
-              <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9em">
-                Kết nối để xem thông tin reader
+              <p class="text-muted" style="font-size: 0.9rem; margin: 0">
+                Connect to view reader information
               </p>
-            </div>
-            <button
-              class="btn btn-primary btn-sm"
-              onclick="getReaderInfo()"
-              id="infoBtn"
-              disabled
-            >
-              <i class="fas fa-sync-alt"></i> Làm mới
-            </button>
-          </div>
-
-          <!-- Antenna Control Section -->
-          <div class="sidebar-section">
-            <h5><i class="fas fa-broadcast-tower"></i> Antenna Control</h5>
-            <div class="mb-3">
-              <label for="powerInput" class="form-label">RF Power (dBm):</label>
-              <input
-                type="range"
-                class="form-range"
-                id="powerInput"
-                min="0"
-                max="30"
-                value="20"
-              />
-              <div class="text-center" style="color: rgba(255, 255, 255, 0.8)">
-                <span id="powerValue">20</span> dBm
-              </div>
-            </div>
-            <div class="mb-3">
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  id="preserveConfig"
-                  checked
-                />
-                <label
-                  class="form-check-label"
-                  for="preserveConfig"
-                  style="color: rgba(255, 255, 255, 0.8)"
-                >
-                  Lưu cấu hình khi tắt nguồn
-                </label>
-              </div>
-            </div>
-            <div class="d-grid gap-2 mb-2">
-              <button
-                class="btn btn-primary"
-                onclick="getAntennaPower()"
-                id="powerInfoBtn"
-                disabled
-              >
-                <i class="fas fa-sync-alt"></i> Get Antenna Power
-              </button>
-              <button
-                class="btn btn-success"
-                onclick="setPower()"
-                id="powerBtn"
-                disabled
-              >
-                <i class="fas fa-bolt"></i> Set Antenna Power
-              </button>
-            </div>
-            <div
-              class="text-center"
-              style="color: #fff; font-size: 0.95em; margin-top: 8px"
-            >
-              Power hiện tại: <span id="currentAntennaPower">--</span> dBm
-            </div>
-          </div>
-
-          <!-- Profile Section -->
-          <div class="sidebar-section">
-            <h5><i class="fas fa-cogs"></i> Profile</h5>
-            <div class="mb-3">
-              <label for="profileSelect" class="form-label">Profile:</label>
-              <select class="form-select" id="profileSelect">
-                <option value="11">11 - 640kHz, FM0, Tari 7.5μs</option>
-                <option value="1">1 - 640kHz, Miller2, Tari 7.5μs</option>
-                <option value="15">15 - 640kHz, Miller4, Tari 7.5μs</option>
-                <option value="12">12 - 320kHz, Miller2, Tari 15μs</option>
-                <option value="3">3 - 320kHz, Miller2, Tari 20μs</option>
-                <option value="5">5 - 320kHz, Miller4, Tari 20μs</option>
-                <option value="7">7 - 250kHz, Miller4, Tari 20μs</option>
-                <option value="13">13 - 160kHz, Miller8, Tari 20μs</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  id="saveProfile"
-                  checked
-                />
-                <label
-                  class="form-check-label"
-                  for="saveProfile"
-                  style="color: rgba(255, 255, 255, 0.8)"
-                >
-                  Lưu khi tắt nguồn
-                </label>
-              </div>
-            </div>
-            <div class="d-grid gap-2">
-              <button
-                class="btn btn-primary"
-                onclick="setProfile()"
-                id="profileBtn"
-                disabled
-              >
-                <i class="fas fa-save"></i> Thiết lập Profile
-              </button>
-              <button
-                class="btn btn-info"
-                onclick="getProfile()"
-                id="getProfileBtn"
-                disabled
-              >
-                <i class="fas fa-info"></i> Lấy Profile hiện tại
-              </button>
             </div>
           </div>
         </div>
@@ -588,492 +673,341 @@
 
       <!-- Main Content -->
       <div class="main-content">
-        <!-- Header -->
-        <div class="main-header">
-          <h2><i class="fas fa-tags"></i> Detected Tags</h2>
-          <div class="stats-row">
-            <div class="stat-item">
-              <div class="stat-number" id="uniqueTags">0</div>
-              <div class="stat-label">Tag</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-number" id="totalTags">0</div>
-              <div class="stat-label">Total Tag</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-number" id="timer">00:00:00</div>
-              <div class="stat-label">Timer</div>
-            </div>
+        <div class="top-bar">
+          <h2 class="app-title">RFID Reader Control Panel</h2>
+          <div class="connection-status">
+            <span class="status-indicator" id="statusIndicator"></span>
+            <span id="connectionStatus">Not Connected</span>
           </div>
         </div>
 
-        <!-- Control Buttons -->
-        <div class="control-buttons">
-          <button
-            class="btn btn-primary"
-            onclick="startInventory(0)"
-            id="startTargetABtn"
-            disabled
-          >
-            <i class="fas fa-play"></i> Start Inventory
-          </button>
-          <button
-            class="btn btn-warning"
-            onclick="stopInventory()"
-            id="stopBtn"
-            disabled
-          >
-            <i class="fas fa-stop"></i> Stop Inventory
-          </button>
-          <button
-            class="btn btn-info"
-            onclick="openParamConfigModal()"
-            id="paramConfigBtn"
-            disabled
-          >
-            <i class="fas fa-sliders-h"></i> Parameter Config
-          </button>
-          <button
-            class="btn btn-success"
-            onclick="openTagsInventoryModal()"
-            id="tagsInventoryBtn"
-            disabled
-          >
-            <i class="fas fa-cogs"></i> Tags Inventory
-          </button>
-
-          <button class="btn btn-danger" onclick="clearTags()">
-            <i class="fas fa-trash"></i> Clear Tags
-          </button>
-          <button class="btn btn-secondary" onclick="resetReader()">
-            <i class="fas fa-redo"></i> Reset Reader
-          </button>
-        </div>
-
-        <!-- Tags Table -->
-        <div class="tags-card">
-          <div class="tags-header">
-            <h4><i class="fas fa-table"></i> Tags Table</h4>
-          </div>
-          <div class="table-responsive">
-            <table class="table table-hover" id="tagsTable">
-              <thead>
-                <tr>
-                  <th>EPC</th>
-                  <th>Count</th>
-                  <th>Antenna</th>
-                  <th>RSSI (dBm)</th>
-                  <th>Last Seen</th>
-                </tr>
-              </thead>
-              <tbody id="tagsTableBody">
-                <tr>
-                  <td colspan="5" class="text-center text-muted">
-                    Chưa có tags được phát hiện
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Tags Inventory Modal -->
-        <div
-          class="modal fade"
-          id="tagsInventoryModal"
-          tabindex="-1"
-          aria-labelledby="tagsInventoryModalLabel"
-          aria-hidden="true"
-        >
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="tagsInventoryModalLabel">
-                  Tags Inventory Settings
-                </h5>
-                <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                ></button>
+        <div class="content-area">
+          <!-- Tags Section -->
+          <div class="card">
+            <div class="card-header">
+              <i class="fas fa-tags"></i> Detected Tags
+            </div>
+            <div class="card-body">
+              <div class="stats-row">
+                <div class="stat-item">
+                  <div class="stat-number" id="uniqueTags">0</div>
+                  <div class="stat-label">Unique Tags</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-number" id="totalTags">0</div>
+                  <div class="stat-label">Total Reads</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-number" id="timer">00:00:00</div>
+                  <div class="stat-label">Timer</div>
+                </div>
               </div>
-              <div class="modal-body">
-                <div class="mb-3">
-                  <label for="qValueInput" class="form-label"
-                    >Q-value (0-15):</label
-                  >
+
+              <div class="table-responsive">
+                <table class="table table-hover" id="tagsTable">
+                  <thead>
+                    <tr>
+                      <th>EPC</th>
+                      <th>Count</th>
+                      <th>Antenna</th>
+                      <th>RSSI (dBm)</th>
+                      <th>Last Seen</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tagsTableBody">
+                    <tr>
+                      <td colspan="5" class="text-center text-muted">
+                        No tags detected yet
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Parameter Configuration Modal -->
+    <div class="modal fade" id="paramConfigModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-sliders-h"></i> Parameter Configuration
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <!-- Param1 Section -->
+            <div class="mb-4">
+              <h6 class="fw-bold mb-3">Param1 (Q-value, Session, Phase)</h6>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label for="qValueParam" class="form-label">Q Value</label>
                   <input
                     type="number"
                     class="form-control"
-                    id="qValueInput"
+                    id="qValueParam"
+                    value="4"
                     min="0"
                     max="15"
-                    value="4"
                   />
                 </div>
-                <div class="mb-3">
-                  <label for="sessionInput" class="form-label"
-                    >Session (0-3):</label
+                <div class="col-md-4">
+                  <label for="sessionParam" class="form-label">Session</label>
+                  <select class="form-select" id="sessionParam">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-check mt-4">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="phaseCheck"
+                    />
+                    <label class="form-check-label" for="phaseCheck"
+                      >Phase</label
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="form-check mt-2">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="saveCheck"
+                  checked
+                />
+                <label class="form-check-label" for="saveCheck"
+                  >Save to EEPROM</label
+                >
+              </div>
+              <div class="mt-3">
+                <button class="btn btn-primary btn-sm" onclick="setParam1()">
+                  <i class="fas fa-save"></i> Set Param1
+                </button>
+                <button class="btn btn-info btn-sm" onclick="getParam1()">
+                  <i class="fas fa-download"></i> Get Param1
+                </button>
+              </div>
+            </div>
+
+            <!-- TID Parameter Section -->
+            <div class="mb-4">
+              <h6 class="fw-bold mb-3">TID Parameter</h6>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="tidStartAddr" class="form-label"
+                    >Start Address</label
                   >
                   <input
-                    type="number"
+                    type="text"
                     class="form-control"
-                    id="sessionInput"
-                    min="0"
-                    max="3"
-                    value="0"
+                    id="tidStartAddr"
+                    value="00"
+                    placeholder="00"
                   />
                 </div>
-                <div class="mb-3">
-                  <label for="scanTimeInput" class="form-label"
-                    >Scan Time (100ms units, 1-255):</label
-                  >
+                <div class="col-md-6">
+                  <label for="tidLength" class="form-label">Length</label>
                   <input
-                    type="number"
+                    type="text"
                     class="form-control"
-                    id="scanTimeInput"
-                    min="1"
-                    max="255"
-                    value="1"
+                    id="tidLength"
+                    value="04"
+                    placeholder="04"
                   />
                 </div>
               </div>
-              <div class="modal-footer">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
+              <div class="form-check mt-2">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="saveTidCheck"
+                  checked
+                />
+                <label class="form-check-label" for="saveTidCheck"
+                  >Save to EEPROM</label
                 >
-                  Đóng
+              </div>
+              <div class="mt-3">
+                <button class="btn btn-primary btn-sm" onclick="setTidParam()">
+                  <i class="fas fa-save"></i> Set TID Param
                 </button>
-                <button
-                  type="button"
-                  class="btn btn-danger"
-                  onclick="stopTagsInventory()"
-                >
-                  Dừng đọc
+                <button class="btn btn-info btn-sm" onclick="getTidParam()">
+                  <i class="fas fa-download"></i> Get TID Param
                 </button>
-                <button
-                  type="button"
-                  class="btn btn-success"
-                  onclick="startTagsInventory()"
+              </div>
+            </div>
+
+            <!-- Mask Parameter Section -->
+            <div class="mb-4">
+              <h6 class="fw-bold mb-3">Mask Parameter</h6>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Mask Type</label>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="maskType"
+                      value="0"
+                      checked
+                    />
+                    <label class="form-check-label">EPC (0)</label>
+                  </div>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="maskType"
+                      value="1"
+                    />
+                    <label class="form-check-label">TID (1)</label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="maskStartAddr" class="form-label"
+                    >Start Address</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="maskStartAddr"
+                    value="00"
+                    placeholder="00"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="maskLength" class="form-label">Length</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="maskLength"
+                    value="04"
+                    placeholder="04"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="maskData" class="form-label">Data</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="maskData"
+                    placeholder="Enter mask data"
+                  />
+                </div>
+              </div>
+              <div class="form-check mt-2">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="saveMaskCheck"
+                  checked
+                />
+                <label class="form-check-label" for="saveMaskCheck"
+                  >Save to EEPROM</label
                 >
-                  Bắt đầu đọc
+              </div>
+              <div class="mt-3">
+                <button class="btn btn-primary btn-sm" onclick="setMaskParam()">
+                  <i class="fas fa-save"></i> Set Mask Param
+                </button>
+                <button class="btn btn-info btn-sm" onclick="getMaskParam()">
+                  <i class="fas fa-download"></i> Get Mask Param
                 </button>
               </div>
             </div>
           </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
         </div>
+      </div>
+    </div>
 
-        <!-- Parameter Configuration Modal -->
-        <div
-          class="modal fade"
-          id="paramConfigModal"
-          tabindex="-1"
-          aria-labelledby="paramConfigModalLabel"
-          aria-hidden="true"
-        >
-          <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="paramConfigModalLabel">
-                  <i class="fas fa-cogs"></i> Fast Inventory Parameter
-                  Configuration
-                </h5>
-                <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                ></button>
+    <!-- Tags Inventory Modal -->
+    <div class="modal fade" id="tagsInventoryModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-cogs"></i> Tags Inventory Configuration
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="qValueInput" class="form-label">Q Value</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="qValueInput"
+                  value="4"
+                  min="0"
+                  max="15"
+                />
               </div>
-              <div class="modal-body">
-                <!-- Param1 Section -->
-                <div class="card mb-3">
-                  <div class="card-header">
-                    <h6 class="mb-0">
-                      <i class="fas fa-sliders-h"></i> Param1
-                    </h6>
-                  </div>
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col-md-3">
-                        <label for="qValueParam" class="form-label">Q:</label>
-                        <select class="form-select" id="qValueParam">
-                          <option value="0">0</option>
-                          <option value="1">1</option>
-                          <option value="2">2</option>
-                          <option value="3">3</option>
-                          <option value="4">4</option>
-                          <option value="5">5</option>
-                          <option value="6" selected>6</option>
-                          <option value="7">7</option>
-                          <option value="8">8</option>
-                          <option value="9">9</option>
-                          <option value="10">10</option>
-                          <option value="11">11</option>
-                          <option value="12">12</option>
-                          <option value="13">13</option>
-                          <option value="14">14</option>
-                          <option value="15">15</option>
-                        </select>
-                      </div>
-                      <div class="col-md-3">
-                        <label for="sessionParam" class="form-label"
-                          >Session:</label
-                        >
-                        <select class="form-select" id="sessionParam">
-                          <option value="0">S0</option>
-                          <option value="1" selected>S1</option>
-                          <option value="2">S2</option>
-                          <option value="3">S3</option>
-                        </select>
-                      </div>
-                      <div class="col-md-3">
-                        <div class="form-check mt-4">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            id="phaseCheck"
-                          />
-                          <label class="form-check-label" for="phaseCheck">
-                            Phase
-                          </label>
-                        </div>
-                      </div>
-                      <div class="col-md-3">
-                        <div class="form-check mt-4">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            id="saveCheck"
-                          />
-                          <label class="form-check-label" for="saveCheck">
-                            Save
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row mt-3">
-                      <div class="col-md-6">
-                        <button
-                          type="button"
-                          class="btn btn-primary"
-                          onclick="setParam1()"
-                        >
-                          <i class="fas fa-save"></i> Set
-                        </button>
-                      </div>
-                      <div class="col-md-6">
-                        <button
-                          type="button"
-                          class="btn btn-info"
-                          onclick="getParam1()"
-                        >
-                          <i class="fas fa-download"></i> Get
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- TID Param Section -->
-                <div class="card mb-3">
-                  <div class="card-header">
-                    <h6 class="mb-0"><i class="fas fa-tag"></i> TID Param</h6>
-                  </div>
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col-md-4">
-                        <label for="tidStartAddr" class="form-label"
-                          >Start (Hex):</label
-                        >
-                        <input
-                          type="text"
-                          class="form-control"
-                          id="tidStartAddr"
-                          maxlength="2"
-                          value="00"
-                        />
-                      </div>
-                      <div class="col-md-4">
-                        <label for="tidLength" class="form-label"
-                          >Length (Hex):</label
-                        >
-                        <input
-                          type="text"
-                          class="form-control"
-                          id="tidLength"
-                          maxlength="2"
-                          value="00"
-                        />
-                      </div>
-                      <div class="col-md-4">
-                        <div class="form-check mt-4">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            id="saveTidCheck"
-                          />
-                          <label class="form-check-label" for="saveTidCheck">
-                            Save
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row mt-3">
-                      <div class="col-md-6">
-                        <button
-                          type="button"
-                          class="btn btn-primary"
-                          onclick="setTidParam()"
-                        >
-                          <i class="fas fa-save"></i> Set
-                        </button>
-                      </div>
-                      <div class="col-md-6">
-                        <button
-                          type="button"
-                          class="btn btn-info"
-                          onclick="getTidParam()"
-                        >
-                          <i class="fas fa-download"></i> Get
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Mask Section -->
-                <div class="card mb-3">
-                  <div class="card-header">
-                    <h6 class="mb-0"><i class="fas fa-mask"></i> Mask</h6>
-                  </div>
-                  <div class="card-body">
-                    <div class="row mb-3">
-                      <div class="col-md-12">
-                        <div class="btn-group" role="group">
-                          <input
-                            type="radio"
-                            class="btn-check"
-                            name="maskType"
-                            id="maskEPC"
-                            value="1"
-                            checked
-                          />
-                          <label class="btn btn-outline-primary" for="maskEPC"
-                            >EPC</label
-                          >
-
-                          <input
-                            type="radio"
-                            class="btn-check"
-                            name="maskType"
-                            id="maskTID"
-                            value="2"
-                          />
-                          <label class="btn btn-outline-primary" for="maskTID"
-                            >TID</label
-                          >
-
-                          <input
-                            type="radio"
-                            class="btn-check"
-                            name="maskType"
-                            id="maskUSER"
-                            value="3"
-                          />
-                          <label class="btn btn-outline-primary" for="maskUSER"
-                            >User</label
-                          >
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-md-4">
-                        <label for="maskStartAddr" class="form-label"
-                          >Start-bit (Hex):</label
-                        >
-                        <input
-                          type="text"
-                          class="form-control"
-                          id="maskStartAddr"
-                          maxlength="4"
-                          value="0020"
-                        />
-                      </div>
-                      <div class="col-md-4">
-                        <label for="maskLength" class="form-label"
-                          >Length (Hex):</label
-                        >
-                        <input
-                          type="text"
-                          class="form-control"
-                          id="maskLength"
-                          maxlength="2"
-                          value="00"
-                        />
-                      </div>
-                      <div class="col-md-4">
-                        <div class="form-check mt-4">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            id="saveMaskCheck"
-                          />
-                          <label class="form-check-label" for="saveMaskCheck">
-                            Save
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row mt-3">
-                      <div class="col-md-12">
-                        <label for="maskData" class="form-label"
-                          >Data (Hex):</label
-                        >
-                        <input
-                          type="text"
-                          class="form-control"
-                          id="maskData"
-                          placeholder="Enter mask data in hex format"
-                        />
-                      </div>
-                    </div>
-                    <div class="row mt-3">
-                      <div class="col-md-6">
-                        <button
-                          type="button"
-                          class="btn btn-primary"
-                          onclick="setMaskParam()"
-                        >
-                          <i class="fas fa-save"></i> Set
-                        </button>
-                      </div>
-                      <div class="col-md-6">
-                        <button
-                          type="button"
-                          class="btn btn-info"
-                          onclick="getMaskParam()"
-                        >
-                          <i class="fas fa-download"></i> Get
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div class="col-md-6">
+                <label for="sessionInput" class="form-label">Session</label>
+                <select class="form-select" id="sessionInput">
+                  <option value="0">0</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                </select>
               </div>
-              <div class="modal-footer">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
+              <div class="col-md-6">
+                <label for="scanTimeInput" class="form-label"
+                  >Scan Time (ms)</label
                 >
-                  Close
-                </button>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="scanTimeInput"
+                  value="1000"
+                  min="100"
+                  max="10000"
+                />
               </div>
             </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="startTagsInventory()"
+            >
+              <i class="fas fa-play"></i> Start Tags Inventory
+            </button>
           </div>
         </div>
       </div>
@@ -1090,7 +1024,6 @@
         max-width: 400px;
       "
     ></div>
-
     <script>
       // Socket.IO connection
       const socket = io();
@@ -1134,10 +1067,11 @@
 
       // Update connection status
       function updateConnectionStatus(connected) {
+        console.log("🔄 Updating connection status to:", connected);
         isConnected = connected;
         if (connected) {
           statusIndicator.className = "status-indicator status-connected";
-          connectionStatus.textContent = "Đã kết nối";
+          connectionStatus.textContent = "Connected";
           connectBtn.disabled = true;
           disconnectBtn.disabled = false;
           enableControls();
@@ -1146,9 +1080,10 @@
           document.getElementById("powerInfoBtn").disabled = false;
           document.getElementById("profileBtn").disabled = false;
           document.getElementById("getProfileBtn").disabled = false;
+          console.log("✅ Connection status updated - Connect button disabled");
         } else {
           statusIndicator.className = "status-indicator status-disconnected";
-          connectionStatus.textContent = "Chưa kết nối";
+          connectionStatus.textContent = "Not Connected";
           connectBtn.disabled = false;
           disconnectBtn.disabled = true;
           disableControls();
@@ -1157,7 +1092,9 @@
           document.getElementById("powerInfoBtn").disabled = true;
           document.getElementById("profileBtn").disabled = true;
           document.getElementById("getProfileBtn").disabled = true;
+          console.log("❌ Connection status updated - Connect button enabled");
         }
+        debugConnectionStatus();
       }
 
       // Enable/disable controls
@@ -1227,6 +1164,7 @@
 
       // Connect to reader
       async function connectReader() {
+        console.log("🔌 Starting connection process...");
         const port = document.getElementById("portInput").value;
         const baudrate = parseInt(
           document.getElementById("baudrateInput").value
@@ -1238,18 +1176,25 @@
           port,
           baudrate,
         });
-        console.log(result);
+        console.log("🔌 Connection result:", result);
 
         showLoading(connectBtn, false);
 
         if (result.success) {
-          updateConnectionStatus(true);
+          console.log(
+            "✅ Connection successful, waiting for WebSocket event..."
+          );
           showAlert(result.message, "success");
+
+          // Fallback: Update connection status immediately in case WebSocket event fails
+          updateConnectionStatus(true);
+
           await getReaderInfo();
           await getAntennaPower();
           //   getReaderInfo();
           //   getAntennaPower();
         } else {
+          console.log("❌ Connection failed");
           showAlert(result.message, "danger");
         }
       }
@@ -1259,10 +1204,13 @@
         const result = await apiCall("/api/disconnect", "POST");
 
         if (result.success) {
-          updateConnectionStatus(false);
           showAlert(result.message, "success");
+
+          // Fallback: Update connection status immediately in case WebSocket event fails
+          updateConnectionStatus(false);
+
           document.getElementById("readerInfo").innerHTML =
-            '<p class="text-muted">Kết nối để xem thông tin reader</p>';
+            '<p class="text-muted" style="font-size: 0.9rem; margin: 0;">Connect to view reader information</p>';
         } else {
           showAlert(result.message, "danger");
         }
@@ -1302,7 +1250,8 @@
       }
 
       // Start inventory
-      async function startInventory(target) {
+      async function startInventory() {
+        const target = document.getElementById("targetSelect").value;
         const result = await apiCall("/api/start_inventory", "POST", {
           target,
         });
@@ -1385,7 +1334,7 @@
         if (result.success) {
           const profile = result.data.profile;
           document.getElementById("profileSelect").value = profile;
-          showAlert(`Profile hiện tại: ${profile}`, "info");
+          showAlert(`Current profile: ${profile}`, "info");
         } else {
           showAlert(result.message, "warning");
         }
@@ -1395,7 +1344,7 @@
       function updateTagsTable() {
         if (tagsData.size === 0) {
           tagsTableBody.innerHTML =
-            '<tr><td colspan="5" class="text-center text-muted">Chưa có tags được phát hiện</td></tr>';
+            '<tr><td colspan="5" class="text-center text-muted">No tags detected yet</td></tr>';
           document.getElementById("uniqueTags").textContent = "0";
           document.getElementById("totalTags").textContent = "0";
           return;
@@ -1458,7 +1407,7 @@
             showAlert(result.message, "danger");
           }
         } catch (error) {
-          showAlert(`Lỗi reset reader: ${error}`, "danger");
+          showAlert(`Reset reader error: ${error}`, "danger");
         }
       }
 
@@ -1468,12 +1417,20 @@
         const icon = button.querySelector("i");
 
         if (loading) {
-          loadingSpan.style.display = "inline-block";
-          icon.style.display = "none";
+          if (loadingSpan) {
+            loadingSpan.style.display = "inline-block";
+          }
+          if (icon) {
+            icon.style.display = "none";
+          }
           button.disabled = true;
         } else {
-          loadingSpan.style.display = "none";
-          icon.style.display = "inline-block";
+          if (loadingSpan) {
+            loadingSpan.style.display = "none";
+          }
+          if (icon) {
+            icon.style.display = "inline-block";
+          }
           button.disabled = false;
         }
       }
@@ -1530,8 +1487,39 @@
         console.log("📡 Status message received:", data.message);
       });
 
+      socket.on("connection_status", function (data) {
+        console.log("🔌 Connection status update:", data);
+        updateConnectionStatus(data.connected);
+        if (data.message) {
+          showAlert(data.message, data.connected ? "success" : "info");
+        }
+      });
+
+      // Debug connection status
+      function debugConnectionStatus() {
+        console.log("🔍 Debug connection status:");
+        console.log("- isConnected variable:", isConnected);
+        console.log("- connectBtn disabled:", connectBtn.disabled);
+        console.log("- disconnectBtn disabled:", disconnectBtn.disabled);
+        console.log("- connectionStatus text:", connectionStatus.textContent);
+      }
+
+      // Check initial connection status
+      async function checkConnectionStatus() {
+        try {
+          const result = await apiCall("/api/connection_status");
+          if (result.success) {
+            updateConnectionStatus(result.connected);
+          }
+        } catch (error) {
+          console.log("Could not check connection status:", error);
+        }
+      }
+
       // Initialize
       updateConnectionStatus(false);
+      updateStartButtonText();
+      checkConnectionStatus();
 
       function openTagsInventoryModal() {
         var modal = new bootstrap.Modal(
@@ -1688,6 +1676,15 @@
         } else {
           showAlert(result.message, "danger");
         }
+      }
+
+      function updateStartButtonText() {
+        const targetSelect = document.getElementById("targetSelect");
+        const startBtn = document.getElementById("startTargetABtn");
+        const target = targetSelect.value;
+        startBtn.innerHTML = `<i class="fas fa-play"></i> Start Inventory (Target ${
+          target === "0" ? "A" : "B"
+        })`;
       }
     </script>
   </body>

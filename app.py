@@ -48,37 +48,6 @@ class RFIDWebController:
         self.current_profile = None
         self.antenna_power = {}
         
-    def connect(self, port: str, baudrate: int = None) -> Dict:
-        """Kết nối đến RFID reader"""
-        if baudrate is None:
-            baudrate = config.DEFAULT_BAUDRATE
-            
-        try:
-            self.reader = connect_reader(port, baudrate)
-            if self.reader:
-                self.is_connected = True
-                logger.info(f"Connected to RFID reader on {port}")
-                return {"success": True, "message": f"Đã kết nối thành công đến {port}"}
-            else:
-                logger.error(f"Failed to connect to {port}")
-                return {"success": False, "message": "Không thể kết nối đến reader"}
-        except Exception as e:
-            logger.error(f"Connection error: {e}")
-            return {"success": False, "message": f"Lỗi kết nối: {str(e)}"}
-    
-    def disconnect(self) -> Dict:
-        """Ngắt kết nối RFID reader"""
-        try:
-            if self.reader and self.reader.is_open:
-                self.reader.close()
-            self.is_connected = False
-            self.reader = None
-            logger.info("Disconnected from RFID reader")
-            return {"success": True, "message": "Đã ngắt kết nối"}
-        except Exception as e:
-            logger.error(f"Disconnect error: {e}")
-            return {"success": False, "message": f"Lỗi ngắt kết nối: {str(e)}"}
-    
     def get_reader_info(self) -> Dict:
         """Lấy thông tin reader"""
         if not self.is_connected:
@@ -92,199 +61,6 @@ class RFIDWebController:
                 return {"success": False, "message": "Không thể lấy thông tin reader"}
         except Exception as e:
             logger.error(f"Get reader info error: {e}")
-            return {"success": False, "message": f"Lỗi: {str(e)}"}
-    
-    def start_inventory(self, target: int = 0) -> Dict:
-        """Bắt đầu inventory"""
-        global inventory_thread, stop_inventory_flag, detected_tags, inventory_stats
-        
-        if not self.is_connected:
-            return {"success": False, "message": "Chưa kết nối đến reader"}
-        
-        # Nếu inventory đang chạy, dừng nó trước
-        if inventory_thread and inventory_thread.is_alive():
-            logger.info("Inventory đang chạy, dừng trước khi start lại")
-            self.stop_inventory()
-            time.sleep(1.0)  # Tăng thời gian chờ để đảm bảo reader ổn định
-        
-        try:
-            stop_inventory_flag = False
-            detected_tags.clear()
-            inventory_stats = {"read_rate": 0, "total_count": 0}
-            
-            # Clear buffer và đợi reader ổn định
-            try:
-                self.reader.reset_input_buffer()
-                self.reader.reset_output_buffer()
-                time.sleep(0.2)
-            except Exception as e:
-                logger.warning(f"Buffer clear warning: {e}")
-            
-            # Execute select commands before starting inventory (matching C# logic)
-            logger.info("Executing select commands before inventory...")
-            try:
-                # Select command parameters (matching C# SelectCmd parameters)
-                mask_mem = 1
-                mask_addr = bytes([0, 0])  # 2 bytes
-                mask_data = bytes([0] * 100)  # 100 bytes
-                mask_len = 0
-                session = 0  # Default session
-                select_antenna = 0xFFFF  # All antennas
-                
-                # Execute select command 4 times (matching C# loop)
-                for m in range(4):
-                    logger.info(f"Executing select command {m+1}/4...")
-                    result = self.reader.select_cmd(
-                        antenna=select_antenna,
-                        session=session,
-                        sel_action=0,  # Default select action
-                        mask_mem=mask_mem,
-                        mask_addr=mask_addr,
-                        mask_len=mask_len,
-                        mask_data=mask_data,
-                        truncate=0
-                    )
-                    
-                    if result != 0:
-                        logger.warning(f"Select command {m+1} failed with code: {result}")
-                    else:
-                        logger.info(f"Select command {m+1} successful")
-                    
-                    time.sleep(0.005)  # 5ms delay like C# Thread.Sleep(5)
-                
-                logger.info("Select commands completed")
-                
-            except Exception as e:
-                logger.error(f"Select command error: {e}")
-                # Continue with inventory even if select commands fail
-            
-            def tag_callback(tag: RFIDTag):
-                logger.info(f"🔍 Tag callback called: EPC={tag.epc}, RSSI={tag.rssi}, Antenna={tag.antenna}")
-                tag_data = {
-                    "epc": tag.epc,
-                    "rssi": tag.rssi,
-                    "antenna": tag.antenna,
-                    "timestamp": time.strftime("%H:%M:%S")
-                }
-                detected_tags.append(tag_data)
-                
-                # Giới hạn số lượng tags hiển thị
-                if len(detected_tags) > config.MAX_TAGS_DISPLAY:
-                    detected_tags.pop(0)
-                
-                logger.info(f"📡 Emitting tag_detected via WebSocket: {tag_data}")
-                try:
-                    # Thử emit với broadcast=True
-                    socketio.emit('tag_detected', tag_data, broadcast=True)
-                    logger.info("✅ WebSocket emit successful with broadcast")
-                except Exception as e:
-                    logger.error(f"❌ WebSocket emit failed: {e}")
-                    # Thử emit không có broadcast
-                    try:
-                        socketio.emit('tag_detected', tag_data)
-                        logger.info("✅ WebSocket emit successful without broadcast")
-                    except Exception as e2:
-                        logger.error(f"❌ WebSocket emit failed again: {e2}")
-            
-            def stats_callback(read_rate: int, total_count: int):
-                logger.info(f"📊 Stats callback called: read_rate={read_rate}, total_count={total_count}")
-                inventory_stats["read_rate"] = read_rate
-                inventory_stats["total_count"] = total_count
-                try:
-                    socketio.emit('stats_update', inventory_stats)
-                    logger.info("✅ Stats WebSocket emit successful")
-                except Exception as e:
-                    logger.error(f"❌ Stats WebSocket emit failed: {e}")
-            
-            # Tạo thread mới với logic cải thiện
-            def inventory_worker():
-                try:
-                    # Clear buffer trước khi start
-                    self.reader.reset_input_buffer()
-                    time.sleep(0.2)  # Tăng thời gian chờ
-                    
-                    # Gọi hàm start_inventory từ SDK với stop_flag
-                    start_inventory(
-                        self.reader, 
-                        config.DEFAULT_ADDRESS, 
-                        target,
-                        tag_callback=tag_callback,
-                        stats_callback=stats_callback,
-                        stop_flag=lambda: stop_inventory_flag
-                    )
-                except Exception as e:
-                    logger.error(f"Inventory worker error: {e}")
-                finally:
-                    logger.info("Inventory worker finished")
-            
-            inventory_thread = threading.Thread(target=inventory_worker)
-            inventory_thread.daemon = True
-            inventory_thread.start()
-            
-            logger.info(f"Started inventory with target {'A' if target == 0 else 'B'}")
-            return {"success": True, "message": f"Inventory đã bắt đầu (Target {'A' if target == 0 else 'B'})"}
-        except Exception as e:
-            logger.error(f"Start inventory error: {e}")
-            return {"success": False, "message": f"Lỗi: {str(e)}"}
-    
-    def stop_inventory(self) -> Dict:
-        """Dừng inventory"""
-        global stop_inventory_flag
-        
-        if not self.is_connected:
-            return {"success": False, "message": "Chưa kết nối đến reader"}
-        
-        try:
-            # Set flag để dừng inventory
-            stop_inventory_flag = True
-            
-            # Gửi lệnh stop đến reader (like C# RWDev.StopInventory)
-            result = self.reader.stop_inventory()
-            
-            if result == 0:
-                logger.info("Stop inventory success")
-                return {"success": True, "message": "Đã dừng inventory thành công"}
-            else:
-                logger.error(f"Stop inventory failed: {result}")
-                return {"success": False, "message": f"Không thể dừng inventory (code: {result})"}
-        except Exception as e:
-            logger.error(f"Stop inventory error: {e}")
-            return {"success": False, "message": f"Lỗi: {str(e)}"}
-    
-    def set_power(self, power: int, preserve_config: bool = True) -> Dict:
-        """Thiết lập công suất RF"""
-        if not self.is_connected:
-            return {"success": False, "message": "Chưa kết nối đến reader"}
-        
-        if not config.MIN_POWER <= power <= config.MAX_POWER:
-            return {"success": False, "message": f"Công suất phải từ {config.MIN_POWER} đến {config.MAX_POWER} dBm"}
-        
-        try:
-            result = set_power(self.reader, power, preserve_config=preserve_config)
-            if result:
-                logger.info(f"Set power to {power} dBm")
-                return {"success": True, "message": f"Đã thiết lập công suất: {power} dBm"}
-            else:
-                return {"success": False, "message": "Không thể thiết lập công suất"}
-        except Exception as e:
-            logger.error(f"Set power error: {e}")
-            return {"success": False, "message": f"Lỗi: {str(e)}"}
-    
-    def set_buzzer(self, enable: bool) -> Dict:
-        """Bật/tắt buzzer"""
-        if not self.is_connected:
-            return {"success": False, "message": "Chưa kết nối đến reader"}
-        
-        try:
-            result = set_buzzer(self.reader, enable)
-            if result:
-                status = "bật" if enable else "tắt"
-                logger.info(f"{'Enabled' if enable else 'Disabled'} buzzer")
-                return {"success": True, "message": f"Đã {status} buzzer"}
-            else:
-                return {"success": False, "message": "Không thể thiết lập buzzer"}
-        except Exception as e:
-            logger.error(f"Set buzzer error: {e}")
             return {"success": False, "message": f"Lỗi: {str(e)}"}
     
     def get_current_profile(self) -> Dict:
@@ -322,58 +98,6 @@ class RFIDWebController:
         except Exception as e:
             logger.error(f"Set profile error: {e}")
             return {"success": False, "message": f"Lỗi: {str(e)}"}
-    
-    def enable_antennas(self, antennas: List[int], save_on_power_down: bool = True) -> Dict:
-        """Bật antennas"""
-        if not self.is_connected:
-            return {"success": False, "message": "Chưa kết nối đến reader"}
-        
-        if not all(1 <= ant <= config.MAX_ANTENNAS for ant in antennas):
-            return {"success": False, "message": f"Antenna phải từ 1 đến {config.MAX_ANTENNAS}"}
-        
-        try:
-            result = enable_antenna(self.reader, antennas, save_on_power_down)
-            if result:
-                logger.info(f"Enabled antennas: {antennas}")
-                return {"success": True, "message": f"Đã bật antennas: {antennas}"}
-            else:
-                return {"success": False, "message": "Không thể bật antennas"}
-        except Exception as e:
-            logger.error(f"Enable antennas error: {e}")
-            return {"success": False, "message": f"Lỗi: {str(e)}"}
-    
-    def disable_antennas(self, antennas: List[int], save_on_power_down: bool = True) -> Dict:
-        """Tắt antennas"""
-        if not self.is_connected:
-            return {"success": False, "message": "Chưa kết nối đến reader"}
-        
-        if not all(1 <= ant <= config.MAX_ANTENNAS for ant in antennas):
-            return {"success": False, "message": f"Antenna phải từ 1 đến {config.MAX_ANTENNAS}"}
-        
-        try:
-            result = disable_antenna(self.reader, antennas, save_on_power_down)
-            if result:
-                logger.info(f"Disabled antennas: {antennas}")
-                return {"success": True, "message": f"Đã tắt antennas: {antennas}"}
-            else:
-                return {"success": False, "message": "Không thể tắt antennas"}
-        except Exception as e:
-            logger.error(f"Disable antennas error: {e}")
-            return {"success": False, "message": f"Lỗi: {str(e)}"}
-    
-    def get_antenna_power(self) -> Dict:
-        """Lấy công suất antennas"""
-        if not self.is_connected:
-            return {"success": False, "message": "Chưa kết nối đến reader"}
-        
-        try:
-            power_bytes = get_power(self.reader)
-            # Convert bytes to dict: {1: power1, 2: power2, ...}
-            power_levels = {i + 1: b for i, b in enumerate(power_bytes) if b != 0}
-            return {"success": True, "data": power_levels}
-        except Exception as e:
-            logger.error(f"Get antenna power error: {e}")
-            return {"success": False, "message": f"Lỗi: {str(e)}"}
 
 # Khởi tạo controller
 reader = UHFReader()
@@ -401,6 +125,9 @@ def api_connect():
     
     result = reader.open_com_port(port=port, com_addr=255, baud=baudrate)
     if result == 0:
+        # Emit connection status to all connected clients
+        logger.info("🔌 Emitting connection_status event: connected=True")
+        socketio.emit('connection_status', {'connected': True, 'message': 'Connected!'})
         return jsonify({'success': True, 'message': 'Connected!'})
     else:
         return jsonify({'success': False, 'error': f'Connection failed with code: {result}'}), 400
@@ -409,6 +136,9 @@ def api_connect():
 def api_disconnect():
     """API ngắt kết nối reader"""
     result = reader.close_com_port()
+    # Emit connection status to all connected clients
+    logger.info("🔌 Emitting connection_status event: connected=False")
+    socketio.emit('connection_status', {'connected': False, 'message': 'Disconnected successfully'})
     return jsonify({'success': True, 'message': 'Disconnected successfully'})
 
 @app.route('/api/reader_info', methods=['GET'])
@@ -416,6 +146,12 @@ def api_reader_info():
     """API lấy thông tin reader"""
     result = reader.get_reader_information()
     return jsonify({'success': True, 'data': result})
+
+@app.route('/api/connection_status', methods=['GET'])
+def api_connection_status():
+    """API kiểm tra trạng thái kết nối"""
+    is_connected = reader.is_connected if hasattr(reader, 'is_connected') else False
+    return jsonify({'success': True, 'connected': is_connected})
 
 @app.route('/api/start_inventory', methods=['POST'])
 def api_start_inventory():
