@@ -126,7 +126,6 @@ def api_connect():
     result = reader.open_com_port(port=port, com_addr=255, baud=baudrate)
     if result == 0:
         # Emit connection status to all connected clients
-        logger.info("🔌 Emitting connection_status event: connected=True")
         socketio.emit('connection_status', {'connected': True, 'message': 'Connected!'})
         return jsonify({'success': True, 'message': 'Connected!'})
     else:
@@ -137,7 +136,6 @@ def api_disconnect():
     """API ngắt kết nối reader"""
     result = reader.close_com_port()
     # Emit connection status to all connected clients
-    logger.info("🔌 Emitting connection_status event: connected=False")
     socketio.emit('connection_status', {'connected': False, 'message': 'Disconnected successfully'})
     return jsonify({'success': True, 'message': 'Disconnected successfully'})
 

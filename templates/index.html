@@ -647,13 +647,6 @@
               >
                 <i class="fas fa-redo"></i>
               </button>
-              <button
-                class="btn btn-outline-secondary btn-sm"
-                onclick="debugConnectionStatus()"
-                title="Debug Connection"
-              >
-                <i class="fas fa-bug"></i>
-              </button>
             </div>
           </div>
 
@@ -1067,7 +1060,6 @@
 
       // Update connection status
       function updateConnectionStatus(connected) {
-        console.log("🔄 Updating connection status to:", connected);
         isConnected = connected;
         if (connected) {
           statusIndicator.className = "status-indicator status-connected";
@@ -1080,7 +1072,6 @@
           document.getElementById("powerInfoBtn").disabled = false;
           document.getElementById("profileBtn").disabled = false;
           document.getElementById("getProfileBtn").disabled = false;
-          console.log("✅ Connection status updated - Connect button disabled");
         } else {
           statusIndicator.className = "status-indicator status-disconnected";
           connectionStatus.textContent = "Not Connected";
@@ -1092,9 +1083,7 @@
           document.getElementById("powerInfoBtn").disabled = true;
           document.getElementById("profileBtn").disabled = true;
           document.getElementById("getProfileBtn").disabled = true;
-          console.log("❌ Connection status updated - Connect button enabled");
         }
-        debugConnectionStatus();
       }
 
       // Enable/disable controls
@@ -1164,7 +1153,6 @@
 
       // Connect to reader
       async function connectReader() {
-        console.log("🔌 Starting connection process...");
         const port = document.getElementById("portInput").value;
         const baudrate = parseInt(
           document.getElementById("baudrateInput").value
@@ -1176,14 +1164,10 @@
           port,
           baudrate,
         });
-        console.log("🔌 Connection result:", result);
 
         showLoading(connectBtn, false);
 
         if (result.success) {
-          console.log(
-            "✅ Connection successful, waiting for WebSocket event..."
-          );
           showAlert(result.message, "success");
 
           // Fallback: Update connection status immediately in case WebSocket event fails
@@ -1194,7 +1178,6 @@
           //   getReaderInfo();
           //   getAntennaPower();
         } else {
-          console.log("❌ Connection failed");
           showAlert(result.message, "danger");
         }
       }
@@ -1252,9 +1235,20 @@
       // Start inventory
       async function startInventory() {
         const target = document.getElementById("targetSelect").value;
+
+        // Stop any existing inventory first
+        try {
+          await apiCall("/api/stop_inventory", "POST");
+          // Wait a bit for the stop to take effect
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        } catch (error) {
+          // Ignore stop errors
+        }
+
         const result = await apiCall("/api/start_inventory", "POST", {
-          target,
+          target: parseInt(target), // Convert to integer
         });
+
         if (result.success) {
           showAlert(result.message, "success");
           document.getElementById("stopBtn").disabled = false;
@@ -1488,21 +1482,11 @@
       });
 
       socket.on("connection_status", function (data) {
-        console.log("🔌 Connection status update:", data);
         updateConnectionStatus(data.connected);
         if (data.message) {
           showAlert(data.message, data.connected ? "success" : "info");
         }
       });
-
-      // Debug connection status
-      function debugConnectionStatus() {
-        console.log("🔍 Debug connection status:");
-        console.log("- isConnected variable:", isConnected);
-        console.log("- connectBtn disabled:", connectBtn.disabled);
-        console.log("- disconnectBtn disabled:", disconnectBtn.disabled);
-        console.log("- connectionStatus text:", connectionStatus.textContent);
-      }
 
       // Check initial connection status
       async function checkConnectionStatus() {
