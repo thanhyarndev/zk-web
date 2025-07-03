@@ -120,6 +120,44 @@ class RFIDWebController:
             except Exception as e:
                 logger.warning(f"Buffer clear warning: {e}")
             
+            # Execute select commands before starting inventory (matching C# logic)
+            logger.info("Executing select commands before inventory...")
+            try:
+                # Select command parameters (matching C# SelectCmd parameters)
+                mask_mem = 1
+                mask_addr = bytes([0, 0])  # 2 bytes
+                mask_data = bytes([0] * 100)  # 100 bytes
+                mask_len = 0
+                session = 0  # Default session
+                select_antenna = 0xFFFF  # All antennas
+                
+                # Execute select command 4 times (matching C# loop)
+                for m in range(4):
+                    logger.info(f"Executing select command {m+1}/4...")
+                    result = self.reader.select_cmd(
+                        antenna=select_antenna,
+                        session=session,
+                        sel_action=0,  # Default select action
+                        mask_mem=mask_mem,
+                        mask_addr=mask_addr,
+                        mask_len=mask_len,
+                        mask_data=mask_data,
+                        truncate=0
+                    )
+                    
+                    if result != 0:
+                        logger.warning(f"Select command {m+1} failed with code: {result}")
+                    else:
+                        logger.info(f"Select command {m+1} successful")
+                    
+                    time.sleep(0.005)  # 5ms delay like C# Thread.Sleep(5)
+                
+                logger.info("Select commands completed")
+                
+            except Exception as e:
+                logger.error(f"Select command error: {e}")
+                # Continue with inventory even if select commands fail
+            
             def tag_callback(tag: RFIDTag):
                 logger.info(f"🔍 Tag callback called: EPC={tag.epc}, RSSI={tag.rssi}, Antenna={tag.antenna}")
                 tag_data = {
@@ -200,38 +238,15 @@ class RFIDWebController:
             # Set flag để dừng inventory
             stop_inventory_flag = True
             
-            # Gửi lệnh stop đến reader
-            if self.reader:
-                # Gửi lệnh stop nhiều lần để đảm bảo reader nhận được
-                for i in range(3):
-                    try:
-                        stop_inventory(self.reader)
-                        time.sleep(0.1)
-                    except Exception as e:
-                        logger.warning(f"Stop command attempt {i+1} failed: {e}")
-                
-                # Đợi reader xử lý lệnh stop
-                time.sleep(0.5)
-                
-                # Clear buffer sau khi stop
-                try:
-                    self.reader.reset_input_buffer()
-                    self.reader.reset_output_buffer()
-                    time.sleep(0.1)
-                except Exception as e:
-                    logger.warning(f"Buffer clear warning: {e}")
+            # Gửi lệnh stop đến reader (like C# RWDev.StopInventory)
+            result = self.reader.stop_inventory()
             
-            # Đợi thread dừng (tối đa 3 giây)
-            if inventory_thread and inventory_thread.is_alive():
-                inventory_thread.join(timeout=3.0)
-                if inventory_thread.is_alive():
-                    logger.warning("Inventory thread không dừng trong thời gian chờ")
-                    # Force stop bằng cách set flag và đợi thêm
-                    stop_inventory_flag = True
-                    time.sleep(0.5)
-            
-            logger.info("Stopped inventory")
-            return {"success": True, "message": "Đã dừng inventory"}
+            if result == 0:
+                logger.info("Stop inventory success")
+                return {"success": True, "message": "Đã dừng inventory thành công"}
+            else:
+                logger.error(f"Stop inventory failed: {result}")
+                return {"success": False, "message": f"Không thể dừng inventory (code: {result})"}
         except Exception as e:
             logger.error(f"Stop inventory error: {e}")
             return {"success": False, "message": f"Lỗi: {str(e)}"}
@@ -420,7 +435,7 @@ def api_stop_inventory():
     """API dừng inventory"""
     result = reader.stop_inventory()
     if result == 0:
-        return jsonify({'success': True, 'message': 'Đã dừng inventory'})
+        return jsonify({'success': True, 'message': 'Đã dừng inventory thành công'})
     else:
         return jsonify({'success': False, 'message': f'Không thể dừng inventory (code: {result})'}), 400
 
@@ -628,138 +643,27 @@ def handle_message(message):
 
 @app.route('/api/tags_inventory', methods=['POST'])
 def api_tags_inventory():
-    """API bắt đầu tags inventory với cấu hình tuỳ chọn (liên tục)"""
-    global inventory_thread, stop_inventory_flag, detected_tags, inventory_stats
-
-    if not rfid_controller.is_connected:
-        return {"success": False, "message": "Chưa kết nối đến reader"}
-
-    # Nếu inventory đang chạy, dừng rồi chờ thread kết thúc
-    if inventory_thread and inventory_thread.is_alive():
-        logger.info("Inventory đang chạy, dừng trước khi start lại")
-        rfid_controller.stop_inventory()
-        time.sleep(1.0)  # Tăng thời gian chờ để đảm bảo reader ổn định
-
+    """API thực hiện một lượt inventory với cấu hình tuỳ chọn (không liên tục)"""
     try:
-        # Reset trạng thái
-        stop_inventory_flag = False
-        detected_tags.clear()
-        inventory_stats = {"read_rate": 0, "total_count": 0}
-
-        # Lấy tham số từ request
-        data      = request.get_json()
-        q_value   = int(data.get("q_value", 4))
-        session   = int(data.get("session", 0))
-        antenna   = int(data.get("antenna", 1))
+        data = request.get_json()
+        q_value = int(data.get("q_value", 4))
+        session = int(data.get("session", 0))
+        antenna = int(data.get("antenna", 1))
         scan_time = int(data.get("scan_time", 10))
 
-        # Clear buffer và đợi reader ổn định trước khi bắt đầu
-        try:
-            rfid_controller.reader.reset_input_buffer()
-            rfid_controller.reader.reset_output_buffer()
-            time.sleep(0.3)  # Tăng thời gian chờ khi chuyển session
-        except Exception as e:
-            logger.warning(f"Buffer clear warning: {e}")
-
-        # Callback khi có tag mới
-        def tag_callback(tag: RFIDTag):
-            tag_data = {
-                "epc":       tag.epc,
-                "rssi":      tag.rssi,
-                "antenna":   tag.antenna,
-                "timestamp": time.strftime("%H:%M:%S")
-            }
-            detected_tags.append(tag_data)
-            if len(detected_tags) > config.MAX_TAGS_DISPLAY:
-                detected_tags.pop(0)
-            # Emit không có broadcast
-            try:
-                socketio.emit("tag_detected", tag_data)
-            except Exception as e:
-                logger.error(f"❌ WebSocket emit failed: {e}")
-
-        # Callback khi có stats
-        def stats_callback(read_rate: int, total_count: int):
-            inventory_stats["read_rate"]   = read_rate
-            inventory_stats["total_count"] = total_count
-            try:
-                socketio.emit("stats_update", inventory_stats)
-            except Exception as e:
-                logger.error(f"❌ Stats WebSocket emit failed: {e}")
-
-        # Thread worker: loop liên tục cho đến khi stop_inventory_flag = True
-        def inventory_worker():
-            cycle_count = 0
-            switch_target = 0
-            try:
-                while not stop_inventory_flag:
-                    cycle_count += 1
-                    logger.info(f"\n--- Starting inventory cycle #{cycle_count} at {time.strftime('%Y-%m-%d %H:%M:%S')} ---")
-                    
-                    # Xóa buffer, đợi 0.2s để ổn định
-                    try:
-                        rfid_controller.reader.reset_input_buffer()
-                        #time.sleep(0.2)
-                    except Exception as e:
-                        logger.warning(f"Buffer clear warning in cycle {cycle_count}: {e}")
-                    
-                    # Thực hiện 1 lượt scan
-                    if session < 2:
-                        start_tags_inventory(
-                        rfid_controller.reader,
-                        address=config.DEFAULT_ADDRESS,
-                        q_value=q_value,
-                        session=session,
-                        target=0,
-                        antenna=antenna,
-                        scan_time=scan_time,
-                        tag_callback=tag_callback,
-                        stats_callback=stats_callback
-                    )
-                    else:
-                        start_tags_inventory(
-                        rfid_controller.reader,
-                        address=config.DEFAULT_ADDRESS,
-                        q_value=q_value,
-                        session=session,
-                        target=switch_target,
-                        antenna=antenna,
-                        scan_time=scan_time,
-                        tag_callback=tag_callback,
-                        stats_callback=stats_callback
-                        )
-                    switch_target = abs(switch_target-1)
-                    
-                    # Nếu đã được yêu cầu dừng, break
-                    if stop_inventory_flag:
-                        break
-                        
-                    logger.info(f"\n--- Inventory cycle #{cycle_count} completed at {time.strftime('%Y-%m-%d %H:%M:%S')} ---")
-                    logger.info("🔄 Starting next cycle immediately...")
-                    
-                    # Không có delay giữa các cycle để quét nhanh nhất có thể
-            
-            except Exception as e:
-                logger.error(f"Tags inventory worker error: {e}")
-            finally:
-                logger.info("Tags inventory worker finished (continuous mode)")
-
-        # Khởi thread
-        inventory_thread = threading.Thread(target=inventory_worker)
-        inventory_thread.daemon = True
-        inventory_thread.start()
-
-        logger.info(f"Started continuous tags inventory (Q={q_value}, Session={session}, Antenna={antenna}, Scan={scan_time})")
-        return {
-            "success": True,
-            "message": f"Tags inventory đã bắt đầu (Q={q_value}, Session={session}, Antenna={antenna}, Scan={scan_time})"
-        }
-
+        # Call inventory_g2 for a single scan
+        tags = reader.inventory_g2(q_value=q_value, session=session, scan_time=scan_time, in_ant=antenna)
+        tag_count = 0
+        for tag in tags:
+            tag_data = tag.__dict__ if hasattr(tag, '__dict__') else dict(tag)
+            import time
+            tag_data['timestamp'] = time.strftime("%H:%M:%S")
+            socketio.emit('tag_detected', tag_data)
+            tag_count += 1
+        return {"success": True, "message": f"Đã quét xong. Số lượng tags: {tag_count}"}
     except Exception as e:
-        logger.error(f"Start tags inventory error: {e}")
+        logger.error(f"Tags inventory error: {e}")
         return {"success": False, "message": f"Lỗi: {str(e)}"}
-
-
 
 if __name__ == '__main__':
     logger.info(f"Starting RFID Web Control Panel on {config.HOST}:{config.PORT}")

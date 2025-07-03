@@ -1182,4 +1182,91 @@ class Reader:
         if self.recv_length >= 4 and self.recv_buffer[2] == 81:
             com_addr[0] = self.recv_buffer[1]  # Update com_addr with response value (C# ComAdr = RecvBuff[1])
             return self.recv_buffer[3]
+        return 49
+
+    def select_cmd(self, com_addr: bytearray, antenna: int, session: bytes, sel_action: bytes, 
+                   mask_mem: bytes, mask_addr: bytes, mask_len: bytes, mask_data: bytes, truncate: bytes) -> int:
+        """Select command (C# SelectCmd method) - Gen2 select command for filtering tags
+        
+        Args:
+            com_addr: Reader address as bytearray[0] (will be updated with response value)
+            antenna: Antenna number (int)
+            session: Session as bytes (single byte)
+            sel_action: Select action as bytes (single byte)
+            mask_mem: Mask memory as bytes (single byte)
+            mask_addr: Mask address as bytes (2 bytes)
+            mask_len: Mask length as bytes (single byte)
+            mask_data: Mask data as bytes
+            truncate: Truncate flag as bytes (single byte)
+        """
+        # Validate single byte parameters
+        if len(session) != 1 or len(sel_action) != 1 or len(mask_mem) != 1 or len(mask_len) != 1 or len(truncate) != 1:
+            raise ValueError("session, sel_action, mask_mem, mask_len, and truncate must be single bytes")
+        if len(mask_addr) < 2:
+            raise ValueError("mask_addr must be at least 2 bytes")
+        
+        # Calculate number of bytes for mask data (same as C#: (MaskLen + 7) / 8)
+        b = (mask_len[0] + 7) // 8
+        
+        # Build command exactly like C# SDK
+        cmd = bytearray()
+        cmd.append(0)  # Placeholder for length
+        cmd.append(com_addr[0])  # SendBuff[1]
+        cmd.append(154)          # SendBuff[2] = command code 154
+        cmd.append((antenna >> 8) & 0xFF)  # SendBuff[3] = (byte)(Antenna >> 8)
+        cmd.append(antenna & 0xFF)         # SendBuff[4] = (byte)((uint)Antenna & 0xFFu)
+        cmd.append(session[0])   # SendBuff[5]
+        cmd.append(sel_action[0]) # SendBuff[6]
+        cmd.append(mask_mem[0])  # SendBuff[7]
+        cmd.extend(mask_addr[:2]) # SendBuff[8,9] = MaskAdr[0], MaskAdr[1]
+        cmd.append(mask_len[0])  # SendBuff[10]
+        
+        if b > 0:
+            # Add mask data and truncate
+            cmd.extend(mask_data[:b])  # SendBuff[11...] = MaskData
+            cmd.append(truncate[0])    # SendBuff[11 + b]
+        else:
+            # No mask data, just add truncate
+            cmd.append(truncate[0])    # SendBuff[11]
+        
+        # Set length: SendBuff[0] = (byte)(13 + b)
+        cmd[0] = 13 + b
+        
+        print(f"[DEBUG] Select command before CRC: {cmd.hex()}")
+        print(f"[DEBUG] Select command length: {cmd[0]}")
+        
+        # Add CRC - C# uses GetCRC(SendBuff, SendBuff[0] - 1)
+        crc = self._get_crc(cmd, cmd[0] - 1)
+        cmd.extend(crc)
+        
+        print(f"[DEBUG] Full select command with CRC: {cmd.hex()}")
+        
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            print(f"[DEBUG] Select send failed: {result}")
+            return result
+        
+        # Wait for response - C# uses GetDataFromPort(154, 1500)
+        result = self._get_data_from_port(154, 1500)
+        if result != 0:
+            print(f"[DEBUG] Select response timeout: {result}")
+            return result
+        
+        print(f"[DEBUG] Select response received: {self.recv_buffer[:self.recv_length].hex()}")
+        
+        # Parse response exactly like C# SDK
+        if self.recv_length >= 4:
+            # Check CRC
+            if self._check_crc(self.recv_buffer, self.recv_length) != 0:
+                print("[DEBUG] Select response CRC check failed")
+                return 49
+            
+            # Check command response
+            if self.recv_buffer[2] == 154:
+                com_addr[0] = self.recv_buffer[1]  # Update com_addr with response value (C# ComAdr = RecvBuff[1])
+                return self.recv_buffer[3]  # Return status code
+            else:
+                print(f"[DEBUG] Select response command mismatch: expected 154, got {self.recv_buffer[2]}")
+                return self.recv_buffer[3]  # Return status code even if command doesn't match
+        
         return 49 

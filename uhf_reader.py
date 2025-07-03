@@ -676,4 +676,44 @@ class UHFReader:
         if not self.is_connected:
             raise ReaderNotConnectedError("Reader is not connected")
         com_addr = bytearray([self.com_addr])
-        return self.uhf.stop_read(com_addr) 
+        return self.uhf.stop_read(com_addr)
+
+    def select_cmd(self, antenna: int, session: int, sel_action: int, mask_mem: int, 
+                   mask_addr: bytes, mask_len: int, mask_data: bytes, truncate: int) -> int:
+        """
+        Select command (Gen2 select command for filtering tags)
+        
+        Args:
+            antenna: Antenna number (int)
+            session: Session (0-3)
+            sel_action: Select action (0-7)
+            mask_mem: Mask memory bank (0-3)
+            mask_addr: Mask address (2 bytes)
+            mask_len: Mask length in bits
+            mask_data: Mask data bytes
+            truncate: Truncate flag (0-1)
+            
+        Returns:
+            0 on success, error code on failure
+        """
+        if not self.is_connected:
+            raise ReaderNotConnectedError("Reader is not connected")
+        
+        # Convert parameters to bytes/bytearray for low-level API
+        com_addr = bytearray([self.com_addr])
+        session_bytes = bytes([session])
+        sel_action_bytes = bytes([sel_action])
+        mask_mem_bytes = bytes([mask_mem])
+        mask_len_bytes = bytes([mask_len])
+        truncate_bytes = bytes([truncate])
+        
+        result = self.uhf.select_cmd(
+            com_addr, antenna, session_bytes, sel_action_bytes, 
+            mask_mem_bytes, mask_addr, mask_len_bytes, mask_data, truncate_bytes
+        )
+        
+        # Update com_addr if successful
+        if result == 0:
+            self.com_addr = com_addr[0]
+        
+        return result 
