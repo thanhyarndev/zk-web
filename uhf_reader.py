@@ -679,12 +679,11 @@ class UHFReader:
         return self.uhf.stop_read(com_addr)
 
     def select_cmd(self, antenna: int, session: int, sel_action: int, mask_mem: int, 
-                   mask_addr: bytes, mask_len: int, mask_data: bytes, truncate: int) -> int:
+                   mask_addr: bytes, mask_len: int, mask_data: bytes, truncate: int, antenna_num: int = 4) -> int:
         """
         Select command (Gen2 select command for filtering tags)
-        
         Args:
-            antenna: Antenna number (int)
+            antenna: Antenna number (bitmask or value)
             session: Session (0-3)
             sel_action: Select action (0-7)
             mask_mem: Mask memory bank (0-3)
@@ -692,7 +691,7 @@ class UHFReader:
             mask_len: Mask length in bits
             mask_data: Mask data bytes
             truncate: Truncate flag (0-1)
-            
+            antenna_num: total number of antennas supported (default 4)
         Returns:
             0 on success, error code on failure
         """
@@ -709,7 +708,7 @@ class UHFReader:
         
         result = self.uhf.select_cmd(
             com_addr, antenna, session_bytes, sel_action_bytes, 
-            mask_mem_bytes, mask_addr, mask_len_bytes, mask_data, truncate_bytes
+            mask_mem_bytes, mask_addr, mask_len_bytes, mask_data, truncate_bytes, antenna_num
         )
         
         # Update com_addr if successful

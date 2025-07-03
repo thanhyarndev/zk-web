@@ -10,10 +10,9 @@ from uhf_reader import UHFReader
 
 # Import các hàm từ zk.py
 from zk import (
-    RFIDTag, InventoryResult, connect_reader, get_reader_info, 
-    start_inventory, stop_inventory, set_power, set_buzzer,
-    get_profile, set_profile, enable_antenna, disable_antenna,
-    get_power, start_tags_inventory
+    get_reader_info, 
+    get_profile, 
+    set_profile,
 )
 
 # Import configuration
@@ -156,13 +155,77 @@ def api_start_inventory():
     """API bắt đầu inventory"""
     data = request.get_json()
     target = data.get('target', 0)
-    result = reader.start_inventory(target)
-    if result == 0:
-        return jsonify({'success': True, 'message': f'Inventory đã bắt đầu (Target {"A" if target == 0 else "B"})'})
-    elif result == 51:
-        return jsonify({'success': False, 'message': 'Inventory is already running'}), 400
-    else:
-        return jsonify({'success': False, 'message': f'Không thể bắt đầu inventory (code: {result})'}), 400
+    
+    try:
+        # Lấy session từ param1 (giống C# GetSession)
+        cfg_num = 0x09  # Configuration number for Param1
+        cfg_data = bytearray(256)
+        data_len = [0]
+        result_param = reader.get_cfg_parameter(cfg_num, cfg_data, data_len)
+        if result_param == 0 and data_len[0] >= 2:
+            session_val = cfg_data[1] if cfg_data[1] < 4 else 0
+        else:
+            session_val = 0  # fallback nếu lỗi
+        
+        # First, call select_cmd for each antenna (like C# code)
+        # Parameters from C# code:
+        # - SelectAntenna = 0xFFFF (all antennas)
+        # - AntennaNum = current antenna
+        # - Session = 0 (default)
+        # - sel_action = 0 (default)
+        # - mask_mem = 1 (EPC memory)
+        # - mask_addr = empty
+        # - mask_len = 0
+        # - mask_data = empty
+        # - truncate = 0
+        
+        sel_action_val = 0     # int = 0 (like C# code: Session, 0, MaskMem, ...)
+        mask_mem_val = 1       # int = EPC memory (like C# MaskMem = 1)
+        mask_addr_bytes = bytes([0, 0])  # 2 bytes address (like C# MaskAdr = new byte[2])
+        mask_len_val = 0       # int = no mask (like C# MaskLen = 0)
+        mask_data_bytes = bytes(100)  # 100 bytes array (like C# MaskData = new byte[100])
+        truncate_val = 0       # int = no truncate (like C# code: ..., 0, frmcomportindex)
+        
+        results = []
+        select_antenna = 0xFFFF  # SelectAntenna = 0xFFFF (all antennas) like C# code
+        # Call select_cmd for each antenna (4 antennas like C# code)
+        # Following C# code exactly: for (int m = 0; m < 4; m++)
+        for antenna in range(4): 
+            result = reader.select_cmd(
+                antenna=select_antenna,  # SelectAntenna = 0xFFFF (all antennas)
+                session=session_val,
+                sel_action=sel_action_val,
+                mask_mem=mask_mem_val,
+                mask_addr=mask_addr_bytes,
+                mask_len=mask_len_val,
+                mask_data=mask_data_bytes,
+                truncate=truncate_val,
+                antenna_num=1
+            )
+            print(f"[DEBUG] Antenna {antenna} result: {result} session: {session_val}")
+ 
+            # Error code 253 might be normal for select command with empty mask
+            # Continue anyway like C# code does
+            if result != 0 and result != 253:
+                logger.warning(f"Select command iteration {m} failed with unexpected code: {result}")
+            time.sleep(0.005)  # 5ms delay like C# Thread.Sleep(5)
+        
+        # Clear any existing data (like C# code clears dataGridView5, epclist, etc.)
+        # This is handled by the frontend when starting new inventory
+        
+        # Now start inventory with target
+        result = reader.start_inventory(target)
+        
+        if result == 0:
+            return jsonify({'success': True, 'message': f'Inventory đã bắt đầu (Target {"A" if target == 0 else "B"})'})
+        elif result == 51:
+            return jsonify({'success': False, 'message': 'Inventory is already running'}), 400
+        else:
+            return jsonify({'success': False, 'message': f'Không thể bắt đầu inventory (code: {result})'}), 400
+            
+    except Exception as e:
+        logger.error(f"Start inventory error: {e}")
+        return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'}), 500
 
 @app.route('/api/stop_inventory', methods=['POST'])
 def api_stop_inventory():

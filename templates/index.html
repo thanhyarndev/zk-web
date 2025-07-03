@@ -647,6 +647,13 @@
               >
                 <i class="fas fa-redo"></i>
               </button>
+              <button
+                class="btn btn-warning"
+                onclick="testSelectCmd()"
+                title="Test Select CMD"
+              >
+                <i class="fas fa-vial"></i>
+              </button>
             </div>
           </div>
 
@@ -1669,6 +1676,173 @@
         startBtn.innerHTML = `<i class="fas fa-play"></i> Start Inventory (Target ${
           target === "0" ? "A" : "B"
         })`;
+      }
+
+      // Test Select CMD function
+      async function testSelectCmd() {
+        try {
+          const targetSelect = document.getElementById("targetSelect");
+          const target = parseInt(targetSelect.value);
+          const session = 0; // Default session 0
+
+          console.log(
+            `🧪 Testing select_cmd with target=${target}, session=${session}`
+          );
+
+          const result = await apiCall("/api/test_select_cmd", "POST", {
+            target: target,
+            session: session,
+          });
+
+          console.log(result);
+
+          if (result.success) {
+            console.log("✅ Select CMD test results:", result.results);
+            console.log("📋 Parameters used:", result.parameters);
+
+            // Show results in alert
+            let message = "Select CMD Test Results:\n\n";
+            result.results.forEach((r) => {
+              const status =
+                r.result === 0 ? "SUCCESS" : `ERROR ${r.result_hex}`;
+              message += `Antenna ${r.antenna}: ${status}\n`;
+            });
+
+            showAlert(message, "info");
+          } else {
+            console.error("❌ Select CMD test failed:", result.error);
+            showAlert(`Test failed: ${result.error}`, "danger");
+          }
+        } catch (error) {
+          console.error("❌ Select CMD test error:", error);
+          showAlert(`Test error: ${error.message}`, "danger");
+        }
+      }
+      async function debugReader() {
+        try {
+          console.log("🔍 Debugging reader object...");
+
+          const result = await apiCall("/api/debug_reader", "POST", {});
+
+          if (result.success) {
+            console.log("📊 Reader Debug Results:");
+            console.log("Reader Type:", result.reader_type);
+            console.log("Total Methods:", result.total_methods);
+            console.log("Total Attributes:", result.total_attributes);
+            console.log("Select Methods:", result.select_methods);
+            console.log("All Methods:", result.all_methods);
+            console.log("Attributes:", result.attributes);
+
+            // Show results in alert
+            let message = `Reader Debug Results:\n\n`;
+            message += `Reader Type: ${result.reader_type}\n`;
+            message += `Total Methods: ${result.total_methods}\n`;
+            message += `Select Methods: ${result.select_methods.join(
+              ", "
+            )}\n\n`;
+            message += `Available Methods:\n${result.all_methods
+              .slice(0, 20)
+              .join(", ")}`;
+            if (result.all_methods.length > 20) {
+              message += `\n... and ${result.all_methods.length - 20} more`;
+            }
+
+            showAlert(message, "info");
+          } else {
+            console.error("❌ Reader debug failed:", result.error);
+            showAlert(`Debug failed: ${result.error}`, "danger");
+          }
+        } catch (error) {
+          console.error("❌ Reader debug error:", error);
+          showAlert(`Debug error: ${error.message}`, "danger");
+        }
+      }
+
+      async function testSelectCmdFixed() {
+        try {
+          const targetSelect = document.getElementById("targetSelect");
+          const target = parseInt(targetSelect.value);
+          const session = 0;
+
+          console.log(
+            `🧪 Testing fixed select_cmd with target=${target}, session=${session}`
+          );
+
+          const result = await apiCall("/api/test_select_cmd_fixed", "POST", {
+            target: target,
+            session: session,
+          });
+
+          console.log(result);
+
+          if (result.success) {
+            console.log("✅ Fixed Select CMD test results:", result.results);
+
+            let message = "Fixed Select CMD Test Results:\n\n";
+            result.results.forEach((r) => {
+              if (r.success) {
+                const status =
+                  r.result === 0 ? "SUCCESS" : `ERROR ${r.result_hex}`;
+                message += `Antenna ${r.antenna}: ${status}\n`;
+              } else {
+                message += `Antenna ${r.antenna}: FAILED - ${r.error}\n`;
+              }
+            });
+
+            showAlert(message, "info");
+          } else {
+            console.error("❌ Fixed Select CMD test failed:", result.error);
+            showAlert(`Test failed: ${result.error}`, "danger");
+          }
+        } catch (error) {
+          console.error("❌ Fixed Select CMD test error:", error);
+          showAlert(`Test error: ${error.message}`, "danger");
+        }
+      }
+
+      async function tryAlternativeSelect() {
+        try {
+          const targetSelect = document.getElementById("targetSelect");
+          const target = parseInt(targetSelect.value);
+          const session = 0;
+
+          console.log(`🔄 Trying alternative select methods...`);
+
+          const result = await apiCall("/api/try_alternative_select", "POST", {
+            target: target,
+            session: session,
+          });
+
+          console.log(result);
+
+          if (result.success) {
+            console.log("✅ Alternative select test results:", result.results);
+
+            let message = "Alternative Select Method Results:\n\n";
+            message += `Available Methods: ${result.available_methods.join(
+              ", "
+            )}\n\n`;
+
+            result.results.forEach((r) => {
+              const status = r.success ? "SUCCESS" : "FAILED";
+              message += `${r.method} (${r.parameter_style}): ${status}\n`;
+              if (r.error) {
+                message += `  Error: ${r.error}\n`;
+              }
+              if (r.result !== undefined) {
+                message += `  Result: ${r.result}\n`;
+              }
+            });
+
+            showAlert(message, "info");
+          } else {
+            console.error("❌ Alternative select test failed:", result.error);
+            showAlert(`Test failed: ${result.error}`, "danger");
+          }
+        } catch (error) {
+          console.error("❌ Alternative select test error:", error);
+          showAlert(`Test error: ${error.message}`, "danger");
+        }
       }
     </script>
   </body>
