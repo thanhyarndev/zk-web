@@ -168,26 +168,14 @@ def api_start_inventory():
             session_val = 0  # fallback nếu lỗi
         
         # First, call select_cmd for each antenna (like C# code)
-        # Parameters from C# code:
-        # - SelectAntenna = 0xFFFF (all antennas)
-        # - AntennaNum = current antenna
-        # - Session = 0 (default)
-        # - sel_action = 0 (default)
-        # - mask_mem = 1 (EPC memory)
-        # - mask_addr = empty
-        # - mask_len = 0
-        # - mask_data = empty
-        # - truncate = 0
-        
         sel_action_val = 0     # int = 0 (like C# code: Session, 0, MaskMem, ...)
         mask_mem_val = 1       # int = EPC memory (like C# MaskMem = 1)
         mask_addr_bytes = bytes([0, 0])  # 2 bytes address (like C# MaskAdr = new byte[2])
         mask_len_val = 0       # int = no mask (like C# MaskLen = 0)
         mask_data_bytes = bytes(100)  # 100 bytes array (like C# MaskData = new byte[100])
         truncate_val = 0       # int = no truncate (like C# code: ..., 0, frmcomportindex)
-        
-        results = []
         select_antenna = 0xFFFF  # SelectAntenna = 0xFFFF (all antennas) like C# code
+
         # Call select_cmd for each antenna (4 antennas like C# code)
         # Following C# code exactly: for (int m = 0; m < 4; m++)
         for antenna in range(4): 
@@ -203,11 +191,6 @@ def api_start_inventory():
                 antenna_num=1
             )
             print(f"[DEBUG] Antenna {antenna} result: {result} session: {session_val}")
- 
-            # Error code 253 might be normal for select command with empty mask
-            # Continue anyway like C# code does
-            if result != 0 and result != 253:
-                logger.warning(f"Select command iteration {m} failed with unexpected code: {result}")
             time.sleep(0.005)  # 5ms delay like C# Thread.Sleep(5)
         
         # Clear any existing data (like C# code clears dataGridView5, epclist, etc.)
