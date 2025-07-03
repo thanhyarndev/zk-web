@@ -528,6 +528,7 @@ class UHFReader:
     def _work_process(self) -> None:
         """Background thread for continuous inventory, giống logic C# workProcess"""
         import time
+        print("[DEBUG] _work_process started. self.callback is set:", self.callback is not None)
         fInventory_EPC_List = ""
         start_time = int(time.time() * 1000)
         while not self.to_stop_thread and self.is_scanning:
@@ -535,27 +536,35 @@ class UHFReader:
                 rfid_data = bytearray(4096)
                 valid_data_length = [0]
                 fCmdRet = self.uhf.get_rfid_tag_data(rfid_data, valid_data_length)
-
+                print(f"[DEBUG] fCmdRet: {fCmdRet}, valid_data_length: {valid_data_length[0]}")
+                if valid_data_length[0] > 0:
+                    print(f"[DEBUG] rfid_data (len={valid_data_length[0]}): {rfid_data[:valid_data_length[0]].hex()}")
                 if fCmdRet == 0:
                     start_time = int(time.time() * 1000)
                     try:
                         daw = rfid_data[:valid_data_length[0]]
                         temp = daw.hex().upper()
+                        print(f"[DEBUG] daw(hex): {temp}")
                         fInventory_EPC_List += temp
                         while len(fInventory_EPC_List) > 18:
                             FlagStr = "EE00"
                             nindex = fInventory_EPC_List.find(FlagStr)
+                            print(f"[DEBUG] Frame search: nindex={nindex}, fInventory_EPC_List={fInventory_EPC_List}")
                             if nindex > 3:
                                 fInventory_EPC_List = fInventory_EPC_List[nindex - 4:]
                             else:
                                 fInventory_EPC_List = fInventory_EPC_List[2:]
                                 continue
                             NumLen = int(fInventory_EPC_List[:2], 16) * 2 + 2
+                            print(f"[DEBUG] NumLen: {NumLen}, fInventory_EPC_List length: {len(fInventory_EPC_List)}")
                             if len(fInventory_EPC_List) < NumLen:
+                                print("[DEBUG] Not enough data for full frame, breaking.")
                                 break
                             temp1 = fInventory_EPC_List[:NumLen]
                             fInventory_EPC_List = fInventory_EPC_List[NumLen:]
+                            print(f"[DEBUG] temp1 (frame): {temp1}")
                             if not self.check_crc(temp1):
+                                print("[DEBUG] CRC check failed for frame.")
                                 continue
                             AntStr = temp1[8:10]
                             lenstr = str(int(temp1[10:12], 16))
@@ -584,14 +593,15 @@ class UHFReader:
                                 tag.phase_begin = phase_begin
                                 tag.phase_end = phase_end
                                 tag.freqkhz = freqkhz
+                                print(f"[DEBUG] Calling callback for tag: {tag.__dict__ if hasattr(tag, '__dict__') else tag}")
                                 self.callback(tag)
                     except Exception as ex:
                         print(f"Exception in work_process parse: {ex}")
                 else:
                     now = int(time.time() * 1000)
                     if now - start_time > 10000:
+                        print("[DEBUG] 10s timeout reached, resetting start_time.")
                         start_time = now
-                        self.uhf.get_reader_information()
                 time.sleep(0.05)
             except Exception as e:
                 print(f"Error in work process: {e}")

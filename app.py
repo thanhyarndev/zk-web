@@ -103,10 +103,12 @@ reader = UHFReader()
 
 def tag_callback(tag):
     import time
-    # Convert tag to dict if it's a custom object
     tag_data = tag.__dict__ if hasattr(tag, '__dict__') else dict(tag)
     tag_data['timestamp'] = time.strftime("%H:%M:%S")
+    print(f"[DEBUG] Emitting tag_detected: {tag_data}")
     socketio.emit('tag_detected', tag_data)
+    detected_tags.append(tag_data)
+    inventory_stats['total_count'] = inventory_stats.get('total_count', 0) + 1
 
 reader.init_rfid_callback(tag_callback)
 

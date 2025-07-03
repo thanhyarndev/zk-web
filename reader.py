@@ -1421,9 +1421,11 @@ class Reader:
     def get_rfid_tag_data(self, output_buffer, output_length_ref):
         import time
         time.sleep(0.005)  # Sleep 5ms
-        size = self.get_available_data_size()
-        if size > 0:
-            data = self.buffer[0x135:0x135+size]
+
+        # Read from the device using the new method
+        data = self.read_data_from_port()
+        if data:
+            size = len(data)
             output_buffer[:size] = data
             output_length_ref[0] = size
             return 0
@@ -1443,3 +1445,34 @@ class Reader:
         cmd.extend(crc)
         self._send_data_noclear(cmd, len(cmd))
         return 0 
+
+    def read_data_from_port(self) -> Optional[bytes]:
+        """
+        Read data from the port (serial or TCP), sleep 5ms, read all available bytes, invoke recv_callback, and return the bytes read.
+        Matches the C# ReadDataFromPort logic.
+        """
+        try:
+            if self.connection_type == self.CONNECTION_SERIAL:
+                if self.serial_port and self.serial_port.is_open:
+                    time.sleep(0.005)  # Sleep 5ms
+                    bytes_to_read = self.serial_port.in_waiting
+                    if bytes_to_read > 0:
+                        buffer = self.serial_port.read(bytes_to_read)
+                        if buffer:
+                            if self.recv_callback:
+                                self.recv_callback(self._bytes_to_hex_string(buffer).encode())
+                            return buffer
+            elif self.connection_type == self.CONNECTION_TCP:
+                if self.tcp_stream:
+                    time.sleep(0.005)
+                    try:
+                        buffer = self.tcp_stream.recv(1024)
+                    except Exception:
+                        buffer = b''
+                    if buffer:
+                        if self.recv_callback:
+                            self.recv_callback(self._bytes_to_hex_string(buffer).encode())
+                        return buffer
+        except Exception as ex:
+            print(f"[Read Error] {ex}")
+        return None 
