@@ -448,69 +448,154 @@ class UHFReader:
     
     def start_inventory(self, target: int = 0) -> int:
         """
-        Start continuous inventory
-        
+        Start continuous inventory (C# logic: gọi StartRead trước, nếu thành công mới tạo thread đọc)
         Args:
             target: Target flag
-            
         Returns:
             0 on success, error code on failure
         """
         if not self.is_connected:
             raise ReaderNotConnectedError("Reader is not connected")
-        
+
         if self.is_scanning:
             return 51  # Already scanning
-        
+
         if not self.callback:
             raise UHFReaderError("No callback function set")
-        
+
+        # Gọi start_read trước (giống C# StartRead)
+        result = self.start_read(target)
+        if result != 0:
+            return result  # Nếu lỗi thì trả về mã lỗi luôn
+
         self.is_scanning = True
         self.to_stop_thread = False
-        
+
         # Start scanning thread
         self.scan_thread = threading.Thread(target=self._work_process)
         self.scan_thread.daemon = True
         self.scan_thread.start()
-        
+
         return 0
     
+    def stop_immediately(self, com_addr: int = None) -> int:
+        """
+        Call stop_immediately on the underlying Reader (C# StopImmediately)
+        Args:
+            com_addr: Communication address (default: self.com_addr)
+        Returns:
+            0 on success
+        """
+        if com_addr is None:
+            com_addr = self.com_addr
+        return self.uhf.stop_immediately(com_addr)
+
     def stop_inventory(self) -> int:
         """
-        Stop continuous inventory
-        
+        Stop continuous inventory (C# logic: set stop flag, call stop_immediately, wait for thread, then stop_read)
         Returns:
             0 on success, error code on failure
         """
         if not self.is_scanning:
             return 0
-        
+
         self.to_stop_thread = True
         self.is_scanning = False
-        
+
+        # Call stop_immediately before waiting for thread (C# logic)
+        self.stop_immediately(self.com_addr)
+
         # Wait for thread to finish
         if self.scan_thread and self.scan_thread.is_alive():
-            self.scan_thread.join(timeout=2.0)
-        
-        return 0
+            while self.scan_thread.is_alive():
+                time.sleep(0.001)  # Sleep 1ms like C#
+        self.scan_thread = None
+
+        time.sleep(0.05)  # Add 50ms delay to let device become idle
+
+        # Now send stop command to device
+        try:
+            if not self.is_connected:
+                raise ReaderNotConnectedError("Reader is not connected")
+            com_addr = bytearray([self.com_addr])
+            result = self.uhf.stop_read(com_addr)
+        except Exception as e:
+            print(f"Error in stop_read: {e}")
+            result = -1
+
+        return result
     
     def _work_process(self) -> None:
-        """Background thread for continuous inventory"""
+        """Background thread for continuous inventory, giống logic C# workProcess"""
+        import time
+        fInventory_EPC_List = ""
+        start_time = int(time.time() * 1000)
         while not self.to_stop_thread and self.is_scanning:
             try:
-                # Perform single inventory
-                tags = self.inventory_g2(scan_time=1)
-                
-                # Call callback for each tag
-                if self.callback and tags:
-                    for tag in tags:
-                        self.callback(tag)
-                
-                time.sleep(0.1)  # Small delay
-                
+                rfid_data = bytearray(4096)
+                valid_data_length = [0]
+                fCmdRet = self.uhf.get_rfid_tag_data(rfid_data, valid_data_length)
+
+                if fCmdRet == 0:
+                    start_time = int(time.time() * 1000)
+                    try:
+                        daw = rfid_data[:valid_data_length[0]]
+                        temp = daw.hex().upper()
+                        fInventory_EPC_List += temp
+                        while len(fInventory_EPC_List) > 18:
+                            FlagStr = "EE00"
+                            nindex = fInventory_EPC_List.find(FlagStr)
+                            if nindex > 3:
+                                fInventory_EPC_List = fInventory_EPC_List[nindex - 4:]
+                            else:
+                                fInventory_EPC_List = fInventory_EPC_List[2:]
+                                continue
+                            NumLen = int(fInventory_EPC_List[:2], 16) * 2 + 2
+                            if len(fInventory_EPC_List) < NumLen:
+                                break
+                            temp1 = fInventory_EPC_List[:NumLen]
+                            fInventory_EPC_List = fInventory_EPC_List[NumLen:]
+                            if not self.check_crc(temp1):
+                                continue
+                            AntStr = temp1[8:10]
+                            lenstr = str(int(temp1[10:12], 16))
+                            length = int(lenstr)
+                            m_phase = False
+                            phase_begin = 0
+                            phase_end = 0
+                            freqkhz = 0
+                            if (length & 0x40) > 0:
+                                m_phase = True
+                            epc_len = (length & 0x3F) * 2
+                            EPCStr = temp1[12:12 + epc_len]
+                            RSSI = temp1[12 + epc_len:12 + epc_len + 2]
+                            if m_phase:
+                                temp_phase = temp1[-18:-4]
+                                phase_begin = int(temp_phase[:4], 16)
+                                phase_end = int(temp_phase[4:8], 16)
+                                freqkhz = int(temp_phase[8:14], 16)
+                            if self.callback:
+                                tag = RFIDTag(
+                                    uid=EPCStr,
+                                    ant=int(AntStr, 16),
+                                    rssi=int(RSSI, 16) if RSSI else 0,
+                                    device_name=getattr(self.uhf, 'device_name', None)
+                                )
+                                tag.phase_begin = phase_begin
+                                tag.phase_end = phase_end
+                                tag.freqkhz = freqkhz
+                                self.callback(tag)
+                    except Exception as ex:
+                        print(f"Exception in work_process parse: {ex}")
+                else:
+                    now = int(time.time() * 1000)
+                    if now - start_time > 10000:
+                        start_time = now
+                        self.uhf.get_reader_information()
+                time.sleep(0.05)
             except Exception as e:
                 print(f"Error in work process: {e}")
-                time.sleep(1.0)  # Longer delay on error
+                time.sleep(1.0)
     
     def hex_string_to_bytes(self, hex_str: str) -> bytes:
         """
@@ -672,11 +757,6 @@ class UHFReader:
         target_bytes = bytes([target])
         return self.uhf.start_read(com_addr, target_bytes)
 
-    def stop_read(self) -> int:
-        if not self.is_connected:
-            raise ReaderNotConnectedError("Reader is not connected")
-        com_addr = bytearray([self.com_addr])
-        return self.uhf.stop_read(com_addr)
 
     def select_cmd(self, antenna: int, session: int, sel_action: int, mask_mem: int, 
                    mask_addr: bytes, mask_len: int, mask_data: bytes, truncate: int, antenna_num: int = 4) -> int:

@@ -213,11 +213,17 @@ def api_start_inventory():
 @app.route('/api/stop_inventory', methods=['POST'])
 def api_stop_inventory():
     """API dừng inventory"""
-    result = reader.stop_inventory()
-    if result == 0:
-        return jsonify({'success': True, 'message': 'Đã dừng inventory thành công'})
-    else:
-        return jsonify({'success': False, 'message': f'Không thể dừng inventory (code: {result})'}), 400
+    try:
+        result = reader.stop_inventory()
+        if result == 0:
+            logger.info("Tags inventory stopped successfully")
+            return {"success": True, "message": "Đã dừng tags inventory thành công"}
+        else:
+            logger.error(f"Không thể dừng tags inventory (code: {result})")
+            return {"success": False, "message": f'Không thể dừng tags inventory (code: {result})'}
+    except Exception as e:
+        logger.error(f"Stop tags inventory error: {e}")
+        return {"success": False, "message": f"Lỗi: {str(e)}"}
 
 @app.route('/api/stop_tags_inventory', methods=['POST'])
 def api_stop_tags_inventory():
@@ -230,13 +236,13 @@ def api_stop_tags_inventory():
         
         # Đợi thread kết thúc
         if inventory_thread and inventory_thread.is_alive():
-            logger.info("Waiting for tags inventory thread to finish...")
-            inventory_thread.join(timeout=3.0)  # Đợi tối đa 3 giây
+            print(f"[DEBUG] Waiting for tags inventory thread to finish...")
+            inventory_thread.join(timeout=1.0)  # Đợi tối đa 3 giây
         
-        logger.info("Tags inventory stopped successfully")
-        return {"success": True, "message": "Đã dừng tags inventory thành công"}
+        print(f"Tags inventory stopped successfully")
+        return {"[DEBUG] success": True, "message": "Đã dừng tags inventory thành công"}
     except Exception as e:
-        logger.error(f"Stop tags inventory error: {e}")
+        print(f"[DEBUG] Stop tags inventory error: {e}")
         return {"success": False, "message": f"Lỗi: {str(e)}"}
 
 @app.route('/api/set_power', methods=['POST'])

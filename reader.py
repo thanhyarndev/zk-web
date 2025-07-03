@@ -51,6 +51,7 @@ class Reader:
         self.recv_buffer = bytearray(8000)
         self.send_buffer = bytearray(300)
         self.recv_length = 0
+        self.buffer = bytearray(4096)  # Simulate device buffer (should be filled by device read logic)
     
     def _get_crc(self, data: bytes, data_len: int) -> bytes:
         """Calculate CRC for the given data"""
@@ -1409,4 +1410,36 @@ class Reader:
                 print(f"[DEBUG] GetCfgParameter response command mismatch: expected 235, got {self.recv_buffer[2]}")
                 return self.recv_buffer[3], 0  # Return status code even if command doesn't match
         
-        return 49, 0 
+        return 49, 0
+
+    def get_available_data_size(self):
+        # Return number of bytes available after offset 0x135
+        if len(self.buffer) > 0x135:
+            return len(self.buffer) - 0x135
+        return 0
+
+    def get_rfid_tag_data(self, output_buffer, output_length_ref):
+        import time
+        time.sleep(0.005)  # Sleep 5ms
+        size = self.get_available_data_size()
+        if size > 0:
+            data = self.buffer[0x135:0x135+size]
+            output_buffer[:size] = data
+            output_length_ref[0] = size
+            return 0
+        return 0xFB
+
+    def stop_immediately(self, com_addr: int) -> int:
+        """
+        Send the StopImmediately command to the device (C# command 147)
+        Args:
+            com_addr: Communication address
+        Returns:
+            0 on success
+        """
+        # Build command: [Length][ComAddr][Command=147][CRC_Low][CRC_High]
+        cmd = bytearray([4, com_addr, 147])
+        crc = self._get_crc(cmd, len(cmd))
+        cmd.extend(crc)
+        self._send_data_noclear(cmd, len(cmd))
+        return 0 
