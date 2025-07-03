@@ -716,4 +716,60 @@ class UHFReader:
         if result == 0:
             self.com_addr = com_addr[0]
         
-        return result 
+        return result
+
+    def set_cfg_parameter(self, opt: int, cfg_num: int, data: bytes) -> int:
+        """
+        Set configuration parameter
+        
+        Args:
+            opt: Option (single byte)
+            cfg_num: Configuration number (single byte)
+            data: Configuration data as bytes
+            
+        Returns:
+            0 on success, error code on failure
+        """
+        if not self.is_connected:
+            raise ReaderNotConnectedError("Reader is not connected")
+        
+        # Convert parameters to bytes/bytearray for low-level API
+        com_addr = bytearray([self.com_addr])
+        opt_bytes = bytes([opt])
+        cfg_num_bytes = bytes([cfg_num])
+        
+        result = self.uhf.set_cfg_parameter(com_addr, opt_bytes, cfg_num_bytes, data)
+        
+        # Update com_addr if successful
+        if result == 0:
+            self.com_addr = com_addr[0]
+        
+        return result
+
+    def get_cfg_parameter(self, cfg_no: int, cfg_data: bytearray, data_len: list) -> int:
+        """
+        Get configuration parameter
+        
+        Args:
+            cfg_no: Configuration number (single byte)
+            cfg_data: Configuration data buffer as bytearray (will be updated with response data)
+            data_len: Data length as list[0] (will be updated with actual data length)
+            
+        Returns:
+            Status code (0 on success, error code on failure)
+        """
+        if not self.is_connected:
+            raise ReaderNotConnectedError("Reader is not connected")
+        
+        # Convert parameters to bytes/bytearray for low-level API
+        com_addr = bytearray([self.com_addr])
+        cfg_no_bytes = bytes([cfg_no])
+        
+        status, actual_len = self.uhf.get_cfg_parameter(com_addr, cfg_no_bytes, cfg_data)
+        
+        # Update com_addr and data_len if successful
+        if status == 0:
+            self.com_addr = com_addr[0]
+            data_len[0] = actual_len
+        
+        return status 

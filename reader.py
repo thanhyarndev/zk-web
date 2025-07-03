@@ -1269,4 +1269,147 @@ class Reader:
                 print(f"[DEBUG] Select response command mismatch: expected 154, got {self.recv_buffer[2]}")
                 return self.recv_buffer[3]  # Return status code even if command doesn't match
         
-        return 49 
+        return 49
+
+    def set_cfg_parameter(self, com_addr: bytearray, opt: bytes, cfg_num: bytes, data: bytes) -> int:
+        """Set configuration parameter (C# SetCfgParameter method)
+        
+        Args:
+            com_addr: Reader address as bytearray[0] (will be updated with response value)
+            opt: Option as bytes (single byte)
+            cfg_num: Configuration number as bytes (single byte)
+            data: Configuration data as bytes
+            
+        Returns:
+            0 on success, error code on failure
+        """
+        # Validate single byte parameters
+        if len(opt) != 1 or len(cfg_num) != 1:
+            raise ValueError("opt and cfg_num must be single bytes")
+        
+        # Build command exactly like C# SDK
+        cmd = bytearray()
+        cmd.append(0)  # Placeholder for length
+        cmd.append(com_addr[0])  # SendBuff[1]
+        cmd.append(234)          # SendBuff[2] = command code 234
+        cmd.append(opt[0])       # SendBuff[3]
+        cmd.append(cfg_num[0])   # SendBuff[4]
+        
+        # Add data if provided
+        if data:
+            cmd.extend(data)     # SendBuff[5...] = data
+        
+        # Set length: SendBuff[0] = (byte)(6 + len)
+        cmd[0] = 6 + len(data)
+        
+        print(f"[DEBUG] SetCfgParameter command before CRC: {cmd.hex()}")
+        print(f"[DEBUG] SetCfgParameter command length: {cmd[0]}")
+        
+        # Add CRC - C# uses GetCRC(SendBuff, SendBuff[0] - 1)
+        crc = self._get_crc(cmd, cmd[0] - 1)
+        cmd.extend(crc)
+        
+        print(f"[DEBUG] Full SetCfgParameter command with CRC: {cmd.hex()}")
+        
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            print(f"[DEBUG] SetCfgParameter send failed: {result}")
+            return result
+        
+        # Wait for response - C# uses GetDataFromPort(234, 1500)
+        result = self._get_data_from_port(234, 1500)
+        if result != 0:
+            print(f"[DEBUG] SetCfgParameter response timeout: {result}")
+            return result
+        
+        print(f"[DEBUG] SetCfgParameter response received: {self.recv_buffer[:self.recv_length].hex()}")
+        
+        # Parse response exactly like C# SDK
+        if self.recv_length >= 4:
+            # Check CRC
+            if self._check_crc(self.recv_buffer, self.recv_length) != 0:
+                print("[DEBUG] SetCfgParameter response CRC check failed")
+                return 49
+            
+            # Check command response
+            if self.recv_buffer[2] == 234:
+                com_addr[0] = self.recv_buffer[1]  # Update com_addr with response value (C# ComAdr = RecvBuff[1])
+                return self.recv_buffer[3]  # Return status code
+            else:
+                print(f"[DEBUG] SetCfgParameter response command mismatch: expected 234, got {self.recv_buffer[2]}")
+                return self.recv_buffer[3]  # Return status code even if command doesn't match
+        
+        return 49
+
+    def get_cfg_parameter(self, com_addr: bytearray, cfg_no: bytes, cfg_data: bytearray) -> tuple[int, int]:
+        """Get configuration parameter (C# GetCfgParameter method)
+        
+        Args:
+            com_addr: Reader address as bytearray[0] (will be updated with response value)
+            cfg_no: Configuration number as bytes (single byte)
+            cfg_data: Configuration data buffer as bytearray (will be updated with response data)
+            
+        Returns:
+            Tuple of (status_code, data_length)
+        """
+        # Validate single byte parameter
+        if len(cfg_no) != 1:
+            raise ValueError("cfg_no must be a single byte")
+        
+        # Build command exactly like C# SDK
+        cmd = bytearray()
+        cmd.append(5)            # SendBuff[0] = 5
+        cmd.append(com_addr[0])  # SendBuff[1]
+        cmd.append(235)          # SendBuff[2] = command code 235
+        cmd.append(cfg_no[0])    # SendBuff[3]
+        
+        print(f"[DEBUG] GetCfgParameter command before CRC: {cmd.hex()}")
+        print(f"[DEBUG] GetCfgParameter command length: {cmd[0]}")
+        
+        # Add CRC - C# uses GetCRC(SendBuff, SendBuff[0] - 1)
+        crc = self._get_crc(cmd, len(cmd))
+        cmd.extend(crc)
+        
+        print(f"[DEBUG] Full GetCfgParameter command with CRC: {cmd.hex()}")
+        
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            print(f"[DEBUG] GetCfgParameter send failed: {result}")
+            return result, 0
+        
+        # Wait for response - C# uses GetDataFromPort(235, 1500)
+        result = self._get_data_from_port(235, 1500)
+        if result != 0:
+            print(f"[DEBUG] GetCfgParameter response timeout: {result}")
+            return result, 0
+        
+        print(f"[DEBUG] GetCfgParameter response received: {self.recv_buffer[:self.recv_length].hex()}")
+        
+        # Parse response exactly like C# SDK
+        if self.recv_length >= 4:
+            # Check CRC
+            if self._check_crc(self.recv_buffer, self.recv_length) != 0:
+                print("[DEBUG] GetCfgParameter response CRC check failed")
+                return 49, 0
+            
+            # Check command response
+            if self.recv_buffer[2] == 235:
+                com_addr[0] = self.recv_buffer[1]  # Update com_addr with response value (C# ComAdr = RecvBuff[1])
+                
+                status = self.recv_buffer[3]
+                if status == 0:
+                    # Success - extract data length and copy data
+                    data_len = self.recv_length - 6  # C#: len = RecvLength - 6
+                    if data_len > 0:
+                        # Copy data to cfg_data buffer
+                        cfg_data[:data_len] = self.recv_buffer[4:4+data_len]  # C#: Array.Copy(RecvBuff, 4, cfgData, 0, len)
+                        print(f"[DEBUG] GetCfgParameter data extracted: {cfg_data[:data_len].hex()}")
+                    
+                    return status, data_len
+                else:
+                    return status, 0
+            else:
+                print(f"[DEBUG] GetCfgParameter response command mismatch: expected 235, got {self.recv_buffer[2]}")
+                return self.recv_buffer[3], 0  # Return status code even if command doesn't match
+        
+        return 49, 0 

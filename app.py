@@ -653,17 +653,292 @@ def api_tags_inventory():
 
         # Call inventory_g2 for a single scan
         tags = reader.inventory_g2(q_value=q_value, session=session, scan_time=scan_time, in_ant=antenna)
-        tag_count = 0
+        
+        # Convert tags to list of dictionaries
+        tag_list = []
         for tag in tags:
-            tag_data = tag.__dict__ if hasattr(tag, '__dict__') else dict(tag)
-            import time
-            tag_data['timestamp'] = time.strftime("%H:%M:%S")
-            socketio.emit('tag_detected', tag_data)
-            tag_count += 1
-        return {"success": True, "message": f"Đã quét xong. Số lượng tags: {tag_count}"}
+            tag_list.append({
+                "epc": tag.epc,
+                "rssi": tag.rssi,
+                "antenna": tag.antenna,
+                "timestamp": time.strftime("%H:%M:%S")
+            })
+        
+        return jsonify({
+            "success": True,
+            "message": f"Found {len(tag_list)} tags",
+            "data": tag_list
+        })
     except Exception as e:
         logger.error(f"Tags inventory error: {e}")
-        return {"success": False, "message": f"Lỗi: {str(e)}"}
+        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
+
+# Parameter Configuration API Endpoints
+@app.route('/api/set_param1', methods=['POST'])
+def api_set_param1():
+    """API thiết lập parameter 1 (Q-value, Session, Phase) - cfgNum = 0x09"""
+    try:
+        if not reader.is_connected:
+            return jsonify({"success": False, "message": "Chưa kết nối đến reader"})
+        
+        data = request.get_json()
+        q_value = int(data.get("q_value", 4))
+        session = int(data.get("session", 0))
+        phase = bool(data.get("phase", False))
+        save = bool(data.get("save", False))
+        
+        # Convert to bytes exactly like C# code
+        data_bytes = bytearray(2)
+        data_bytes[0] = q_value & 0x0F  # Q-value (lower 4 bits)
+        if phase:
+            data_bytes[0] |= 0x10  # Set phase bit (like C# data[0] |= 0x10)
+        data_bytes[1] = session & 0xFF  # Session
+        
+        # Set opt based on save checkbox (like C# opt = 0x00 if save, else 0x01)
+        opt = 0x00 if save else 0x01
+        cfg_num = 0x09  # Configuration number for Param1
+        
+        # Call the actual SDK function
+        result = reader.set_cfg_parameter(opt, cfg_num, bytes(data_bytes))
+        
+        if result == 0:
+            logger.info(f"Param1 set successfully: Q={q_value}, Session={session}, Phase={phase}, Save={save}")
+            return jsonify({
+                "success": True,
+                "message": f"Parameter 1 set successfully (Q={q_value}, Session=S{session}, Phase={phase})"
+            })
+        else:
+            logger.error(f"Param1 set failed with code: {result}")
+            return jsonify({"success": False, "message": f"Set failed with error code: {result}"})
+            
+    except Exception as e:
+        logger.error(f"Set Param1 error: {e}")
+        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
+
+@app.route('/api/get_param1', methods=['GET'])
+def api_get_param1():
+    """API lấy parameter 1 (Q-value, Session, Phase) - cfgNum = 0x09"""
+    try:
+        if not reader.is_connected:
+            return jsonify({"success": False, "message": "Chưa kết nối đến reader"})
+        
+        cfg_num = 0x09  # Configuration number for Param1
+        cfg_data = bytearray(256)  # Buffer for configuration data
+        data_len = [0]  # Will be updated with actual data length
+        
+        # Call the actual SDK function
+        result = reader.get_cfg_parameter(cfg_num, cfg_data, data_len)
+        
+        if result == 0 and data_len[0] >= 2:
+            # Parse data exactly like C# code
+            q_value = cfg_data[0] & 0x0F  # Lower 4 bits (like C# data[0] & 0x0F)
+            phase = (cfg_data[0] & 0x10) > 0  # Phase bit (like C# (data[0] & 0x10) > 0)
+            session = cfg_data[1] if cfg_data[1] < 4 else 0  # Session (like C# data[1] < 4)
+            
+            logger.info(f"Param1 retrieved: Q={q_value}, Session={session}, Phase={phase}")
+            return jsonify({
+                "success": True,
+                "data": {
+                    "q_value": q_value,
+                    "session": session,
+                    "phase": phase
+                }
+            })
+        else:
+            logger.error(f"Param1 get failed with code: {result}")
+            return jsonify({"success": False, "message": f"Get failed with error code: {result}"})
+            
+    except Exception as e:
+        logger.error(f"Get Param1 error: {e}")
+        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
+
+@app.route('/api/set_tid_param', methods=['POST'])
+def api_set_tid_param():
+    """API thiết lập TID parameter - cfgNum = 0x0A"""
+    try:
+        if not reader.is_connected:
+            return jsonify({"success": False, "message": "Chưa kết nối đến reader"})
+        
+        data = request.get_json()
+        start_addr = data.get("start_addr", "00")
+        length = data.get("length", "00")
+        save = bool(data.get("save", False))
+        
+        # Convert hex strings to bytes exactly like C# code
+        start_addr_byte = int(start_addr, 16)
+        length_byte = int(length, 16)
+        
+        # Convert to bytes
+        data_bytes = bytearray(2)
+        data_bytes[0] = start_addr_byte  # Like C# data[0] = Convert.ToByte(txt_mtidaddr.Text, 16)
+        data_bytes[1] = length_byte      # Like C# data[1] = Convert.ToByte(txt_Mtidlen.Text, 16)
+        
+        # Set opt based on save checkbox
+        opt = 0x00 if save else 0x01
+        cfg_num = 0x0A  # Configuration number for TID Param
+        
+        # Call the actual SDK function
+        result = reader.set_cfg_parameter(opt, cfg_num, bytes(data_bytes))
+        
+        if result == 0:
+            logger.info(f"TID Param set successfully: Start=0x{start_addr}, Length=0x{length}, Save={save}")
+            return jsonify({
+                "success": True,
+                "message": f"TID parameter set successfully (Start=0x{start_addr}, Length=0x{length})"
+            })
+        else:
+            logger.error(f"TID Param set failed with code: {result}")
+            return jsonify({"success": False, "message": f"Set failed with error code: {result}"})
+            
+    except Exception as e:
+        logger.error(f"Set TID Param error: {e}")
+        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
+
+@app.route('/api/get_tid_param', methods=['GET'])
+def api_get_tid_param():
+    """API lấy TID parameter - cfgNum = 0x0A"""
+    try:
+        if not reader.is_connected:
+            return jsonify({"success": False, "message": "Chưa kết nối đến reader"})
+        
+        cfg_num = 0x0A  # Configuration number for TID Param
+        cfg_data = bytearray(256)  # Buffer for configuration data
+        data_len = [0]  # Will be updated with actual data length
+        
+        # Call the actual SDK function
+        result = reader.get_cfg_parameter(cfg_num, cfg_data, data_len)
+        
+        if result == 0 and data_len[0] >= 2:
+            # Parse data exactly like C# code
+            start_addr = f"{cfg_data[0]:02x}"  # Like C# Convert.ToString(data[0], 16).PadLeft(2, '0')
+            length = f"{cfg_data[1]:02x}"      # Like C# Convert.ToString(data[1], 16).PadLeft(2, '0')
+            
+            logger.info(f"TID Param retrieved: Start=0x{start_addr}, Length=0x{length}")
+            return jsonify({
+                "success": True,
+                "data": {
+                    "start_addr": start_addr,
+                    "length": length
+                }
+            })
+        else:
+            logger.error(f"TID Param get failed with code: {result}")
+            return jsonify({"success": False, "message": f"Get failed with error code: {result}"})
+            
+    except Exception as e:
+        logger.error(f"Get TID Param error: {e}")
+        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
+
+@app.route('/api/set_mask_param', methods=['POST'])
+def api_set_mask_param():
+    """API thiết lập Mask parameter - cfgNum = 0x0B"""
+    try:
+        if not reader.is_connected:
+            return jsonify({"success": False, "message": "Chưa kết nối đến reader"})
+        
+        data = request.get_json()
+        mask_type = int(data.get("mask_type", 1))  # 1=EPC, 2=TID, 3=User
+        start_addr = data.get("start_addr", "0020")
+        length = data.get("length", "00")
+        mask_data = data.get("data", "")
+        save = bool(data.get("save", False))
+        
+        # Convert hex strings to integers
+        start_addr_int = int(start_addr, 16)
+        length_int = int(length, 16)
+        
+        # Build data array exactly like C# code
+        data_bytes = bytearray()
+        
+        # Add mask type (like C# data[len] = 1/2/3)
+        data_bytes.append(mask_type)
+        
+        # Add start address (2 bytes, like C# data[len] = (byte)(MaskAddr >> 8), data[len+1] = (byte)(MaskAddr & 255))
+        data_bytes.append((start_addr_int >> 8) & 0xFF)
+        data_bytes.append(start_addr_int & 0xFF)
+        
+        # Add length (like C# data[len] = (byte)MaskLen)
+        data_bytes.append(length_int)
+        
+        # Add mask data if length > 0
+        if length_int > 0 and mask_data:
+            # Convert hex string to bytes
+            mask_data_bytes = bytes.fromhex(mask_data.replace(" ", ""))
+            data_len_bytes = (length_int + 7) // 8  # Like C# (MaskLen + 7) / 8
+            
+            if len(mask_data_bytes) >= data_len_bytes:
+                data_bytes.extend(mask_data_bytes[:data_len_bytes])
+            else:
+                return jsonify({"success": False, "message": "Mask data length insufficient"})
+        
+        # Set opt based on save checkbox
+        opt = 0x00 if save else 0x01
+        cfg_num = 0x0B  # Configuration number for Mask Param
+        
+        # Call the actual SDK function
+        result = reader.set_cfg_parameter(opt, cfg_num, bytes(data_bytes))
+        
+        if result == 0:
+            logger.info(f"Mask Param set successfully: Type={mask_type}, Start=0x{start_addr}, Length=0x{length}, Data={mask_data}, Save={save}")
+            return jsonify({
+                "success": True,
+                "message": f"Mask parameter set successfully (Type={mask_type}, Start=0x{start_addr}, Length=0x{length})"
+            })
+        else:
+            logger.error(f"Mask Param set failed with code: {result}")
+            return jsonify({"success": False, "message": f"Set failed with error code: {result}"})
+            
+    except Exception as e:
+        logger.error(f"Set Mask Param error: {e}")
+        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
+
+@app.route('/api/get_mask_param', methods=['GET'])
+def api_get_mask_param():
+    """API lấy Mask parameter - cfgNum = 0x0B"""
+    try:
+        if not reader.is_connected:
+            return jsonify({"success": False, "message": "Chưa kết nối đến reader"})
+        
+        cfg_num = 0x0B  # Configuration number for Mask Param
+        cfg_data = bytearray(256)  # Buffer for configuration data
+        data_len = [0]  # Will be updated with actual data length
+        
+        # Call the actual SDK function
+        result = reader.get_cfg_parameter(cfg_num, cfg_data, data_len)
+        
+        if result == 0 and data_len[0] >= 4:
+            # Parse data exactly like C# code
+            mask_type = cfg_data[0]  # Like C# data[0] == 1/2/3
+            
+            # Start address (2 bytes, like C# data[1] * 256 + data[2])
+            start_addr = f"{cfg_data[1] * 256 + cfg_data[2]:04x}"  # Like C# Convert.ToString(data[1] * 256 + data[2], 16).PadLeft(4, '0')
+            
+            # Length (like C# data[3])
+            length = f"{cfg_data[3]:02x}"  # Like C# Convert.ToString(data[3], 16).PadLeft(2, '0')
+            
+            # Mask data (remaining bytes, like C# Array.Copy(data, 4, daw, 0, daw.Length))
+            mask_data = ""
+            if cfg_data[3] > 0 and data_len[0] > 4:
+                mask_data_bytes = cfg_data[4:data_len[0]]
+                mask_data = mask_data_bytes.hex().upper()  # Like C# ByteArrayToHexString(daw)
+            
+            logger.info(f"Mask Param retrieved: Type={mask_type}, Start=0x{start_addr}, Length=0x{length}, Data={mask_data}")
+            return jsonify({
+                "success": True,
+                "data": {
+                    "mask_type": mask_type,
+                    "start_addr": start_addr,
+                    "length": length,
+                    "data": mask_data
+                }
+            })
+        else:
+            logger.error(f"Mask Param get failed with code: {result}")
+            return jsonify({"success": False, "message": f"Get failed with error code: {result}"})
+            
+    except Exception as e:
+        logger.error(f"Get Mask Param error: {e}")
+        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
 
 if __name__ == '__main__':
     logger.info(f"Starting RFID Web Control Panel on {config.HOST}:{config.PORT}")

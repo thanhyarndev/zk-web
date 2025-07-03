@@ -615,15 +615,7 @@
             id="startTargetABtn"
             disabled
           >
-            <i class="fas fa-play"></i> Start Inventory (Target A)
-          </button>
-          <button
-            class="btn btn-success"
-            onclick="openTagsInventoryModal()"
-            id="tagsInventoryBtn"
-            disabled
-          >
-            <i class="fas fa-cogs"></i> Tags Inventory
+            <i class="fas fa-play"></i> Start Inventory
           </button>
           <button
             class="btn btn-warning"
@@ -633,6 +625,23 @@
           >
             <i class="fas fa-stop"></i> Stop Inventory
           </button>
+          <button
+            class="btn btn-info"
+            onclick="openParamConfigModal()"
+            id="paramConfigBtn"
+            disabled
+          >
+            <i class="fas fa-sliders-h"></i> Parameter Config
+          </button>
+          <button
+            class="btn btn-success"
+            onclick="openTagsInventoryModal()"
+            id="tagsInventoryBtn"
+            disabled
+          >
+            <i class="fas fa-cogs"></i> Tags Inventory
+          </button>
+
           <button class="btn btn-danger" onclick="clearTags()">
             <i class="fas fa-trash"></i> Clear Tags
           </button>
@@ -756,6 +765,317 @@
             </div>
           </div>
         </div>
+
+        <!-- Parameter Configuration Modal -->
+        <div
+          class="modal fade"
+          id="paramConfigModal"
+          tabindex="-1"
+          aria-labelledby="paramConfigModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="paramConfigModalLabel">
+                  <i class="fas fa-cogs"></i> Fast Inventory Parameter
+                  Configuration
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <!-- Param1 Section -->
+                <div class="card mb-3">
+                  <div class="card-header">
+                    <h6 class="mb-0">
+                      <i class="fas fa-sliders-h"></i> Param1
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-3">
+                        <label for="qValueParam" class="form-label">Q:</label>
+                        <select class="form-select" id="qValueParam">
+                          <option value="0">0</option>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                          <option value="4">4</option>
+                          <option value="5">5</option>
+                          <option value="6" selected>6</option>
+                          <option value="7">7</option>
+                          <option value="8">8</option>
+                          <option value="9">9</option>
+                          <option value="10">10</option>
+                          <option value="11">11</option>
+                          <option value="12">12</option>
+                          <option value="13">13</option>
+                          <option value="14">14</option>
+                          <option value="15">15</option>
+                        </select>
+                      </div>
+                      <div class="col-md-3">
+                        <label for="sessionParam" class="form-label"
+                          >Session:</label
+                        >
+                        <select class="form-select" id="sessionParam">
+                          <option value="0">S0</option>
+                          <option value="1" selected>S1</option>
+                          <option value="2">S2</option>
+                          <option value="3">S3</option>
+                        </select>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-check mt-4">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="phaseCheck"
+                          />
+                          <label class="form-check-label" for="phaseCheck">
+                            Phase
+                          </label>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-check mt-4">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="saveCheck"
+                          />
+                          <label class="form-check-label" for="saveCheck">
+                            Save
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row mt-3">
+                      <div class="col-md-6">
+                        <button
+                          type="button"
+                          class="btn btn-primary"
+                          onclick="setParam1()"
+                        >
+                          <i class="fas fa-save"></i> Set
+                        </button>
+                      </div>
+                      <div class="col-md-6">
+                        <button
+                          type="button"
+                          class="btn btn-info"
+                          onclick="getParam1()"
+                        >
+                          <i class="fas fa-download"></i> Get
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- TID Param Section -->
+                <div class="card mb-3">
+                  <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-tag"></i> TID Param</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-4">
+                        <label for="tidStartAddr" class="form-label"
+                          >Start (Hex):</label
+                        >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="tidStartAddr"
+                          maxlength="2"
+                          value="00"
+                        />
+                      </div>
+                      <div class="col-md-4">
+                        <label for="tidLength" class="form-label"
+                          >Length (Hex):</label
+                        >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="tidLength"
+                          maxlength="2"
+                          value="00"
+                        />
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-check mt-4">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="saveTidCheck"
+                          />
+                          <label class="form-check-label" for="saveTidCheck">
+                            Save
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row mt-3">
+                      <div class="col-md-6">
+                        <button
+                          type="button"
+                          class="btn btn-primary"
+                          onclick="setTidParam()"
+                        >
+                          <i class="fas fa-save"></i> Set
+                        </button>
+                      </div>
+                      <div class="col-md-6">
+                        <button
+                          type="button"
+                          class="btn btn-info"
+                          onclick="getTidParam()"
+                        >
+                          <i class="fas fa-download"></i> Get
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Mask Section -->
+                <div class="card mb-3">
+                  <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-mask"></i> Mask</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="row mb-3">
+                      <div class="col-md-12">
+                        <div class="btn-group" role="group">
+                          <input
+                            type="radio"
+                            class="btn-check"
+                            name="maskType"
+                            id="maskEPC"
+                            value="1"
+                            checked
+                          />
+                          <label class="btn btn-outline-primary" for="maskEPC"
+                            >EPC</label
+                          >
+
+                          <input
+                            type="radio"
+                            class="btn-check"
+                            name="maskType"
+                            id="maskTID"
+                            value="2"
+                          />
+                          <label class="btn btn-outline-primary" for="maskTID"
+                            >TID</label
+                          >
+
+                          <input
+                            type="radio"
+                            class="btn-check"
+                            name="maskType"
+                            id="maskUSER"
+                            value="3"
+                          />
+                          <label class="btn btn-outline-primary" for="maskUSER"
+                            >User</label
+                          >
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-4">
+                        <label for="maskStartAddr" class="form-label"
+                          >Start-bit (Hex):</label
+                        >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="maskStartAddr"
+                          maxlength="4"
+                          value="0020"
+                        />
+                      </div>
+                      <div class="col-md-4">
+                        <label for="maskLength" class="form-label"
+                          >Length (Hex):</label
+                        >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="maskLength"
+                          maxlength="2"
+                          value="00"
+                        />
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-check mt-4">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="saveMaskCheck"
+                          />
+                          <label class="form-check-label" for="saveMaskCheck">
+                            Save
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row mt-3">
+                      <div class="col-md-12">
+                        <label for="maskData" class="form-label"
+                          >Data (Hex):</label
+                        >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="maskData"
+                          placeholder="Enter mask data in hex format"
+                        />
+                      </div>
+                    </div>
+                    <div class="row mt-3">
+                      <div class="col-md-6">
+                        <button
+                          type="button"
+                          class="btn btn-primary"
+                          onclick="setMaskParam()"
+                        >
+                          <i class="fas fa-save"></i> Set
+                        </button>
+                      </div>
+                      <div class="col-md-6">
+                        <button
+                          type="button"
+                          class="btn btn-info"
+                          onclick="getMaskParam()"
+                        >
+                          <i class="fas fa-download"></i> Get
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -845,6 +1165,7 @@
         document.getElementById("infoBtn").disabled = false;
         document.getElementById("startTargetABtn").disabled = false;
         document.getElementById("tagsInventoryBtn").disabled = false;
+        document.getElementById("paramConfigBtn").disabled = false;
         document.getElementById("stopBtn").disabled = false;
         document.getElementById("powerBtn").disabled = false;
         document.getElementById("powerInfoBtn").disabled = false;
@@ -856,6 +1177,7 @@
         document.getElementById("infoBtn").disabled = true;
         document.getElementById("startTargetABtn").disabled = true;
         document.getElementById("tagsInventoryBtn").disabled = true;
+        document.getElementById("paramConfigBtn").disabled = true;
         document.getElementById("stopBtn").disabled = true;
         document.getElementById("powerBtn").disabled = true;
         document.getElementById("powerInfoBtn").disabled = true;
@@ -1252,6 +1574,117 @@
           showAlert(result.message, "success");
           document.getElementById("stopBtn").disabled = true;
           stopTimer();
+        } else {
+          showAlert(result.message, "danger");
+        }
+      }
+
+      // Parameter Configuration Functions
+      function openParamConfigModal() {
+        var modal = new bootstrap.Modal(
+          document.getElementById("paramConfigModal")
+        );
+        modal.show();
+      }
+
+      async function setParam1() {
+        const qValue = parseInt(document.getElementById("qValueParam").value);
+        const session = parseInt(document.getElementById("sessionParam").value);
+        const phase = document.getElementById("phaseCheck").checked;
+        const save = document.getElementById("saveCheck").checked;
+
+        const result = await apiCall("/api/set_param1", "POST", {
+          q_value: qValue,
+          session: session,
+          phase: phase,
+          save: save,
+        });
+
+        if (result.success) {
+          showAlert(result.message, "success");
+        } else {
+          showAlert(result.message, "danger");
+        }
+      }
+
+      async function getParam1() {
+        const result = await apiCall("/api/get_param1", "GET");
+        if (result.success) {
+          const data = result.data;
+          document.getElementById("qValueParam").value = data.q_value;
+          document.getElementById("sessionParam").value = data.session;
+          document.getElementById("phaseCheck").checked = data.phase;
+          showAlert("Parameter 1 loaded successfully", "success");
+        } else {
+          showAlert(result.message, "danger");
+        }
+      }
+
+      async function setTidParam() {
+        const startAddr = document.getElementById("tidStartAddr").value;
+        const length = document.getElementById("tidLength").value;
+        const save = document.getElementById("saveTidCheck").checked;
+
+        const result = await apiCall("/api/set_tid_param", "POST", {
+          start_addr: startAddr,
+          length: length,
+          save: save,
+        });
+
+        if (result.success) {
+          showAlert(result.message, "success");
+        } else {
+          showAlert(result.message, "danger");
+        }
+      }
+
+      async function getTidParam() {
+        const result = await apiCall("/api/get_tid_param", "GET");
+        if (result.success) {
+          const data = result.data;
+          document.getElementById("tidStartAddr").value = data.start_addr;
+          document.getElementById("tidLength").value = data.length;
+          showAlert("TID parameter loaded successfully", "success");
+        } else {
+          showAlert(result.message, "danger");
+        }
+      }
+
+      async function setMaskParam() {
+        const maskType = document.querySelector(
+          'input[name="maskType"]:checked'
+        ).value;
+        const startAddr = document.getElementById("maskStartAddr").value;
+        const length = document.getElementById("maskLength").value;
+        const data = document.getElementById("maskData").value;
+        const save = document.getElementById("saveMaskCheck").checked;
+
+        const result = await apiCall("/api/set_mask_param", "POST", {
+          mask_type: parseInt(maskType),
+          start_addr: startAddr,
+          length: length,
+          data: data,
+          save: save,
+        });
+
+        if (result.success) {
+          showAlert(result.message, "success");
+        } else {
+          showAlert(result.message, "danger");
+        }
+      }
+
+      async function getMaskParam() {
+        const result = await apiCall("/api/get_mask_param", "GET");
+        if (result.success) {
+          const data = result.data;
+          document.querySelector(
+            `input[name="maskType"][value="${data.mask_type}"]`
+          ).checked = true;
+          document.getElementById("maskStartAddr").value = data.start_addr;
+          document.getElementById("maskLength").value = data.length;
+          document.getElementById("maskData").value = data.data || "";
+          showAlert("Mask parameter loaded successfully", "success");
         } else {
           showAlert(result.message, "danger");
         }
