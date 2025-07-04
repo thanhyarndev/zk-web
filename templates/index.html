@@ -262,17 +262,17 @@
       }
 
       .btn-info:hover {
-        background: #217dbb;
+        background: #2980b9;
         color: #fff;
       }
 
       .btn-secondary {
-        background: #6c757d;
+        background: #95a5a6;
         color: #fff;
       }
 
       .btn-secondary:hover {
-        background: #5a6268;
+        background: #7f8c8d;
         color: #fff;
       }
 
@@ -471,6 +471,276 @@
           width: 100%;
         }
       }
+
+      /* Reader Info Styles */
+      .reader-info-container {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid #e9ecef;
+      }
+
+      .info-section {
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #dee2e6;
+      }
+
+      .info-section:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+      }
+
+      .info-title {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.25rem 1rem;
+      }
+
+      .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.125rem 0;
+        font-size: 0.8rem;
+      }
+
+      .info-item-compact {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 0.125rem 0;
+        font-size: 0.75rem;
+        min-height: 1.2rem;
+      }
+
+      .info-label {
+        font-weight: 500;
+        color: #6c757d;
+        font-size: 0.85rem;
+        min-width: 80px;
+        flex-shrink: 0;
+      }
+
+      .info-value {
+        font-weight: 400;
+        color: #212529;
+        font-size: 0.85rem;
+        text-align: right;
+        word-break: break-word;
+        flex: 1;
+        margin-left: 0.5rem;
+      }
+
+      .info-item-compact .info-label {
+        font-size: 0.75rem;
+        min-width: 80px;
+        flex-shrink: 0;
+      }
+
+      .info-item-compact .info-value {
+        font-size: 0.75rem;
+        flex: 1;
+        margin-left: 0.5rem;
+        text-align: left;
+        word-break: break-word;
+        line-height: 1.2;
+      }
+
+      /* Card Styles */
+      .card {
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .card-header {
+        padding: 0.5rem 1rem;
+        border-bottom: 1px solid #e9ecef;
+        background: #f8f9fa;
+        border-radius: 8px 8px 0 0;
+        font-weight: 600;
+        color: #495057;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .card-body {
+        padding: 1rem;
+      }
+
+      /* Stats Row */
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 6px;
+      }
+
+      .stat-item {
+        text-align: center;
+      }
+
+      .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin-bottom: 0.25rem;
+      }
+
+      .stat-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      /* Table Styles */
+      .table {
+        margin-bottom: 0;
+        font-size: 0.9rem;
+      }
+
+      .table th {
+        border-top: none;
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 0.75rem;
+      }
+
+      .table td {
+        padding: 0.75rem;
+        vertical-align: middle;
+        border-top: 1px solid #e9ecef;
+      }
+
+      .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+      }
+
+      /* Alert Styles */
+      .alert {
+        border-radius: 6px;
+        border: none;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+      }
+
+      .alert-success {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .alert-warning {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      .alert-info {
+        background: #d1ecf1;
+        color: #0c5460;
+      }
+
+      /* Modal Styles */
+      .modal-content {
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .modal-header {
+        border-bottom: 1px solid #e9ecef;
+        padding: 1rem 1.5rem;
+        background: #f8f9fa;
+        border-radius: 8px 8px 0 0;
+      }
+
+      .modal-title {
+        font-weight: 600;
+        color: #495057;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .modal-body {
+        padding: 1.5rem;
+      }
+
+      /* Form Check Styles */
+      .form-check {
+        margin-bottom: 0.5rem;
+      }
+
+      .form-check-input:checked {
+        background-color: #222;
+        border-color: #222;
+      }
+
+      .form-check-input:focus {
+        border-color: #222;
+        box-shadow: 0 0 0 0.2rem rgba(34, 34, 34, 0.25);
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .sidebar {
+          width: 100%;
+          height: auto;
+          position: relative;
+        }
+
+        .app-container {
+          flex-direction: column;
+        }
+
+        .main-content {
+          height: auto;
+        }
+
+        .stats-row {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .info-item {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.25rem;
+        }
+
+        .info-value {
+          text-align: left;
+        }
+      }
     </style>
   </head>
   <body>
@@ -512,7 +782,7 @@
               <button
                 class="btn btn-success"
                 id="connectBtn"
-                onclick="connectReader()"
+                onclick="connect()"
               >
                 <i class="fas fa-link"></i> Connect
                 <span class="loading" style="display: none">
@@ -522,7 +792,7 @@
               <button
                 class="btn btn-danger"
                 id="disconnectBtn"
-                onclick="disconnectReader()"
+                onclick="disconnect()"
                 disabled
               >
                 <i class="fas fa-unlink"></i> Disconnect
@@ -1225,31 +1495,11 @@
 
       // Enable/disable controls
       function enableControls() {
-        document.getElementById("infoBtn").disabled = false;
-        document.getElementById("startFastModeBtn").disabled = false;
-        document.getElementById("startG2ModeBtn").disabled = false;
-        document.getElementById("fastModeConfigBtn").disabled = false;
-        document.getElementById("g2ModeConfigBtn").disabled = false;
-        document.getElementById("stopFastModeBtn").disabled = false;
-        document.getElementById("stopG2ModeBtn").disabled = false;
-        document.getElementById("powerBtn").disabled = false;
-        document.getElementById("powerInfoBtn").disabled = false;
-        document.getElementById("profileBtn").disabled = false;
-        document.getElementById("getProfileBtn").disabled = false;
+        enableConnectedControls();
       }
 
       function disableControls() {
-        document.getElementById("infoBtn").disabled = true;
-        document.getElementById("startFastModeBtn").disabled = true;
-        document.getElementById("startG2ModeBtn").disabled = true;
-        document.getElementById("fastModeConfigBtn").disabled = true;
-        document.getElementById("g2ModeConfigBtn").disabled = true;
-        document.getElementById("stopFastModeBtn").disabled = true;
-        document.getElementById("stopG2ModeBtn").disabled = true;
-        document.getElementById("powerBtn").disabled = true;
-        document.getElementById("powerInfoBtn").disabled = true;
-        document.getElementById("profileBtn").disabled = true;
-        document.getElementById("getProfileBtn").disabled = true;
+        disableConnectedControls();
       }
 
       // Show alert
@@ -1293,51 +1543,135 @@
       }
 
       // Connect to reader
-      async function connectReader() {
+      async function connect() {
         const port = document.getElementById("portInput").value;
         const baudrate = parseInt(
           document.getElementById("baudrateInput").value
         );
 
-        showLoading(connectBtn, true);
+        if (!port) {
+          showAlert("Please select a port", "warning");
+          return;
+        }
 
-        const result = await apiCall("/api/connect", "POST", {
-          port,
-          baudrate,
-        });
+        try {
+          document.getElementById("connectBtn").disabled = true;
+          document.getElementById("connectBtn").innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Connecting...';
 
-        showLoading(connectBtn, false);
+          const result = await apiCall("/api/connect", "POST", {
+            port: port,
+            baudrate: baudrate,
+          });
 
-        if (result.success) {
-          showAlert(result.message, "success");
+          if (result.success) {
+            showAlert(result.message, "success");
+            updateConnectionStatus(true);
 
-          // Fallback: Update connection status immediately in case WebSocket event fails
-          updateConnectionStatus(true);
+            // Automatically load reader information after connection (like C# app)
+            await getReaderInfo();
 
-          await getReaderInfo();
-          await getAntennaPower();
-          //   getReaderInfo();
-          //   getAntennaPower();
-        } else {
-          showAlert(result.message, "danger");
+            // Enable controls that require connection
+            enableConnectedControls();
+          } else {
+            showAlert(result.message, "danger");
+            updateConnectionStatus(false);
+          }
+        } catch (error) {
+          console.error("Connection error:", error);
+          showAlert("Connection failed: " + error.message, "danger");
+          updateConnectionStatus(false);
+        } finally {
+          document.getElementById("connectBtn").disabled = false;
+          document.getElementById("connectBtn").innerHTML =
+            '<i class="fas fa-plug"></i> Connect';
         }
       }
 
       // Disconnect from reader
-      async function disconnectReader() {
-        const result = await apiCall("/api/disconnect", "POST");
+      async function disconnect() {
+        try {
+          const result = await apiCall("/api/disconnect", "POST");
+          if (result.success) {
+            showAlert(result.message, "success");
+            updateConnectionStatus(false);
 
-        if (result.success) {
-          showAlert(result.message, "success");
+            // Clear reader information
+            document.getElementById("readerInfo").innerHTML =
+              '<p class="text-muted" style="font-size: 0.9rem; margin: 0;">Connect to view reader information</p>';
 
-          // Fallback: Update connection status immediately in case WebSocket event fails
-          updateConnectionStatus(false);
-
-          document.getElementById("readerInfo").innerHTML =
-            '<p class="text-muted" style="font-size: 0.9rem; margin: 0;">Connect to view reader information</p>';
-        } else {
-          showAlert(result.message, "danger");
+            // Disable controls that require connection
+            disableConnectedControls();
+          } else {
+            showAlert(result.message, "danger");
+          }
+        } catch (error) {
+          console.error("Disconnect error:", error);
+          showAlert("Disconnect failed: " + error.message, "danger");
         }
+      }
+
+      // Enable controls that require connection
+      function enableConnectedControls() {
+        // Enable inventory buttons
+        // document.getElementById("startBtn").disabled = false; // General start button not implemented
+        document.getElementById("startFastModeBtn").disabled = false;
+        document.getElementById("startG2ModeBtn").disabled = false;
+
+        // Enable configuration buttons
+        document.getElementById("fastModeConfigBtn").disabled = false;
+        document.getElementById("g2ModeConfigBtn").disabled = false;
+
+        // Enable power control
+        document.getElementById("powerInput").disabled = false;
+        document.getElementById("powerBtn").disabled = false;
+
+        // Enable buzzer control
+        // document.getElementById("buzzerBtn").disabled = false; // Buzzer button not implemented yet
+
+        // Enable antenna controls
+        const antennaCheckboxes = document.querySelectorAll(
+          'input[id^="check_ant"]'
+        );
+        antennaCheckboxes.forEach((checkbox) => {
+          checkbox.disabled = false;
+        });
+
+        // Enable get reader info button
+        document.getElementById("infoBtn").disabled = false;
+      }
+
+      // Disable controls that require connection
+      function disableConnectedControls() {
+        // Disable inventory buttons
+        // document.getElementById("startBtn").disabled = true; // General start button not implemented
+        // document.getElementById("stopBtn").disabled = true; // General stop button not implemented
+        document.getElementById("startFastModeBtn").disabled = true;
+        document.getElementById("stopFastModeBtn").disabled = true;
+        document.getElementById("startG2ModeBtn").disabled = true;
+        document.getElementById("stopG2ModeBtn").disabled = true;
+
+        // Disable configuration buttons
+        document.getElementById("fastModeConfigBtn").disabled = true;
+        document.getElementById("g2ModeConfigBtn").disabled = true;
+
+        // Disable power control
+        document.getElementById("powerInput").disabled = true;
+        document.getElementById("powerBtn").disabled = true;
+
+        // Disable buzzer control
+        // document.getElementById("buzzerBtn").disabled = true; // Buzzer button not implemented yet
+
+        // Disable antenna controls
+        const antennaCheckboxes = document.querySelectorAll(
+          'input[id^="check_ant"]'
+        );
+        antennaCheckboxes.forEach((checkbox) => {
+          checkbox.disabled = true;
+        });
+
+        // Disable get reader info button
+        document.getElementById("infoBtn").disabled = true;
       }
 
       // Get reader info
@@ -1346,34 +1680,162 @@
 
         if (result.success) {
           const info = result.data;
-          console.log(info);
+          console.log("Reader info:", info);
+
+          // Format frequency information
+          let freqDisplay = "";
+          if (info.frequency_info.band === "Auto") {
+            freqDisplay = "Auto Frequency";
+          } else {
+            freqDisplay = `${info.frequency_info.band_name}<br>`;
+            if (info.frequency_info.same_freq) {
+              freqDisplay += `Frequency: ${info.frequency_info.min_freq.toFixed(
+                3
+              )} MHz`;
+            } else {
+              freqDisplay += `Range: ${info.frequency_info.min_freq.toFixed(
+                3
+              )} - ${info.frequency_info.max_freq.toFixed(3)} MHz`;
+            }
+          }
+
+          // Format antenna information
+          let antDisplay = "";
+          if (info.antenna_config.enabled_antennas.length > 0) {
+            antDisplay = `Enabled: ${info.antenna_config.enabled_antennas.join(
+              ", "
+            )}<br>`;
+          }
+          antDisplay += `Total: ${info.antenna_count} antennas`;
+
+          // Format output report information
+          let outputDisplay = "";
+          const outputs = [];
+          if (info.output_config.output_rep1) outputs.push("Output 1");
+          if (info.output_config.output_rep2) outputs.push("Output 2");
+          if (info.output_config.output_rep3) outputs.push("Output 3");
+          if (info.output_config.output_rep4) outputs.push("Output 4");
+          outputDisplay = outputs.length > 0 ? outputs.join(", ") : "None";
+
+          // Format mode type
+          const modeTypes = {
+            0: "C6 Series",
+            1: "R2000 Series",
+            2: "RRUx180 Series",
+            3: "9810 Series",
+            4: "FD Series",
+          };
+
           document.getElementById("readerInfo").innerHTML = `
-                    <div class="row">
-                        <div class="col-6">
-                            <strong>Firmware:</strong> ${info.version_info}<br>
-                            <strong>Type:</strong> ${info.tr_type}<br>
-                            <strong>Power:</strong> ${info.power_dbm} dBm<br>
-                            <strong>Inventory Time:</strong> ${
-                              info.scan_time
-                            } ms
-                        </div>
-                        <div class="col-6">
-                           
-                            <strong>Antenna Check:</strong> ${
-                              info.check_ant
-                            }<br>
-                            <strong>Antenna Config:</strong> 0x${info.ant
-                              .toString(16)
-                              .toUpperCase()}
-                        </div>
-                    </div>
-                `;
+            <div class="reader-info-container">
+              <!-- Main Info Grid -->
+              <div class="info-grid" style="grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div class="info-item-compact">
+                  <span class="info-label">Model:</span>
+                  <span class="info-value">${info.model_name}</span>
+                </div>
+                <div class="info-item-compact">
+                  <span class="info-label">Type:</span>
+                  <span class="info-value">${info.reader_type_hex}</span>
+                </div>
+                <div class="info-item-compact">
+                  <span class="info-label">Version:</span>
+                  <span class="info-value">${info.version_info}</span>
+                </div>
+                <div class="info-item-compact">
+                  <span class="info-label">Address:</span>
+                  <span class="info-value">0x${info.com_addr
+                    .toString(16)
+                    .toUpperCase()}</span>
+                </div>
+                <div class="info-item-compact">
+                  <span class="info-label">Power:</span>
+                  <span class="info-value">${info.power_dbm} dBm</span>
+                </div>
+                <div class="info-item-compact">
+                  <span class="info-label">Scan Time:</span>
+                  <span class="info-value">${info.scan_time} ms</span>
+                </div>
+                <div class="info-item-compact">
+                  <span class="info-label">Antennas:</span>
+                  <span class="info-value">${info.antenna_count}</span>
+                </div>
+                <div class="info-item-compact">
+                  <span class="info-label">TR Type:</span>
+                  <span class="info-value">${info.tr_type}</span>
+                </div>
+                <div class="info-item-compact">
+                  <span class="info-label">Beep:</span>
+                  <span class="info-value">${info.beep_status}</span>
+                </div>
+                <div class="info-item-compact">
+                  <span class="info-label">Ant Check:</span>
+                  <span class="info-value">${info.antenna_check_status}</span>
+                </div>
+                <div class="info-item-compact">
+                  <span class="info-label">Ant Config:</span>
+                  <span class="info-value">0x${info.ant_cfg0
+                    .toString(16)
+                    .toUpperCase()}</span>
+                </div>
+                <div class="info-item-compact">
+                  <span class="info-label">Output:</span>
+                  <span class="info-value">0x${info.output_rep
+                    .toString(16)
+                    .toUpperCase()}</span>
+                </div>
+              </div>
+              
+              <!-- Frequency Info (if not auto) -->
+              ${
+                info.frequency_info.band !== "Auto"
+                  ? `
+              <div class="info-section" style="margin-top: 0.5rem;">
+                <h6 class="info-title">Frequency</h6>
+                <div class="info-grid" style="grid-template-columns: 1fr; gap: 0.25rem;">
+                  <div class="info-item-compact">
+                    <span class="info-label">Band:</span>
+                    <span class="info-value">${
+                      info.frequency_info.band_name
+                    }</span>
+                  </div>
+                  <div class="info-item-compact">
+                    <span class="info-label">Range:</span>
+                    <span class="info-value">${info.frequency_info.min_freq.toFixed(
+                      3
+                    )} - ${info.frequency_info.max_freq.toFixed(3)} MHz</span>
+                  </div>
+                </div>
+              </div>
+              `
+                  : ""
+              }
+              
+              <!-- Antenna Details (if enabled antennas) -->
+              ${
+                info.antenna_config.enabled_antennas.length > 0
+                  ? `
+              <div class="info-section" style="margin-top: 0.5rem;">
+                <h6 class="info-title">Enabled Antennas</h6>
+                <div class="info-item-compact">
+                  <span class="info-label">Active:</span>
+                  <span class="info-value">${info.antenna_config.enabled_antennas.join(
+                    ", "
+                  )}</span>
+                </div>
+              </div>
+              `
+                  : ""
+              }
+            </div>
+          `;
         } else {
           showAlert(result.message, "warning");
         }
       }
 
-      // Start inventory
+      // Start inventory (commented out - uses non-existent elements)
+      /*
       async function startInventory() {
         const target = document.getElementById("targetSelect").value;
 
@@ -1409,6 +1871,7 @@
           showAlert(result.message, "danger");
         }
       }
+      */
 
       // Fast Mode Inventory Functions
       async function startFastModeInventory() {
@@ -1462,8 +1925,34 @@
           // Ignore stop errors
         }
 
+        // Get antenna selection (for now, use all antennas)
+        const selectedAntennas = [];
+        for (let i = 1; i <= 16; i++) {
+          const antCheckbox = document.getElementById(`check_ant${i}`);
+          if (antCheckbox && antCheckbox.checked) {
+            selectedAntennas.push(i);
+          }
+        }
+
+        // If no antennas selected, use antenna 1 as default
+        if (selectedAntennas.length === 0) {
+          selectedAntennas.push(1);
+        }
+
         const result = await apiCall("/api/start_inventory_g2", "POST", {
           mode_type: modeType,
+          scan_time: 0, // TODO: Get from UI
+          q_value: 4, // TODO: Get from UI
+          session: 0, // TODO: Get from UI
+          target: 0, // TODO: Get from UI
+          target_times: 1, // TODO: Get from UI
+          enable_phase: false, // TODO: Get from UI
+          enable_rate: false, // TODO: Get from UI
+          antennas: selectedAntennas,
+          mix_mem: 0, // TODO: Get from UI for mix mode
+          read_addr: "0000", // TODO: Get from UI for mix mode
+          read_len: "04", // TODO: Get from UI for mix mode
+          psd: "00000000", // TODO: Get from UI for mix mode
         });
 
         if (result.success) {
@@ -1471,6 +1960,11 @@
           document.getElementById("stopG2ModeBtn").disabled = false;
           document.getElementById("startG2ModeBtn").disabled = true;
           startTimer();
+
+          // Log the parameters used
+          if (result.parameters) {
+            console.log("G2 Inventory parameters:", result.parameters);
+          }
         } else {
           showAlert(result.message, "danger");
         }
@@ -1744,7 +2238,7 @@
 
       // Initialize
       updateConnectionStatus(false);
-      updateStartButtonText();
+      // updateStartButtonText(); // Function commented out
       checkConnectionStatus();
 
       function openTagsInventoryModal() {
@@ -1904,16 +2398,17 @@
         }
       }
 
-      function updateStartButtonText() {
-        const targetSelect = document.getElementById("targetSelect");
-        const startBtn = document.getElementById("startTargetABtn");
-        const target = targetSelect.value;
-        startBtn.innerHTML = `<i class="fas fa-play"></i> Start Inventory (Target ${
-          target === "0" ? "A" : "B"
-        })`;
-      }
+      // function updateStartButtonText() {
+      //   const targetSelect = document.getElementById("targetSelect");
+      //   const startBtn = document.getElementById("startTargetABtn");
+      //   const target = targetSelect.value;
+      //   startBtn.innerHTML = `<i class="fas fa-play"></i> Start Inventory (Target ${
+      //     target === "0" ? "A" : "B"
+      //   })`;
+      // }
 
-      // Test Select CMD function
+      // Test Select CMD function (commented out - uses non-existent elements)
+      /*
       async function testSelectCmd() {
         try {
           const targetSelect = document.getElementById("targetSelect");
@@ -1953,6 +2448,9 @@
           showAlert(`Test error: ${error.message}`, "danger");
         }
       }
+      */
+      // Debug and test functions (commented out - uses non-existent elements)
+      /*
       async function debugReader() {
         try {
           console.log("🔍 Debugging reader object...");
@@ -2079,6 +2577,36 @@
           showAlert(`Test error: ${error.message}`, "danger");
         }
       }
+      */
+
+      // Initialize the application
+      document.addEventListener("DOMContentLoaded", function () {
+        console.log("🚀 Initializing RFID Reader Control Panel...");
+
+        // Disable controls initially
+        disableConnectedControls();
+
+        // Initialize power slider
+        const powerSlider = document.getElementById("powerInput");
+        const powerValue = document.getElementById("powerValue");
+        if (powerSlider && powerValue) {
+          powerSlider.addEventListener("input", function () {
+            powerValue.textContent = this.value;
+          });
+        }
+
+        // Initialize antenna checkboxes
+        const antennaCheckboxes = document.querySelectorAll(
+          'input[id^="check_ant"]'
+        );
+        antennaCheckboxes.forEach((checkbox) => {
+          checkbox.addEventListener("change", function () {
+            console.log(`Antenna ${this.id} changed to: ${this.checked}`);
+          });
+        });
+
+        console.log("✅ Initialization complete");
+      });
     </script>
   </body>
 </html>

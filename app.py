@@ -8,13 +8,6 @@ import serial
 import logging
 from uhf_reader import UHFReader
 
-# Import các hàm từ zk.py
-from zk import (
-    get_reader_info, 
-    get_profile, 
-    set_profile,
-)
-
 # Import configuration
 from config import get_config
 
@@ -39,64 +32,6 @@ logging.basicConfig(
     format=config.LOG_FORMAT
 )
 logger = logging.getLogger(__name__)
-
-class RFIDWebController:
-    def __init__(self):
-        self.reader = None
-        self.is_connected = False
-        self.current_profile = None
-        self.antenna_power = {}
-        
-    def get_reader_info(self) -> Dict:
-        """Lấy thông tin reader"""
-        if not self.is_connected:
-            return {"success": False, "message": "Chưa kết nối đến reader"}
-        
-        try:
-            info = get_reader_info(self.reader)
-            if info:
-                return {"success": True, "data": info}
-            else:
-                return {"success": False, "message": "Không thể lấy thông tin reader"}
-        except Exception as e:
-            logger.error(f"Get reader info error: {e}")
-            return {"success": False, "message": f"Lỗi: {str(e)}"}
-    
-    def get_current_profile(self) -> Dict:
-        """Lấy profile hiện tại"""
-        if not self.is_connected:
-            return {"success": False, "message": "Chưa kết nối đến reader"}
-        
-        try:
-            profile = get_profile(self.reader)
-            if profile is not None:
-                self.current_profile = profile
-                return {"success": True, "data": {"profile": profile}}
-            else:
-                return {"success": False, "message": "Không thể lấy profile"}
-        except Exception as e:
-            logger.error(f"Get profile error: {e}")
-            return {"success": False, "message": f"Lỗi: {str(e)}"}
-    
-    def set_profile(self, profile_num: int, save_on_power_down: bool = True) -> Dict:
-        """Thiết lập profile"""
-        if not self.is_connected:
-            return {"success": False, "message": "Chưa kết nối đến reader"}
-        
-        if profile_num not in config.PROFILE_CONFIGS:
-            return {"success": False, "message": "Profile không hợp lệ"}
-        
-        try:
-            result = set_profile(self.reader, profile_num, save_on_power_down)
-            if result:
-                self.current_profile = profile_num
-                logger.info(f"Set profile to {profile_num}")
-                return {"success": True, "message": f"Đã thiết lập profile: {profile_num}"}
-            else:
-                return {"success": False, "message": "Không thể thiết lập profile"}
-        except Exception as e:
-            logger.error(f"Set profile error: {e}")
-            return {"success": False, "message": f"Lỗi: {str(e)}"}
 
 # Khởi tạo controller
 reader = UHFReader()
@@ -142,9 +77,273 @@ def api_disconnect():
 
 @app.route('/api/reader_info', methods=['GET'])
 def api_reader_info():
-    """API lấy thông tin reader"""
-    result = reader.get_reader_information()
-    return jsonify({'success': True, 'data': result})
+    """API lấy thông tin reader - follows C# btGetInformation_Click logic"""
+    try:
+        # Create parameters like C# version
+        com_addr = reader.com_addr
+        version_info = bytearray(2)
+        reader_type = [0]
+        tr_type = [0]
+        dmax_fre = [0]
+        dmin_fre = [0]
+        power_dbm = [0]
+        scan_time = [0]
+        ant_cfg0 = [0]  # Antenna configuration byte 0
+        beep_en = [0]
+        ant_cfg1 = [0]  # Antenna configuration byte 1 (for 16-antenna readers)
+        output_rep = [0]
+        check_ant = [0]
+        
+        # Call SDK like C#: RWDev.GetReaderInformation(...)
+        result = reader.get_reader_information(
+            com_addr, version_info, reader_type, tr_type,
+            dmax_fre, dmin_fre, power_dbm, scan_time,
+            ant_cfg0, beep_en, output_rep, check_ant
+        )
+        
+        if result != 0:
+            return jsonify({'success': False, 'error': f'Get Reader Information failed: {result}'}), 400
+        
+        # Parse data like C# code
+        version_str = f"{version_info[0]:02d}.{version_info[1]:02d}"
+        reader_type_val = reader_type[0]
+        
+        # Determine model name like C# switch statement
+        model_name = "UHFREADER--" + version_str  # Default
+        if reader_type_val == 0x62:
+            model_name = f"UHF2882C6M--{version_str}"
+        elif reader_type_val == 0x67:
+            model_name = f"UHF2881C6M--{version_str}"
+        elif reader_type_val == 0x73:
+            model_name = f"UHF7181M--{version_str}"
+        elif reader_type_val == 0x53:
+            model_name = f"UHF5181M--{version_str}"
+        elif reader_type_val == 0x33:
+            model_name = f"UHF3181M--{version_str}"
+        elif reader_type_val == 0x75:
+            model_name = f"UHF7182M--{version_str}"
+        elif reader_type_val == 0x55:
+            model_name = f"UHF5182M--{version_str}"
+        elif reader_type_val == 0x35:
+            model_name = f"UHF3182M--{version_str}"
+        elif reader_type_val == 0x11:
+            model_name = f"UHF9810M4P--{version_str}"
+        elif reader_type_val == 0x7B:
+            model_name = f"UHF78C2A--{version_str}"
+        elif reader_type_val == 0x5B:
+            model_name = f"UHF58C2A--{version_str}"
+        elif reader_type_val == 0x3B:
+            model_name = f"UHF38C2A--{version_str}"
+        elif reader_type_val == 0x92:
+            model_name = f"UHF1682M--{version_str}"
+        elif reader_type_val == 0x40:
+            model_name = f"UHF7182MPH--{version_str}"
+        elif reader_type_val == 0x71:
+            model_name = f"UHF7180M--{version_str}"
+        elif reader_type_val == 0x70:
+            model_name = f"UHF5180M--{version_str}"
+        elif reader_type_val == 0x31:
+            model_name = f"UHF3180M--{version_str}"
+        elif reader_type_val == 0x61:
+            model_name = f"UHF9880C6M--{version_str}"
+        elif reader_type_val == 0x64:
+            model_name = f"UHF9881C6M--{version_str}"
+        elif reader_type_val == 0x66:
+            model_name = f"UHF9885C6M--{version_str}"
+        elif reader_type_val == 0x7A:
+            model_name = f"UHF7280--{version_str}"
+        elif reader_type_val == 0x5A:
+            model_name = f"UHF5280--{version_str}"
+        elif reader_type_val == 0x3A:
+            model_name = f"UHF3280--{version_str}"
+        elif reader_type_val == 0x5F:
+            model_name = f"UHF5281MPT--{version_str}"
+        elif reader_type_val == 0x7F:
+            model_name = f"UHF7281MPT--{version_str}"
+        elif reader_type_val == 0x7C:
+            model_name = f"UHF7281--{version_str}"
+        elif reader_type_val == 0x5C:
+            model_name = f"UHF5281--{version_str}"
+        elif reader_type_val == 0x3C:
+            model_name = f"UHF3281--{version_str}"
+        elif reader_type_val == 0x7D:
+            model_name = f"UHF72828M--{version_str}"
+        elif reader_type_val == 0x5D:
+            model_name = f"UHF52828M--{version_str}"
+        elif reader_type_val == 0x3D:
+            model_name = f"UHF32828M--{version_str}"
+        elif reader_type_val == 0x3E:
+            model_name = f"UHF3280MRL--{version_str}"
+        elif reader_type_val == 0x5E:
+            model_name = f"UHF5280MRL--{version_str}"
+        elif reader_type_val == 0x7E:
+            model_name = f"UHF3780MRL--{version_str}"
+        elif reader_type_val == 0x6A:
+            model_name = f"UHF353M--{version_str}"
+        elif reader_type_val == 0x6B:
+            model_name = f"UHF553M--{version_str}"
+        elif reader_type_val == 0x6C:
+            model_name = f"UHF753M--{version_str}"
+        elif reader_type_val == 0x91:
+            model_name = f"UHF1680M--{version_str}"
+        elif reader_type_val == 0x65:
+            model_name = f"UHF2899C6M--{version_str}"
+        elif reader_type_val == 0x77:
+            model_name = f"UHF7199M--{version_str}"
+        elif reader_type_val == 0x57:
+            model_name = f"UHF5199M--{version_str}"
+        elif reader_type_val == 0x39:
+            model_name = f"UHF3199M--{version_str}"
+        elif reader_type_val == 0x94:
+            model_name = f"UHF1699M--{version_str}"
+        elif reader_type_val == 0x42:
+            model_name = f"UHF7199MPH--{version_str}"
+        elif reader_type_val == 0x68:
+            model_name = f"UHF2889C6M--{version_str}"
+        elif reader_type_val == 0x76:
+            model_name = f"UHF7189M--{version_str}"
+        elif reader_type_val == 0x56:
+            model_name = f"UHF5189M--{version_str}"
+        elif reader_type_val == 0x38:
+            model_name = f"UHF3189M--{version_str}"
+        elif reader_type_val == 0x93:
+            model_name = f"UHF1689M--{version_str}"
+        elif reader_type_val == 0x41:
+            model_name = f"UHF7189MPH--{version_str}"
+        
+        # Determine mode type like C# code
+        mode_type = 1  # Default R2000
+        if reader_type_val in [0x62, 0x61, 0x64, 0x66, 0x65, 0x67, 0x68]:  # C6
+            mode_type = 0
+        elif reader_type_val in [0x71, 0x31, 0x70, 0x72, 0x5F, 0x7F, 0x76, 0x56, 0x38,
+                                0x57, 0x77, 0x39, 0x55, 0x75, 0x35, 0x33, 0x53, 0x73,
+                                0x3A, 0x5A, 0x7A, 0x3B, 0x5B, 0x7B, 0x3C, 0x5C, 0x7C,
+                                0x3D, 0x5D, 0x7D, 0x3E, 0x5E, 0x7E, 0x40, 0x41, 0x42,
+                                0x6A, 0x6B, 0x6C]:  # RRUx180
+            mode_type = 2
+        elif reader_type_val == 0x11:  # 9810
+            mode_type = 3
+        elif reader_type_val in [0x91, 0x92, 0x93, 0x94]:  # FD
+            mode_type = 4
+        
+        # Determine antenna count like C# code
+        antenna_count = 4  # Default
+        if reader_type_val in [0x11, 0x8A, 0x8B, 0x0C, 0x20, 0x62, 0x67, 0x73, 0x53, 
+                              0x75, 0x55, 0x7B, 0x5B, 0x3B, 0x35, 0x33, 0x92, 0x40]:
+            antenna_count = 4
+        elif reader_type_val in [0x71, 0x70, 0x72, 0x0F, 0x10, 0x1A, 0x51, 0x31, 0x21,
+                                0x23, 0x28, 0x36, 0x37, 0x16, 0x63, 0x64, 0x66, 0x61,
+                                0x7A, 0x5A, 0x3A, 0x7C, 0x5C, 0x3C, 0x7D, 0x5D, 0x3D,
+                                0x3E, 0x5E, 0x7E, 0x6A, 0x6B, 0x6C, 0x91, 0x5F, 0x7F]:
+            antenna_count = 1
+        elif reader_type_val in [0x27, 0x65, 0x77, 0x57, 0x39, 0x94, 0x42]:
+            antenna_count = 16
+        elif reader_type_val in [0x26, 0x68, 0x76, 0x56, 0x38, 0x93, 0x41]:
+            antenna_count = 8
+        
+        # Parse frequency information like C# code
+        freq_info = {}
+        if dmax_fre[0] == 255 and dmin_fre[0] == 255:
+            freq_info = {'band': 'Auto', 'min_freq': 0, 'max_freq': 0, 'same_freq': True}
+        else:
+            freq_band = ((dmax_fre[0] & 0xC0) >> 4) | (dmin_fre[0] >> 6)
+            freq_info = {
+                'band': freq_band,
+                'dmax_fre': dmax_fre[0],
+                'dmin_fre': dmin_fre[0],
+                'same_freq': dmax_fre[0] == dmin_fre[0]
+            }
+            
+            # Calculate actual frequencies based on band
+            if freq_band == 1:
+                freq_info['band_name'] = 'Band 1 (920.125MHz)'
+                freq_info['min_freq'] = 920.125 + (dmin_fre[0] & 0x3F) * 0.25
+                freq_info['max_freq'] = 920.125 + (dmax_fre[0] & 0x3F) * 0.25
+            elif freq_band == 2:
+                freq_info['band_name'] = 'Band 2 (902.75MHz)'
+                freq_info['min_freq'] = 902.75 + (dmin_fre[0] & 0x3F) * 0.5
+                freq_info['max_freq'] = 902.75 + (dmax_fre[0] & 0x3F) * 0.5
+            elif freq_band == 3:
+                freq_info['band_name'] = 'Band 3 (917.1MHz)'
+                freq_info['min_freq'] = 917.1 + (dmin_fre[0] & 0x3F) * 0.2
+                freq_info['max_freq'] = 917.1 + (dmax_fre[0] & 0x3F) * 0.2
+            elif freq_band == 4:
+                freq_info['band_name'] = 'Band 4 (865.1MHz)'
+                freq_info['min_freq'] = 865.1 + (dmin_fre[0] & 0x3F) * 0.2
+                freq_info['max_freq'] = 865.1 + (dmax_fre[0] & 0x3F) * 0.2
+            elif freq_band == 8:
+                freq_info['band_name'] = 'Band 8 (840.125MHz)'
+                freq_info['min_freq'] = 840.125 + (dmin_fre[0] & 0x3F) * 0.25
+                freq_info['max_freq'] = 840.125 + (dmax_fre[0] & 0x3F) * 0.25
+            elif freq_band == 12:
+                freq_info['band_name'] = 'Band 12 (902MHz)'
+                freq_info['min_freq'] = 902 + (dmin_fre[0] & 0x3F) * 0.5
+                freq_info['max_freq'] = 902 + (dmax_fre[0] & 0x3F) * 0.5
+            elif freq_band == 0:
+                freq_info['band_name'] = 'Band 0 (840MHz)'
+                freq_info['min_freq'] = 840 + (dmin_fre[0] & 0x3F) * 2
+                freq_info['max_freq'] = 840 + (dmax_fre[0] & 0x3F) * 2
+        
+        # Parse antenna configuration like C# code
+        ant_config = {
+            'enabled_antennas': [],
+            'antenna_status': {},
+            'config_byte_0': ant_cfg0[0],
+            'config_hex': f"0x{ant_cfg0[0]:02X}"
+        }
+        
+        # Parse antennas 1-8 from ant_cfg0
+        for i in range(8):
+            if i < antenna_count:
+                antenna_num = i + 1
+                enabled = (ant_cfg0[0] & (1 << i)) != 0
+                ant_config['antenna_status'][f'ant{antenna_num}'] = enabled
+                if enabled:
+                    ant_config['enabled_antennas'].append(antenna_num)
+        
+        # For 16-antenna readers, note that we only have ant_cfg0
+        if antenna_count == 16:
+            ant_config['note'] = 'Only first 8 antennas shown (ant_cfg1 not available from SDK)'
+        
+        # Parse output report like C# code
+        output_config = {
+            'output_rep1': (output_rep[0] & 0x01) == 1,
+            'output_rep2': (output_rep[0] & 0x02) == 2,
+            'output_rep3': (output_rep[0] & 0x04) == 4,
+            'output_rep4': (output_rep[0] & 0x08) == 8,
+            'raw_value': output_rep[0]
+        }
+        
+        data = {
+            'com_addr': com_addr,
+            'version_info': version_str,
+            'version_bytes': bytes(version_info).hex().upper(),
+            'reader_type': reader_type_val,
+            'reader_type_hex': f"0x{reader_type_val:02X}",
+            'model_name': model_name,
+            'mode_type': mode_type,
+            'antenna_count': antenna_count,
+            'tr_type': tr_type[0],
+            'dmax_fre': dmax_fre[0],
+            'dmin_fre': dmin_fre[0],
+            'power_dbm': power_dbm[0],
+            'scan_time': scan_time[0],
+            'ant_cfg0': ant_cfg0[0],
+            'beep_en': beep_en[0],
+            'output_rep': output_rep[0],
+            'check_ant': check_ant[0],
+            'frequency_info': freq_info,
+            'antenna_config': ant_config,
+            'output_config': output_config,
+            'beep_status': 'Enabled' if beep_en[0] == 1 else 'Disabled',
+            'antenna_check_status': 'Enabled' if check_ant[0] == 1 else 'Disabled'
+        }
+        
+        return jsonify({'success': True, 'data': data})
+        
+    except Exception as e:
+        logger.error(f"Reader info error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/connection_status', methods=['GET'])
 def api_connection_status():
@@ -214,71 +413,151 @@ def api_start_inventory():
 
 @app.route('/api/start_inventory_g2', methods=['POST'])
 def api_start_inventory_g2():
-    """API bắt đầu inventory G2 mode"""
+    """API bắt đầu inventory G2 mode - based on C# btIventoryG2_Click"""
     data = request.get_json()
-    mode_type = data.get('mode_type', 'epc')
     
     try:
-        # Lấy session từ param1 (giống C# GetSession)
-        cfg_num = 0x09  # Configuration number for Param1
-        cfg_data = bytearray(256)
-        data_len = [0]
-        result_param = reader.get_cfg_parameter(cfg_num, cfg_data, data_len)
-        if result_param == 0 and data_len[0] >= 2:
-            session_val = cfg_data[1] if cfg_data[1] < 4 else 0
-        else:
-            session_val = 0  # fallback nếu lỗi
+        # Extract parameters from request
+        mode_type = data.get('mode_type', 'epc')  # epc, tid, mix, fastid
+        scan_time = data.get('scan_time', 0)  # com_scantime.SelectedIndex
+        q_value = data.get('q_value', 4)  # com_Q.SelectedIndex
+        session = data.get('session', 0)  # com_S.SelectedIndex
+        target = data.get('target', 0)  # com_Target.SelectedIndex
+        target_times = data.get('target_times', 1)  # text_target.Text
+        enable_phase = data.get('enable_phase', False)  # check_phase.Checked
+        enable_rate = data.get('enable_rate', False)  # checkBox_rate.Checked
+        antennas = data.get('antennas', [1])  # Selected antennas
         
-        # First, call select_cmd for each antenna (like C# code)
-        sel_action_val = 0     # int = 0 (like C# code: Session, 0, MaskMem, ...)
-        mask_mem_val = 1       # int = EPC memory (like C# MaskMem = 1)
-        mask_addr_bytes = bytes([0, 0])  # 2 bytes address (like C# MaskAdr = new byte[2])
-        mask_len_val = 0       # int = no mask (like C# MaskLen = 0)
-        mask_data_bytes = bytes(100)  # 100 bytes array (like C# MaskData = new byte[100])
-        truncate_val = 0       # int = no truncate (like C# code: ..., 0, frmcomportindex)
-        select_antenna = 0xFFFF  # SelectAntenna = 0xFFFF (all antennas) like C# code
-
-        # Call select_cmd for each antenna (4 antennas like C# code)
-        # Following C# code exactly: for (int m = 0; m < 4; m++)
-        for antenna in range(4): 
-            result = reader.select_cmd(
-                antenna=select_antenna,  # SelectAntenna = 0xFFFF (all antennas)
-                session=session_val,
-                sel_action=sel_action_val,
-                mask_mem=mask_mem_val,
-                mask_addr=mask_addr_bytes,
-                mask_len=mask_len_val,
-                mask_data=mask_data_bytes,
-                truncate=truncate_val,
-                antenna_num=1
-            )
-            print(f"[DEBUG] Antenna {antenna} result: {result} session: {session_val}")
-            time.sleep(0.005)  # 5ms delay like C# Thread.Sleep(5)
+        # Mix mode specific parameters
+        mix_mem = data.get('mix_mem', 0)  # com_MixMem.SelectedIndex
+        read_addr = data.get('read_addr', '0000')  # text_readadr.Text
+        read_len = data.get('read_len', '04')  # text_readLen.Text
+        psd = data.get('psd', '00000000')  # text_readpsd.Text
         
-        # Clear any existing data (like C# code clears dataGridView5, epclist, etc.)
-        # This is handled by the frontend when starting new inventory
+        # Validate mix mode parameters
+        if mode_type == 'mix':
+            if len(read_addr) != 4 or len(read_len) != 2 or len(psd) != 8:
+                return jsonify({'success': False, 'message': 'Mix inventory parameter error!!!'}), 400
         
-        # Now start inventory with G2 mode type
-        # For G2 mode, we need to set the appropriate mode before starting inventory
-        # This would typically involve setting configuration parameters based on mode_type
-        # For now, we'll use the same start_inventory but with different target based on mode
+        # Clear existing data (equivalent to C# clearing lists and UI)
+        global detected_tags, inventory_stats
+        detected_tags.clear()
+        inventory_stats = {
+            'total_tags': 0,
+            'total_time': 0,
+            'commands_sent': 0,
+            'commands_successful': 0
+        }
         
-        target = 0  # Default target A for G2 mode
-        if mode_type == 'tid':
-            # TID mode specific configuration could go here
-            pass
-        elif mode_type == 'mix':
-            # Mix mode specific configuration could go here
-            pass
+        # Set scan time
+        scan_time_byte = scan_time
+        
+        # Set Q value with rate flag if enabled
+        q_value_byte = q_value
+        if enable_rate:
+            q_value_byte |= 0x80
+        
+        
+        # Set profile for ModeType 2 (if applicable) - matching C# logic
+        # TODO: Determine ModeType value from UI or configuration
+        # if ModeType == 2:
+        #     rf_profile = 0  # RF_Profile is initialized as 0 in C#
+        #     profile_with_flags = rf_profile | 0xC0  # 0 | 0xC0 = 0xC0
+        #     result = reader.set_profile(profile=profile_with_flags)
+        #     if result != 0:
+        #         logger.warning(f"Failed to set profile: {result}")
+        #     else:
+        #         logger.info(f"Profile set successfully with flags: {profile_with_flags}")
+        
+        # Set read mode based on session
+        read_mode = 0
+        if session == 4:
+            read_mode = 255
+        elif session < 4:
+            read_mode = session
+        elif session == 5:
+            read_mode = 254
+        elif session == 6:
+            read_mode = 253
+        
+        # Set scan type and flags based on mode
+        tid_flag = 0
+        scan_type = 0
+        tid_addr = 0
+        tid_len = 0
+        
+        if mode_type == 'epc':
+            tid_flag = 0
+            scan_type = 0
+        elif mode_type == 'tid':
+            tid_flag = 1
+            tid_addr = int(read_addr, 16) & 0x00FF
+            tid_len = int(read_len, 16)
+            scan_type = 1
         elif mode_type == 'fastid':
-            # FastID mode specific configuration could go here
-            pass
-        # EPC is default
+            tid_flag = 0
+            q_value_byte |= 0x20
+            scan_type = 2
+        elif mode_type == 'mix':
+            scan_type = 3
+            # TODO: Implement mix mode specific logic
+            # ReadMem = (byte)com_MixMem.SelectedIndex
+            # ReadAdr = HexStringToByteArray(text_readadr.Text)
+            # ReadLen = Convert.ToByte(text_readLen.Text, 16)
+            # Psd = HexStringToByteArray(text_readpsd.Text)
         
-        result = reader.start_inventory(target)
+        # Add phase flag if enabled
+        if enable_phase:
+            q_value_byte |= 0x10
+        
+        # Build antenna configuration
+        select_antenna = 0
+        ant_list = [0] * 16
+        
+        for ant_num in antennas:
+            if 1 <= ant_num <= 16:
+                ant_list[ant_num - 1] = 1
+                select_antenna |= (1 << (ant_num - 1))
+        
+        # TODO: Implement PresetTarget function
+        # PresetTarget(readMode, SelectAntenna)
+        
+        # Set target
+        target_byte = target
+        
+        # TODO: Implement inventory thread logic
+        # This would replace the C# mythread = new Thread(new ThreadStart(inventory))
+        # For now, we'll use the existing start_inventory method with modified parameters
+        
+        # Start inventory with calculated parameters
+        result = reader.start_inventory_g2(
+            target=target_byte,
+            scan_time=scan_time_byte,
+            q_value=q_value_byte,
+            session=session,
+            read_mode=read_mode,
+            scan_type=scan_type,
+            tid_flag=tid_flag,
+            tid_addr=tid_addr,
+            tid_len=tid_len,
+            select_antenna=select_antenna,
+            mode_type=mode_type
+        )
         
         if result == 0:
-            return jsonify({'success': True, 'message': f'G2 Mode inventory đã bắt đầu ({mode_type.upper()})'})
+            return jsonify({
+                'success': True, 
+                'message': f'G2 Mode inventory started successfully ({mode_type.upper()})',
+                'parameters': {
+                    'mode_type': mode_type,
+                    'scan_type': scan_type,
+                    'q_value': q_value_byte,
+                    'session': session,
+                    'target': target_byte,
+                    'antennas': antennas,
+                    'scan_time': scan_time_byte
+                }
+            })
         elif result == 51:
             return jsonify({'success': False, 'message': 'Inventory is already running'}), 400
         else:
@@ -423,7 +702,7 @@ def api_debug():
     """API debug info"""
     try:
         data = {
-            "is_connected": rfid_controller.is_connected,
+            "is_connected": reader.is_connected,
             "inventory_thread_alive": inventory_thread.is_alive() if inventory_thread else False,
             "stop_inventory_flag": stop_inventory_flag,
             "detected_tags_count": len(detected_tags),

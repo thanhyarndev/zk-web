@@ -159,67 +159,32 @@ class UHFReader:
         
         return 0, 48  # No working port found
     
-    def get_reader_information(self) -> Dict[str, Any]:
+    def get_reader_information(self, com_addr: int, version_info: bytearray, reader_type: list, tr_type: list, 
+                             dmax_fre: list, dmin_fre: list, power_dbm: list, scan_time: list,
+                             ant_cfg0: list, beep_en: list, output_rep: list, check_ant: list) -> int:
         """
-        Get reader information
-        
-        Returns:
-            Dictionary containing reader information
-        """
-        if not self.is_connected:
-            raise ReaderNotConnectedError("Reader is not connected")
-        
-        version_info = bytearray(2)
-        reader_type = [0]
-        tr_type = [0]
-        dmax_fre = [0]
-        dmin_fre = [0]
-        power_dbm = [0]
-        scan_time = [0]
-        ant = [0]
-        beep_en = [0]
-        output_rep = [0]
-        check_ant = [0]
-        
-        result = self.uhf.get_reader_information(
-            self.com_addr, version_info, reader_type, tr_type,
-            dmax_fre, dmin_fre, power_dbm, scan_time,
-            ant, beep_en, output_rep, check_ant
-        )
-        
-        if result == 0:
-            return {
-                'com_addr': self.com_addr,
-                'version_info': bytes(version_info).hex().upper(),
-                'reader_type': reader_type[0],
-                'tr_type': tr_type[0],
-                'dmax_fre': dmax_fre[0],
-                'dmin_fre': dmin_fre[0],
-                'power_dbm': power_dbm[0],
-                'scan_time': scan_time[0],
-                'ant': ant[0],
-                'beep_en': beep_en[0],
-                'output_rep': output_rep[0],
-                'check_ant': check_ant[0]
-            }
-        else:
-            raise UHFReaderError(f"Failed to get reader information: {result}")
-    
-    def set_region(self, dmax_fre: int, dmin_fre: int) -> int:
-        """
-        Set frequency region
+        Get reader information - strict C# equivalent
         
         Args:
-            dmax_fre: Maximum frequency
-            dmin_fre: Minimum frequency
+            com_addr: Reader address (can be modified)
+            version_info: Version info array (2 bytes)
+            reader_type: Reader type (output)
+            tr_type: Transmitter type (output)
+            dmax_fre: Max frequency (output)
+            dmin_fre: Min frequency (output)
+            power_dbm: Power in dBm (output)
+            scan_time: Scan time (output)
+            ant_cfg0: Antenna configuration byte 0 (output)
+            beep_en: Beep enable (output)
+            output_rep: Output report (output)
+            check_ant: Check antenna (output)
             
         Returns:
             0 on success, error code on failure
         """
-        if not self.is_connected:
-            raise ReaderNotConnectedError("Reader is not connected")
-        
-        return self.uhf.set_region(self.com_addr, dmax_fre, dmin_fre)
+        return self.uhf.get_reader_information(com_addr, version_info, reader_type, tr_type,
+                                             dmax_fre, dmin_fre, power_dbm, scan_time,
+                                             ant_cfg0, beep_en, output_rep, check_ant)
     
     def set_address(self, new_addr: int) -> int:
         """
@@ -750,11 +715,22 @@ class UHFReader:
         else:
             raise UHFReaderError(f"Get antenna power failed: {result}")
 
-    def set_profile(self, profile: int) -> int:
+    def set_profile(self, com_addr: int = None, profile: int = None) -> int:
         if not self.is_connected:
             raise ReaderNotConnectedError("Reader is not connected")
+        
+        # Use instance com_addr if not provided
+        if com_addr is None:
+            com_addr = self.com_addr
+        
+        # Use default profile if not provided
+        if profile is None:
+            profile = 1  # Default profile
+            
+        com_addr_bytearray = bytearray([com_addr])
         profile_bytearray = bytearray([profile])
-        result = self.uhf.set_profile(self.com_addr, profile_bytearray)
+        
+        result = self.uhf.set_profile(com_addr_bytearray, profile_bytearray)
         if result == 0:
             return profile_bytearray[0]
         else:
@@ -860,4 +836,106 @@ class UHFReader:
             self.com_addr = com_addr[0]
             data_len[0] = actual_len
         
-        return status 
+        return status
+
+    def start_inventory_g2(self, target: int = 0, scan_time: int = 0, q_value: int = 4, 
+                          session: int = 0, read_mode: int = 0, scan_type: int = 0,
+                          tid_flag: int = 0, tid_addr: int = 0, tid_len: int = 0,
+                          select_antenna: int = 0xFFFF, mode_type: str = 'epc') -> int:
+        """
+        Start G2 mode inventory with comprehensive parameters
+        Based on C# btIventoryG2_Click implementation
+        """
+        if not self.is_connected:
+            raise ReaderNotConnectedError("Reader is not connected")
+        
+        try:
+            # TODO: Implement PresetTarget equivalent
+            # PresetTarget(readMode, SelectAntenna)
+            
+            # TODO: Implement the actual inventory start logic
+            # This would replace the C# inventory() method call
+            
+            # For now, use the basic start_inventory as a fallback
+            # but with the calculated parameters
+            logger.info(f"Starting G2 inventory: mode={mode_type}, scan_type={scan_type}, "
+                       f"q_value={q_value}, session={session}, target={target}")
+            
+            # TODO: Implement proper G2 inventory start
+            # This should call the appropriate UHF SDK method with all the calculated parameters
+            
+            # Placeholder implementation
+            result = self.start_inventory(target)
+            
+            if result == 0:
+                logger.info("G2 inventory started successfully")
+            else:
+                logger.error(f"Failed to start G2 inventory: {result}")
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error starting G2 inventory: {e}")
+            raise UHFReaderError(f"Start G2 inventory failed: {e}")
+
+    def stop_inventory_immediately(self) -> int:
+        """
+        Stop inventory immediately - equivalent to C# StopImmediately
+        """
+        if not self.is_connected:
+            raise ReaderNotConnectedError("Reader is not connected")
+        
+        try:
+            # TODO: Implement immediate stop logic
+            # This should be equivalent to C# RWDev.StopImmediately(ref fComAdr, frmcomportindex)
+            
+            # For now, use the existing stop_inventory method
+            result = self.stop_inventory()
+            
+            if result == 0:
+                logger.info("Inventory stopped immediately")
+            else:
+                logger.error(f"Failed to stop inventory immediately: {result}")
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error stopping inventory immediately: {e}")
+            raise UHFReaderError(f"Stop inventory immediately failed: {e}")
+
+    def preset_target(self, read_mode: int, select_antenna: int) -> int:
+        """
+        Preset target - equivalent to C# PresetTarget function
+        TODO: Implement this function based on C# PresetTarget implementation
+        """
+        if not self.is_connected:
+            raise ReaderNotConnectedError("Reader is not connected")
+        
+        try:
+            # TODO: Implement PresetTarget logic
+            # This should set up the target parameters before starting inventory
+            
+            logger.info(f"Preset target: read_mode={read_mode}, select_antenna={select_antenna}")
+            
+            # Placeholder implementation
+            return 0
+            
+        except Exception as e:
+            logger.error(f"Error in preset target: {e}")
+            raise UHFReaderError(f"Preset target failed: {e}")
+
+    def hex_string_to_byte_array(self, hex_string: str) -> bytes:
+        """
+        Convert hex string to byte array - equivalent to C# HexStringToByteArray
+        """
+        try:
+            # Remove any spaces and ensure even length
+            hex_string = hex_string.replace(" ", "").upper()
+            if len(hex_string) % 2 != 0:
+                hex_string = "0" + hex_string
+            
+            # Convert to bytes
+            return bytes.fromhex(hex_string)
+        except Exception as e:
+            logger.error(f"Error converting hex string to byte array: {e}")
+            raise UHFReaderError(f"Hex string conversion failed: {e}") 
