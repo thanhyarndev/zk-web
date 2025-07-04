@@ -201,6 +201,51 @@
         color: #fff;
       }
 
+      /* Inventory Mode Sections */
+      .inventory-mode-section {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .mode-title {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #495057;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .mode-selection {
+        margin-bottom: 1rem;
+      }
+
+      .mode-controls {
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-start;
+      }
+
+      .mode-controls .btn-group-vertical {
+        flex: 1;
+      }
+
+      .mode-controls .btn-group {
+        flex-shrink: 0;
+      }
+
+      .general-controls {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #dee2e6;
+      }
+
       .btn-danger {
         background: #e74c3c;
         color: #fff;
@@ -584,76 +629,171 @@
             <div class="section-title">
               <i class="fas fa-gamepad"></i> Control
             </div>
-            <label for="targetSelect" class="form-label">Target</label>
-            <select
-              class="form-select"
-              id="targetSelect"
-              onchange="updateStartButtonText()"
-            >
-              <option value="0">Target A</option>
-              <option value="1">Target B</option>
-            </select>
 
-            <div class="btn-group-vertical">
-              <button
-                class="btn btn-primary"
-                onclick="startInventory()"
-                id="startTargetABtn"
-                disabled
-              >
-                <i class="fas fa-play"></i> Start Inventory (Target A)
-              </button>
+            <!-- Fast Mode Section -->
+            <div class="inventory-mode-section">
+              <div class="mode-title">
+                <i class="fas fa-bolt"></i> Fast Mode (Start Inventory)
+              </div>
 
-              <button
-                class="btn btn-warning"
-                onclick="stopInventory()"
-                id="stopBtn"
-                disabled
+              <label for="fastModeTarget" class="form-label">Target</label>
+              <select
+                class="form-select"
+                id="fastModeTarget"
+                onchange="updateFastModeButtonText()"
               >
-                <i class="fas fa-stop"></i> Stop
-              </button>
+                <option value="0">Target A</option>
+                <option value="1">Target B</option>
+              </select>
+
+              <div class="mode-controls">
+                <div class="btn-group-vertical">
+                  <button
+                    class="btn btn-primary"
+                    onclick="startFastModeInventory()"
+                    id="startFastModeBtn"
+                    disabled
+                  >
+                    <i class="fas fa-play"></i> Start Fast Mode
+                  </button>
+
+                  <button
+                    class="btn btn-warning"
+                    onclick="stopFastModeInventory()"
+                    id="stopFastModeBtn"
+                    disabled
+                  >
+                    <i class="fas fa-stop"></i> Stop Fast Mode
+                  </button>
+                </div>
+
+                <div class="btn-group">
+                  <button
+                    class="btn btn-info"
+                    onclick="openFastModeConfigModal()"
+                    id="fastModeConfigBtn"
+                    disabled
+                    title="Fast Mode Config"
+                  >
+                    <i class="fas fa-sliders-h"></i>
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div class="btn-group">
-              <button
-                class="btn btn-info"
-                onclick="openParamConfigModal()"
-                id="paramConfigBtn"
-                disabled
-                title="Parameter Config"
-              >
-                <i class="fas fa-sliders-h"></i>
-              </button>
-              <button
-                class="btn btn-success"
-                onclick="openTagsInventoryModal()"
-                id="tagsInventoryBtn"
-                disabled
-                title="Tags Inventory"
-              >
-                <i class="fas fa-cogs"></i>
-              </button>
-              <button
-                class="btn btn-danger"
-                onclick="clearTags()"
-                title="Clear Tags"
-              >
-                <i class="fas fa-trash"></i>
-              </button>
-              <button
-                class="btn btn-secondary"
-                onclick="resetReader()"
-                title="Reset Reader"
-              >
-                <i class="fas fa-redo"></i>
-              </button>
-              <button
-                class="btn btn-warning"
-                onclick="testSelectCmd()"
-                title="Test Select CMD"
-              >
-                <i class="fas fa-vial"></i>
-              </button>
+            <!-- G2 Mode Section -->
+            <div class="inventory-mode-section">
+              <div class="mode-title">
+                <i class="fas fa-microchip"></i> G2 Mode (Inventory G2)
+              </div>
+
+              <label for="g2ModeType" class="form-label">Mode Type</label>
+              <div class="mode-selection">
+                <div class="form-check form-check-inline">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="g2ModeType"
+                    id="g2ModeEPC"
+                    value="epc"
+                    checked
+                  />
+                  <label class="form-check-label" for="g2ModeEPC">EPC</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="g2ModeType"
+                    id="g2ModeTID"
+                    value="tid"
+                  />
+                  <label class="form-check-label" for="g2ModeTID">TID</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="g2ModeType"
+                    id="g2ModeMix"
+                    value="mix"
+                  />
+                  <label class="form-check-label" for="g2ModeMix">Mix</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="g2ModeType"
+                    id="g2ModeFastID"
+                    value="fastid"
+                  />
+                  <label class="form-check-label" for="g2ModeFastID"
+                    >FastID</label
+                  >
+                </div>
+              </div>
+
+              <div class="mode-controls">
+                <div class="btn-group-vertical">
+                  <button
+                    class="btn btn-success"
+                    onclick="startG2ModeInventory()"
+                    id="startG2ModeBtn"
+                    disabled
+                  >
+                    <i class="fas fa-play"></i> Start G2 Mode
+                  </button>
+
+                  <button
+                    class="btn btn-warning"
+                    onclick="stopG2ModeInventory()"
+                    id="stopG2ModeBtn"
+                    disabled
+                  >
+                    <i class="fas fa-stop"></i> Stop G2 Mode
+                  </button>
+                </div>
+
+                <div class="btn-group">
+                  <button
+                    class="btn btn-info"
+                    onclick="openG2ModeConfigModal()"
+                    id="g2ModeConfigBtn"
+                    disabled
+                    title="G2 Mode Config"
+                  >
+                    <i class="fas fa-sliders-h"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- General Control Buttons -->
+            <div class="general-controls">
+              <div class="btn-group">
+                <button
+                  class="btn btn-danger"
+                  onclick="clearTags()"
+                  title="Clear Tags"
+                >
+                  <i class="fas fa-trash"></i>
+                </button>
+                <button
+                  class="btn btn-secondary"
+                  onclick="resetReader()"
+                  title="Reset Reader"
+                >
+                  <i class="fas fa-redo"></i>
+                </button>
+                <button
+                  class="btn btn-warning"
+                  onclick="testSelectCmd()"
+                  title="Test Select CMD"
+                >
+                  <i class="fas fa-vial"></i>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1074,32 +1214,24 @@
           connectBtn.disabled = true;
           disconnectBtn.disabled = false;
           enableControls();
-          // Enable profile and antenna buttons
-          document.getElementById("powerBtn").disabled = false;
-          document.getElementById("powerInfoBtn").disabled = false;
-          document.getElementById("profileBtn").disabled = false;
-          document.getElementById("getProfileBtn").disabled = false;
         } else {
           statusIndicator.className = "status-indicator status-disconnected";
           connectionStatus.textContent = "Not Connected";
           connectBtn.disabled = false;
           disconnectBtn.disabled = true;
           disableControls();
-          // Disable profile and antenna buttons
-          document.getElementById("powerBtn").disabled = true;
-          document.getElementById("powerInfoBtn").disabled = true;
-          document.getElementById("profileBtn").disabled = true;
-          document.getElementById("getProfileBtn").disabled = true;
         }
       }
 
       // Enable/disable controls
       function enableControls() {
         document.getElementById("infoBtn").disabled = false;
-        document.getElementById("startTargetABtn").disabled = false;
-        document.getElementById("tagsInventoryBtn").disabled = false;
-        document.getElementById("paramConfigBtn").disabled = false;
-        document.getElementById("stopBtn").disabled = false;
+        document.getElementById("startFastModeBtn").disabled = false;
+        document.getElementById("startG2ModeBtn").disabled = false;
+        document.getElementById("fastModeConfigBtn").disabled = false;
+        document.getElementById("g2ModeConfigBtn").disabled = false;
+        document.getElementById("stopFastModeBtn").disabled = false;
+        document.getElementById("stopG2ModeBtn").disabled = false;
         document.getElementById("powerBtn").disabled = false;
         document.getElementById("powerInfoBtn").disabled = false;
         document.getElementById("profileBtn").disabled = false;
@@ -1108,10 +1240,12 @@
 
       function disableControls() {
         document.getElementById("infoBtn").disabled = true;
-        document.getElementById("startTargetABtn").disabled = true;
-        document.getElementById("tagsInventoryBtn").disabled = true;
-        document.getElementById("paramConfigBtn").disabled = true;
-        document.getElementById("stopBtn").disabled = true;
+        document.getElementById("startFastModeBtn").disabled = true;
+        document.getElementById("startG2ModeBtn").disabled = true;
+        document.getElementById("fastModeConfigBtn").disabled = true;
+        document.getElementById("g2ModeConfigBtn").disabled = true;
+        document.getElementById("stopFastModeBtn").disabled = true;
+        document.getElementById("stopG2ModeBtn").disabled = true;
         document.getElementById("powerBtn").disabled = true;
         document.getElementById("powerInfoBtn").disabled = true;
         document.getElementById("profileBtn").disabled = true;
@@ -1274,6 +1408,107 @@
         } else {
           showAlert(result.message, "danger");
         }
+      }
+
+      // Fast Mode Inventory Functions
+      async function startFastModeInventory() {
+        const target = document.getElementById("fastModeTarget").value;
+
+        // Stop any existing inventory first
+        try {
+          await apiCall("/api/stop_inventory", "POST");
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        } catch (error) {
+          // Ignore stop errors
+        }
+
+        const result = await apiCall("/api/start_inventory", "POST", {
+          target: parseInt(target),
+        });
+
+        if (result.success) {
+          showAlert("Fast Mode inventory started successfully", "success");
+          document.getElementById("stopFastModeBtn").disabled = false;
+          document.getElementById("startFastModeBtn").disabled = true;
+          startTimer();
+        } else {
+          showAlert(result.message, "danger");
+        }
+      }
+
+      async function stopFastModeInventory() {
+        const result = await apiCall("/api/stop_inventory", "POST");
+        if (result.success) {
+          showAlert("Fast Mode inventory stopped", "success");
+          document.getElementById("stopFastModeBtn").disabled = true;
+          document.getElementById("startFastModeBtn").disabled = false;
+          stopTimer();
+        } else {
+          showAlert(result.message, "danger");
+        }
+      }
+
+      // G2 Mode Inventory Functions
+      async function startG2ModeInventory() {
+        const modeType = document.querySelector(
+          'input[name="g2ModeType"]:checked'
+        ).value;
+
+        // Stop any existing inventory first
+        try {
+          await apiCall("/api/stop_inventory", "POST");
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        } catch (error) {
+          // Ignore stop errors
+        }
+
+        const result = await apiCall("/api/start_inventory_g2", "POST", {
+          mode_type: modeType,
+        });
+
+        if (result.success) {
+          showAlert("G2 Mode inventory started successfully", "success");
+          document.getElementById("stopG2ModeBtn").disabled = false;
+          document.getElementById("startG2ModeBtn").disabled = true;
+          startTimer();
+        } else {
+          showAlert(result.message, "danger");
+        }
+      }
+
+      async function stopG2ModeInventory() {
+        const result = await apiCall("/api/stop_inventory", "POST");
+        if (result.success) {
+          showAlert("G2 Mode inventory stopped", "success");
+          document.getElementById("stopG2ModeBtn").disabled = true;
+          document.getElementById("startG2ModeBtn").disabled = false;
+          stopTimer();
+        } else {
+          showAlert(result.message, "danger");
+        }
+      }
+
+      // Config Modal Functions
+      function openFastModeConfigModal() {
+        // Use the existing parameter configuration modal for Fast Mode
+        const modal = new bootstrap.Modal(
+          document.getElementById("paramConfigModal")
+        );
+        modal.show();
+      }
+
+      function openG2ModeConfigModal() {
+        // TODO: Implement G2 Mode configuration modal
+        showAlert("G2 Mode configuration modal - to be implemented", "info");
+      }
+
+      // Button text update functions
+      function updateFastModeButtonText() {
+        const target = document.getElementById("fastModeTarget").value;
+        const startBtn = document.getElementById("startFastModeBtn");
+        startBtn.innerHTML = `<i class="fas fa-play"></i> Start Fast Mode (Target ${
+          target === "0" ? "A" : "B"
+        })`;
       }
 
       // Set power (for single antenna)

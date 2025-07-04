@@ -767,7 +767,6 @@ class UHFReader:
         target_bytes = bytes([target])
         return self.uhf.start_read(com_addr, target_bytes)
 
-
     def select_cmd(self, antenna: int, session: int, sel_action: int, mask_mem: int, 
                    mask_addr: bytes, mask_len: int, mask_data: bytes, truncate: int, antenna_num: int = 4) -> int:
         """

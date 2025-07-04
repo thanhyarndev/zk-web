@@ -212,6 +212,82 @@ def api_start_inventory():
         logger.error(f"Start inventory error: {e}")
         return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'}), 500
 
+@app.route('/api/start_inventory_g2', methods=['POST'])
+def api_start_inventory_g2():
+    """API bắt đầu inventory G2 mode"""
+    data = request.get_json()
+    mode_type = data.get('mode_type', 'epc')
+    
+    try:
+        # Lấy session từ param1 (giống C# GetSession)
+        cfg_num = 0x09  # Configuration number for Param1
+        cfg_data = bytearray(256)
+        data_len = [0]
+        result_param = reader.get_cfg_parameter(cfg_num, cfg_data, data_len)
+        if result_param == 0 and data_len[0] >= 2:
+            session_val = cfg_data[1] if cfg_data[1] < 4 else 0
+        else:
+            session_val = 0  # fallback nếu lỗi
+        
+        # First, call select_cmd for each antenna (like C# code)
+        sel_action_val = 0     # int = 0 (like C# code: Session, 0, MaskMem, ...)
+        mask_mem_val = 1       # int = EPC memory (like C# MaskMem = 1)
+        mask_addr_bytes = bytes([0, 0])  # 2 bytes address (like C# MaskAdr = new byte[2])
+        mask_len_val = 0       # int = no mask (like C# MaskLen = 0)
+        mask_data_bytes = bytes(100)  # 100 bytes array (like C# MaskData = new byte[100])
+        truncate_val = 0       # int = no truncate (like C# code: ..., 0, frmcomportindex)
+        select_antenna = 0xFFFF  # SelectAntenna = 0xFFFF (all antennas) like C# code
+
+        # Call select_cmd for each antenna (4 antennas like C# code)
+        # Following C# code exactly: for (int m = 0; m < 4; m++)
+        for antenna in range(4): 
+            result = reader.select_cmd(
+                antenna=select_antenna,  # SelectAntenna = 0xFFFF (all antennas)
+                session=session_val,
+                sel_action=sel_action_val,
+                mask_mem=mask_mem_val,
+                mask_addr=mask_addr_bytes,
+                mask_len=mask_len_val,
+                mask_data=mask_data_bytes,
+                truncate=truncate_val,
+                antenna_num=1
+            )
+            print(f"[DEBUG] Antenna {antenna} result: {result} session: {session_val}")
+            time.sleep(0.005)  # 5ms delay like C# Thread.Sleep(5)
+        
+        # Clear any existing data (like C# code clears dataGridView5, epclist, etc.)
+        # This is handled by the frontend when starting new inventory
+        
+        # Now start inventory with G2 mode type
+        # For G2 mode, we need to set the appropriate mode before starting inventory
+        # This would typically involve setting configuration parameters based on mode_type
+        # For now, we'll use the same start_inventory but with different target based on mode
+        
+        target = 0  # Default target A for G2 mode
+        if mode_type == 'tid':
+            # TID mode specific configuration could go here
+            pass
+        elif mode_type == 'mix':
+            # Mix mode specific configuration could go here
+            pass
+        elif mode_type == 'fastid':
+            # FastID mode specific configuration could go here
+            pass
+        # EPC is default
+        
+        result = reader.start_inventory(target)
+        
+        if result == 0:
+            return jsonify({'success': True, 'message': f'G2 Mode inventory đã bắt đầu ({mode_type.upper()})'})
+        elif result == 51:
+            return jsonify({'success': False, 'message': 'Inventory is already running'}), 400
+        else:
+            return jsonify({'success': False, 'message': f'Không thể bắt đầu G2 inventory (code: {result})'}), 400
+            
+    except Exception as e:
+        logger.error(f"Start G2 inventory error: {e}")
+        return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'}), 500
+
 @app.route('/api/stop_inventory', methods=['POST'])
 def api_stop_inventory():
     """API dừng inventory"""
