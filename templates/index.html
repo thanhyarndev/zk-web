@@ -232,6 +232,30 @@
         align-items: flex-start;
       }
 
+      /* G2 Mode Parameters */
+      .inventory-mode-section .row.g-2 {
+        margin-bottom: 1rem;
+      }
+
+      .inventory-mode-section .form-control-sm,
+      .inventory-mode-section .form-select-sm {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+      }
+
+      .inventory-mode-section .form-label {
+        font-size: 0.8rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .inventory-mode-section .form-check {
+        margin-bottom: 0;
+      }
+
+      .inventory-mode-section .form-check-label {
+        font-size: 0.8rem;
+      }
+
       .mode-controls .btn-group-vertical {
         flex: 1;
       }
@@ -403,7 +427,9 @@
       }
 
       .antenna-badge,
-      .rssi-badge {
+      .rssi-badge,
+      .phase-badge,
+      .freq-badge {
         font-size: 0.8rem;
         border-radius: 6px;
         padding: 0.25rem 0.5rem;
@@ -418,6 +444,16 @@
       .rssi-badge {
         background: #f8d7da;
         color: #c0392b;
+      }
+
+      .phase-badge {
+        background: #d1ecf1;
+        color: #0c5460;
+      }
+
+      .freq-badge {
+        background: #d4edda;
+        color: #155724;
       }
 
       .timestamp {
@@ -1004,6 +1040,130 @@
                 </div>
               </div>
 
+              <!-- G2 Mode Parameters -->
+              <div class="row g-2 mt-2">
+                <div class="col-md-6">
+                  <label for="g2ScanTime" class="form-label"
+                    >Scan Time (s)</label
+                  >
+                  <input
+                    type="number"
+                    class="form-control form-control-sm"
+                    id="g2ScanTime"
+                    value="0"
+                    min="0"
+                    max="65535"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="g2QValue" class="form-label">Q Value</label>
+                  <input
+                    type="number"
+                    class="form-control form-control-sm"
+                    id="g2QValue"
+                    value="4"
+                    min="0"
+                    max="15"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="g2Session" class="form-label">Session</label>
+                  <select class="form-select form-select-sm" id="g2Session">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label for="g2Target" class="form-label">Target</label>
+                  <select class="form-select form-select-sm" id="g2Target">
+                    <option value="0">A</option>
+                    <option value="1">B</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label for="g2TargetTimes" class="form-label"
+                    >Target Times</label
+                  >
+                  <input
+                    type="number"
+                    class="form-control form-control-sm"
+                    id="g2TargetTimes"
+                    value="1"
+                    min="1"
+                    max="255"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="g2MixMem" class="form-label">Mix Memory</label>
+                  <input
+                    type="number"
+                    class="form-control form-control-sm"
+                    id="g2MixMem"
+                    value="0"
+                    min="0"
+                    max="255"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="g2ReadAddr" class="form-label"
+                    >Read Address</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    id="g2ReadAddr"
+                    value="0000"
+                    placeholder="0000"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="g2ReadLen" class="form-label">Read Length</label>
+                  <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    id="g2ReadLen"
+                    value="04"
+                    placeholder="04"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="g2PSD" class="form-label">PSD</label>
+                  <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    id="g2PSD"
+                    value="00000000"
+                    placeholder="00000000"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <div class="form-check mt-4">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="g2EnablePhase"
+                    />
+                    <label class="form-check-label" for="g2EnablePhase"
+                      >Enable Phase</label
+                    >
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-check mt-4">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="g2EnableRate"
+                    />
+                    <label class="form-check-label" for="g2EnableRate"
+                      >Enable Rate</label
+                    >
+                  </div>
+                </div>
+              </div>
+
               <div class="mode-controls">
                 <div class="btn-group-vertical">
                   <button
@@ -1121,6 +1281,8 @@
                       <th>Count</th>
                       <th>Antenna</th>
                       <th>RSSI (dBm)</th>
+                      <th>Phase</th>
+                      <th>Freq (kHz)</th>
                       <th>Last Seen</th>
                     </tr>
                   </thead>
@@ -1939,20 +2101,35 @@
           selectedAntennas.push(1);
         }
 
+        // Get parameters from UI
+        const scanTime = parseInt(document.getElementById("g2ScanTime").value);
+        const qValue = parseInt(document.getElementById("g2QValue").value);
+        const session = parseInt(document.getElementById("g2Session").value);
+        const target = parseInt(document.getElementById("g2Target").value);
+        const targetTimes = parseInt(
+          document.getElementById("g2TargetTimes").value
+        );
+        const enablePhase = document.getElementById("g2EnablePhase").checked;
+        const enableRate = document.getElementById("g2EnableRate").checked;
+        const mixMem = parseInt(document.getElementById("g2MixMem").value);
+        const readAddr = document.getElementById("g2ReadAddr").value;
+        const readLen = document.getElementById("g2ReadLen").value;
+        const psd = document.getElementById("g2PSD").value;
+
         const result = await apiCall("/api/start_inventory_g2", "POST", {
           mode_type: modeType,
-          scan_time: 0, // TODO: Get from UI
-          q_value: 4, // TODO: Get from UI
-          session: 0, // TODO: Get from UI
-          target: 0, // TODO: Get from UI
-          target_times: 1, // TODO: Get from UI
-          enable_phase: false, // TODO: Get from UI
-          enable_rate: false, // TODO: Get from UI
+          scan_time: scanTime,
+          q_value: qValue,
+          session: session,
+          target: target,
+          target_times: targetTimes,
+          enable_phase: enablePhase,
+          enable_rate: enableRate,
           antennas: selectedAntennas,
-          mix_mem: 0, // TODO: Get from UI for mix mode
-          read_addr: "0000", // TODO: Get from UI for mix mode
-          read_len: "04", // TODO: Get from UI for mix mode
-          psd: "00000000", // TODO: Get from UI for mix mode
+          mix_mem: mixMem,
+          read_addr: readAddr,
+          read_len: readLen,
+          psd: psd,
         });
 
         if (result.success) {
@@ -1971,7 +2148,7 @@
       }
 
       async function stopG2ModeInventory() {
-        const result = await apiCall("/api/stop_inventory", "POST");
+        const result = await apiCall("/api/stop_inventory_g2", "POST");
         if (result.success) {
           showAlert("G2 Mode inventory stopped", "success");
           document.getElementById("stopG2ModeBtn").disabled = true;
@@ -2074,7 +2251,7 @@
       function updateTagsTable() {
         if (tagsData.size === 0) {
           tagsTableBody.innerHTML =
-            '<tr><td colspan="5" class="text-center text-muted">No tags detected yet</td></tr>';
+            '<tr><td colspan="7" class="text-center text-muted">No tags detected yet</td></tr>';
           document.getElementById("uniqueTags").textContent = "0";
           document.getElementById("totalTags").textContent = "0";
           return;
@@ -2091,11 +2268,23 @@
         // Add rows
         sortedTags.forEach(([epc, data]) => {
           const row = document.createElement("tr");
+
+          // Format phase display (show range if different)
+          const phaseDisplay =
+            data.phase_begin === data.phase_end
+              ? data.phase_begin
+              : `${data.phase_begin}-${data.phase_end}`;
+
+          // Format frequency display
+          const freqDisplay = data.freqkhz > 0 ? data.freqkhz : "-";
+
           row.innerHTML = `
                     <td><span class="tag-epc">${epc}</span></td>
                     <td><span class="badge bg-primary">${data.count}</span></td>
                     <td><span class="antenna-badge">Ant ${data.antenna}</span></td>
                     <td><span class="rssi-badge">${data.rssi} dBm</span></td>
+                    <td><span class="phase-badge">${phaseDisplay}</span></td>
+                    <td><span class="freq-badge">${freqDisplay}</span></td>
                     <td><span class="timestamp">${data.lastSeen}</span></td>
                 `;
           tagsTableBody.appendChild(row);
@@ -2184,28 +2373,44 @@
       socket.on("tag_detected", function (tagData) {
         console.log("🔍 WebSocket tag_detected received:", tagData);
 
-        // Use uid as EPC, ant as antenna, rssi as RSSI
-        const epc = tagData.uid;
+        // Use new RFIDTag structure: epc, antenna, rssi, phase_begin, phase_end, freqkhz
+        const epc = tagData.epc || tagData.uid; // Backward compatibility
+        const antenna = tagData.antenna || tagData.ant; // Backward compatibility
+        const rssi = tagData.rssi || 0;
+
         if (tagsData.has(epc)) {
           // Update existing tag
           const existing = tagsData.get(epc);
           existing.count++;
           existing.lastSeen = tagData.timestamp;
           // Update RSSI if new one is stronger
-          if (tagData.rssi > existing.rssi) {
-            existing.rssi = tagData.rssi;
+          if (rssi > existing.rssi) {
+            existing.rssi = rssi;
           }
           // Update antenna if different
-          if (existing.antenna !== tagData.ant) {
-            existing.antenna = `${existing.antenna}, ${tagData.ant}`;
+          if (existing.antenna !== antenna) {
+            existing.antenna = `${existing.antenna}, ${antenna}`;
+          }
+          // Update phase and frequency data if available (for InventoryMix_G2)
+          if (tagData.phase_begin !== undefined) {
+            existing.phase_begin = tagData.phase_begin;
+            existing.phase_end = tagData.phase_end;
+            existing.freqkhz = tagData.freqkhz;
           }
         } else {
-          // Add new tag
+          // Add new tag with enhanced data structure
           tagsData.set(epc, {
             count: 1,
-            antenna: tagData.ant,
-            rssi: tagData.rssi,
+            antenna: antenna,
+            rssi: rssi,
             lastSeen: tagData.timestamp,
+            // New fields for InventoryMix_G2
+            phase_begin: tagData.phase_begin || 0,
+            phase_end: tagData.phase_end || 0,
+            freqkhz: tagData.freqkhz || 0,
+            packet_param: tagData.packet_param || 0,
+            len: tagData.len || 0,
+            device_name: tagData.device_name || "Unknown",
           });
         }
 

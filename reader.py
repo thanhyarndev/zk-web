@@ -1124,7 +1124,7 @@ class Reader:
             com_addr: Reader address
             profile: Profile value as bytearray[0] (will be updated with response value if status=0)
         """
-        cmd = bytearray([5, com_addr, 127, profile[0]])
+        cmd = bytearray([5, com_addr[0], 127, profile[0]])
         crc = self._get_crc(cmd, len(cmd))
         cmd.extend(crc)
         result = self._send_data(cmd, len(cmd))
@@ -1476,3 +1476,192 @@ class Reader:
         except Exception as ex:
             print(f"[Read Error] {ex}")
         return None 
+
+    def inventory_mix_g2(self, com_addr: bytearray, q_value: bytes, session: bytes,
+                        mask_mem: bytes, mask_addr: bytearray, mask_len: bytes,
+                        mask_data: bytearray, mask_flag: bytes, read_mem: bytes,
+                        read_addr: bytearray, read_len: bytes, psd: bytearray,
+                        target: bytes, in_ant: bytes, scan_time: bytes, fast_flag: bytes,
+                        epc_list: bytearray, ant: list, total_len: list, card_num: list) -> int:
+        """Perform Gen2 inventory mix operation (C# SDK InventoryMix_G2 logic)"""
+        # C# SDK defaults scan_time to 20 if 0 is passed
+        scan_time_val = scan_time[0] if scan_time[0] != 0 else 20
+        print(f"[DEBUG] InventoryMix_G2 parameters: com_addr={com_addr[0]}, q_value={q_value[0]}, session={session[0]}, scan_time={scan_time_val}")
+        
+        # Build command exactly like C# SDK
+        cmd = bytearray()
+        cmd.append(com_addr[0])  # SendBuff[1]
+        cmd.append(25)           # SendBuff[2] = command code 25 (InventoryMix_G2)
+        cmd.append(q_value[0])   # SendBuff[3]
+        cmd.append(session[0])   # SendBuff[4]
+        
+        if mask_flag[0] == 1:
+            cmd.append(mask_mem[0])  # SendBuff[5]
+            cmd.extend(mask_addr)    # SendBuff[6,7]
+            cmd.append(mask_len[0])  # SendBuff[8]
+            num_bytes = (mask_len[0] + 7) // 8 if mask_len[0] % 8 != 0 else mask_len[0] // 8
+            cmd.extend(mask_data[:num_bytes])
+            
+            cmd.append(read_mem[0])  # SendBuff[num+9]
+            cmd.extend(read_addr)    # SendBuff[num+10, num+11]
+            cmd.append(read_len[0])  # SendBuff[num+12]
+            cmd.extend(psd)          # SendBuff[num+13...num+16] (4 bytes)
+            
+            if fast_flag[0] == 1:
+                cmd.append(target[0])    # SendBuff[num+17]
+                cmd.append(in_ant[0])    # SendBuff[num+18]
+                cmd.append(scan_time_val) # SendBuff[num+19]
+                # SendBuff[0] = 21 + num
+                cmd.insert(0, 21 + num_bytes)
+            else:
+                # SendBuff[0] = 18 + num
+                cmd.insert(0, 18 + num_bytes)
+        else:
+            cmd.append(read_mem[0])  # SendBuff[5]
+            cmd.extend(read_addr)    # SendBuff[6,7]
+            cmd.append(read_len[0])  # SendBuff[8]
+            cmd.extend(psd)          # SendBuff[9...12] (4 bytes)
+            
+            if fast_flag[0] == 1:
+                cmd.append(target[0])    # SendBuff[13]
+                cmd.append(in_ant[0])    # SendBuff[14]
+                cmd.append(scan_time_val) # SendBuff[15]
+                cmd.insert(0, 17)        # SendBuff[0] = 17
+            else:
+                cmd.insert(0, 14)        # SendBuff[0] = 14
+        
+        print(f"[DEBUG] InventoryMix_G2 command before CRC: {cmd.hex()}")
+        print(f"[DEBUG] Command length: {cmd[0]}")
+        
+        # Add CRC - C# uses GetCRC(SendBuff, SendBuff[0] - 1)
+        crc = self._get_crc(cmd, cmd[0] - 1)
+        cmd.extend(crc)
+        
+        print(f"[DEBUG] Full InventoryMix_G2 command with CRC: {cmd.hex()}")
+        
+        result = self._send_data(cmd, len(cmd))
+        if result != 0:
+            print(f"[DEBUG] InventoryMix_G2 send failed: {result}")
+            return result
+        
+        # C# calls GetInventoryMixG1(Scantime * 100, ...) - scan_time is in 10ms units
+        # So scan_time=20 means 2000ms timeout
+        return self._get_inventory_mix_g1(scan_time_val * 100, epc_list, ant, total_len, card_num) 
+
+    def _get_inventory_mix_g1(self, scan_time: int, epc_list: bytearray, ant: list, total_len: list, card_num: list) -> int:
+        """Get inventory mix data (private method like C# GetInventoryMixG1)"""
+        card_num[0] = 0
+        total_len[0] = 0
+        num = 0
+        array = bytearray(4096)  # Buffer for incomplete packets
+        num2 = 0  # Remaining bytes from previous read
+        start_time = time.time()
+        
+        try:
+            while (time.time() - start_time) * 1000 < scan_time * 2 + 2000:  # Convert to milliseconds
+                array2 = self._read_data()
+                if array2 is not None:
+                    num = len(array2)
+                    if num == 0:
+                        continue
+                    
+                    # Combine previous remaining data with new data
+                    array3 = bytearray(num2 + num)
+                    array3[:num2] = array[:num2]
+                    array3[num2:num2+num] = array2
+                    
+                    num4 = 0  # Current position in array3
+                    while len(array3) - num4 > 5:
+                        if array3[num4] >= 5 and array3[num4 + 2] == 25:  # Command 25 = InventoryMix_G2
+                            num5 = array3[num4]  # Packet length
+                            if len(array3) < num4 + num5 + 1:
+                                break
+                            
+                            # Extract complete packet
+                            array4 = array3[num4:num4 + num5 + 1]
+                            
+                            if self._check_crc(array4, len(array4)) == 0:
+                                start_time = time.time()  # Reset timeout timer
+                                num6 = array4[0] + 1  # Move to next packet
+                                num4 += num6
+                                
+                                num7 = array4[3]  # Status
+                                if num7 in (1, 2, 3, 4):
+                                    num8 = array4[5]  # Number of tags
+                                    if num8 > 0:
+                                        num9 = 6  # Start of tag data
+                                        for i in range(num8):
+                                            num10 = array4[num9 + 1] & 0x3F  # EPC length
+                                            flag = False
+                                            phase_begin = 0
+                                            phase_end = 0
+                                            freqkhz = 0
+                                            
+                                            if (array4[num9 + 1] & 0x40) > 0:
+                                                flag = True
+                                            
+                                            if not flag:
+                                                # EPC only (3 bytes: packet param + EPC length + EPC data)
+                                                epc_list[total_len[0]:total_len[0] + num10 + 3] = array4[num9:num9 + num10 + 3]
+                                                total_len[0] += num10 + 3
+                                            else:
+                                                # EPC + extra data (7 bytes: packet param + EPC length + EPC data + extra data)
+                                                epc_list[total_len[0]:total_len[0] + num10 + 7] = array4[num9:num9 + num10 + 7]
+                                                total_len[0] += num10 + 7
+                                                
+                                                # Extract phase and frequency data
+                                                if num9 + num10 + 9 < len(array4):
+                                                    phase_begin = array4[num9 + num10 + 3] * 256 + array4[num9 + num10 + 4]
+                                                    phase_end = array4[num9 + num10 + 5] * 256 + array4[num9 + num10 + 6]
+                                                    freqkhz = (array4[num9 + num10 + 7] << 16) + (array4[num9 + num10 + 8] << 8) + array4[num9 + num10 + 9]
+                                            
+                                            card_num[0] += 1
+                                            ant[0] = array4[4]  # Antenna number
+                                            
+                                            # Call callback if available (equivalent to C# ReceiveCallback)
+                                            if hasattr(self, 'receive_callback') and self.receive_callback is not None:
+                                                # Create RFIDTag object with all the data
+                                                from rfid_tag import RFIDTag
+                                                tag = RFIDTag()
+                                                tag.device_name = getattr(self, 'dev_name', 'Unknown')
+                                                tag.antenna = array4[4]
+                                                tag.len = array4[num9 + 1]
+                                                tag.packet_param = array4[num9]
+                                                tag.phase_begin = phase_begin
+                                                tag.phase_end = phase_end
+                                                tag.rssi = array4[num9 + 2 + num10] if num9 + 2 + num10 < len(array4) else 0
+                                                tag.freqkhz = freqkhz
+                                                
+                                                # Extract EPC data
+                                                epc_data = array4[num9 + 2:num9 + 2 + num10]
+                                                tag.epc = self._bytes_to_hex_string(epc_data)
+                                                
+                                                # Call the callback
+                                                self.receive_callback(tag)
+                                            
+                                            # Move to next tag
+                                            if flag:
+                                                num9 += 10 + num10  # EPC + extra data
+                                            else:
+                                                num9 += 3 + num10   # EPC only
+                                
+                                if num7 != 3:  # Not continuing
+                                    return num7
+                            else:
+                                num4 += 1  # CRC check failed, move to next byte
+                        else:
+                            num4 += 1  # Not a valid packet, move to next byte
+                    
+                    # Save remaining incomplete data for next iteration
+                    if len(array3) > num4:
+                        num2 = len(array3) - num4
+                        array[:num2] = array3[num4:num4 + num2]
+                    else:
+                        num2 = 0
+                else:
+                    time.sleep(0.005)  # 5ms sleep like C# Thread.Sleep(5)
+        
+        except Exception as ex:
+            print(f"[DEBUG] Exception in GetInventoryMixG1: {ex}")
+        
+        return 48  # Timeout 

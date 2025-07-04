@@ -12,6 +12,8 @@ from exceptions import (
     UHFReaderError, ConnectionError, TimeoutError,
     ReaderNotConnectedError, OperationInProgressError
 )
+import logging
+logger = logging.getLogger(__name__)
 
 class UHFReader:
     """
@@ -20,6 +22,7 @@ class UHFReader:
     read/write operations, and configuration.
     """
     
+    #CHECK
     def __init__(self):
         """Initialize the UHF reader"""
         self.uhf = Reader()
@@ -30,6 +33,7 @@ class UHFReader:
         self.scan_thread: Optional[threading.Thread] = None
         self.com_addr = 255
     
+    #CHECK
     def init_rfid_callback(self, callback: Callable[[RFIDTag], None]) -> None:
         """
         Initialize RFID callback function
@@ -83,6 +87,7 @@ class UHFReader:
         
         return result
     
+    #CHECK
     def open_com_port(self, port, com_addr: int, baud: int, skip_verification: bool = False) -> int:
         """
         Open serial connection to the reader
@@ -107,6 +112,7 @@ class UHFReader:
         
         return result
     
+    #CHECK
     def close_com_port(self) -> int:
         """
         Close serial connection
@@ -159,6 +165,7 @@ class UHFReader:
         
         return 0, 48  # No working port found
     
+    #CHECK
     def get_reader_information(self, com_addr: int, version_info: bytearray, reader_type: list, tr_type: list, 
                              dmax_fre: list, dmin_fre: list, power_dbm: list, scan_time: list,
                              ant_cfg0: list, beep_en: list, output_rep: list, check_ant: list) -> int:
@@ -326,8 +333,8 @@ class UHFReader:
                             extra_len = 7
                             offset += extra_len  # skip extra fields
                         tag = RFIDTag(
-                            uid=epc_data.hex().upper(),
-                            ant=ant[0],
+                            epc=epc_data.hex().upper(),
+                            antenna=ant[0],
                             rssi=rssi,
                             device_name=self.uhf.device_name
                         )
@@ -411,6 +418,7 @@ class UHFReader:
             mask_data, error_code
         )
     
+    #CHECK
     def start_inventory(self, target: int = 0) -> int:
         """
         Start continuous inventory (C# logic: gọi StartRead trước, nếu thành công mới tạo thread đọc)
@@ -443,6 +451,7 @@ class UHFReader:
 
         return 0
     
+    #CHECK
     def stop_immediately(self, com_addr: int = None) -> int:
         """
         Call stop_immediately on the underlying Reader (C# StopImmediately)
@@ -455,6 +464,7 @@ class UHFReader:
             com_addr = self.com_addr
         return self.uhf.stop_immediately(com_addr)
 
+    #CHECK
     def stop_inventory(self) -> int:
         """
         Stop continuous inventory (C# logic: set stop flag, call stop_immediately, wait for thread, then stop_read)
@@ -490,6 +500,7 @@ class UHFReader:
 
         return result
     
+    #CHECK
     def _work_process(self) -> None:
         """Background thread for continuous inventory, giống logic C# workProcess"""
         import time
@@ -550,8 +561,8 @@ class UHFReader:
                                 freqkhz = int(temp_phase[8:14], 16)
                             if self.callback:
                                 tag = RFIDTag(
-                                    uid=EPCStr,
-                                    ant=int(AntStr, 16),
+                                    epc=EPCStr,
+                                    antenna=int(AntStr, 16),
                                     rssi=int(RSSI, 16) if RSSI else 0,
                                     device_name=getattr(self.uhf, 'device_name', None)
                                 )
@@ -734,7 +745,8 @@ class UHFReader:
         if result == 0:
             return profile_bytearray[0]
         else:
-            raise UHFReaderError(f"Set profile failed: {result}")
+            # Return the result code instead of raising an exception
+            return result
 
     def start_read(self, target: int = 0) -> int:
         if not self.is_connected:
@@ -743,6 +755,7 @@ class UHFReader:
         target_bytes = bytes([target])
         return self.uhf.start_read(com_addr, target_bytes)
 
+    #CHECK
     def select_cmd(self, antenna: int, session: int, sel_action: int, mask_mem: int, 
                    mask_addr: bytes, mask_len: int, mask_data: bytes, truncate: int, antenna_num: int = 4) -> int:
         """
@@ -782,6 +795,7 @@ class UHFReader:
         
         return result
 
+    #CHECK
     def set_cfg_parameter(self, opt: int, cfg_num: int, data: bytes) -> int:
         """
         Set configuration parameter
@@ -810,6 +824,7 @@ class UHFReader:
         
         return result
 
+    #CHECK
     def get_cfg_parameter(self, cfg_no: int, cfg_data: bytearray, data_len: list) -> int:
         """
         Get configuration parameter
@@ -938,4 +953,87 @@ class UHFReader:
             return bytes.fromhex(hex_string)
         except Exception as e:
             logger.error(f"Error converting hex string to byte array: {e}")
-            raise UHFReaderError(f"Hex string conversion failed: {e}") 
+            raise UHFReaderError(f"Hex string conversion failed: {e}")
+
+    def inventory_mix_g2(self, q_value: int = 4, session: int = 0, mask_mem: int = 0,
+                        mask_addr: bytes = b'\x00\x00', mask_len: int = 0,
+                        mask_data: bytes = b'', mask_flag: int = 0, read_mem: int = 0,
+                        read_addr: bytes = b'\x00\x00', read_len: int = 0,
+                        psd: bytes = b'\x00\x00\x00\x00', target: int = 0,
+                        in_ant: int = 0, scan_time: int = 20, fast_flag: int = 0) -> int:
+        """
+        Perform Gen2 inventory mix operation - C# style with real-time callbacks
+        
+        Args:
+            q_value: Q value for inventory (0-15)
+            session: Session number (0-3)
+            mask_mem: Mask memory bank (0-3)
+            mask_addr: Mask address (2 bytes)
+            mask_len: Mask length in bits
+            mask_data: Mask data bytes
+            mask_flag: Mask flag (0-1)
+            read_mem: Read memory bank (0-3)
+            read_addr: Read address (2 bytes)
+            read_len: Read length in words
+            psd: PSD (4 bytes)
+            target: Target (0-1)
+            in_ant: Input antenna (0-3)
+            scan_time: Scan time in 10ms units (0=default 20)
+            fast_flag: Fast flag (0-1)
+            
+        Returns:
+            Result code (0 on success, error code on failure)
+            Tags are processed via callback in real-time (C# style)
+        """
+        if not self.is_connected:
+            raise ReaderNotConnectedError("Reader is not connected")
+        
+        if self.is_scanning:
+            raise OperationInProgressError("Inventory already in progress")
+        
+        try:
+            # Convert parameters to bytes/bytearray for low-level API
+            com_addr = bytearray([self.com_addr])
+            q_value_bytes = bytes([q_value])
+            session_bytes = bytes([session])
+            mask_mem_bytes = bytes([mask_mem])
+            mask_addr_array = bytearray(mask_addr)
+            mask_len_bytes = bytes([mask_len])
+            mask_data_array = bytearray(mask_data)
+            mask_flag_bytes = bytes([mask_flag])
+            read_mem_bytes = bytes([read_mem])
+            read_addr_array = bytearray(read_addr)
+            read_len_bytes = bytes([read_len])
+            psd_array = bytearray(psd)
+            target_bytes = bytes([target])
+            in_ant_bytes = bytes([in_ant])
+            scan_time_bytes = bytes([scan_time])
+            fast_flag_bytes = bytes([fast_flag])
+            
+            # Prepare output parameters (mutable lists for pass-by-reference simulation)
+            epc_list = bytearray(8192)  # Large buffer for EPC data
+            ant = [0]  # Antenna number
+            total_len = [0]  # Total length
+            card_num = [0]  # Number of cards
+            
+            # Call low-level inventory_mix_g2 method
+            # Tags will be processed via callback in real-time (C# style)
+            result = self.uhf.inventory_mix_g2(
+                com_addr, q_value_bytes, session_bytes,
+                mask_mem_bytes, mask_addr_array, mask_len_bytes,
+                mask_data_array, mask_flag_bytes, read_mem_bytes,
+                read_addr_array, read_len_bytes, psd_array,
+                target_bytes, in_ant_bytes, scan_time_bytes, fast_flag_bytes,
+                epc_list, ant, total_len, card_num
+            )
+            
+            # Update com_addr if successful
+            if result == 0:
+                self.com_addr = com_addr[0]
+            
+            logger.info(f"Inventory mix G2 completed: {card_num[0]} tags found, result={result}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in inventory mix G2: {e}")
+            raise UHFReaderError(f"Inventory mix G2 failed: {e}") 
