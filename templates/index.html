@@ -993,177 +993,443 @@
                 <i class="fas fa-microchip"></i> G2 Mode (Inventory G2)
               </div>
 
-              <label for="g2ModeType" class="form-label">Mode Type</label>
-              <div class="mode-selection">
-                <div class="form-check form-check-inline">
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    name="g2ModeType"
-                    id="g2ModeEPC"
-                    value="epc"
-                    checked
-                  />
-                  <label class="form-check-label" for="g2ModeEPC">EPC</label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    name="g2ModeType"
-                    id="g2ModeTID"
-                    value="tid"
-                  />
-                  <label class="form-check-label" for="g2ModeTID">TID</label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    name="g2ModeType"
-                    id="g2ModeMix"
-                    value="mix"
-                  />
-                  <label class="form-check-label" for="g2ModeMix">Mix</label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    name="g2ModeType"
-                    id="g2ModeFastID"
-                    value="fastid"
-                  />
-                  <label class="form-check-label" for="g2ModeFastID"
-                    >FastID</label
-                  >
-                </div>
-              </div>
-
-              <!-- G2 Mode Parameters -->
-              <div class="row g-2 mt-2">
-                <div class="col-md-6">
-                  <label for="g2ScanTime" class="form-label"
-                    >Scan Time (s)</label
-                  >
-                  <input
-                    type="number"
-                    class="form-control form-control-sm"
-                    id="g2ScanTime"
-                    value="0"
-                    min="0"
-                    max="65535"
-                  />
-                </div>
-                <div class="col-md-6">
-                  <label for="g2QValue" class="form-label">Q Value</label>
-                  <input
-                    type="number"
-                    class="form-control form-control-sm"
-                    id="g2QValue"
-                    value="4"
-                    min="0"
-                    max="15"
-                  />
-                </div>
-                <div class="col-md-6">
-                  <label for="g2Session" class="form-label">Session</label>
-                  <select class="form-select form-select-sm" id="g2Session">
-                    <option value="0">0</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                  </select>
-                </div>
-                <div class="col-md-6">
-                  <label for="g2Target" class="form-label">Target</label>
-                  <select class="form-select form-select-sm" id="g2Target">
-                    <option value="0">A</option>
-                    <option value="1">B</option>
-                  </select>
-                </div>
-                <div class="col-md-6">
-                  <label for="g2TargetTimes" class="form-label"
-                    >Target Times</label
-                  >
-                  <input
-                    type="number"
-                    class="form-control form-control-sm"
-                    id="g2TargetTimes"
-                    value="1"
-                    min="1"
-                    max="255"
-                  />
-                </div>
-                <div class="col-md-6">
-                  <label for="g2MixMem" class="form-label">Mix Memory</label>
-                  <input
-                    type="number"
-                    class="form-control form-control-sm"
-                    id="g2MixMem"
-                    value="0"
-                    min="0"
-                    max="255"
-                  />
-                </div>
-                <div class="col-md-6">
-                  <label for="g2ReadAddr" class="form-label"
-                    >Read Address</label
-                  >
-                  <input
-                    type="text"
-                    class="form-control form-control-sm"
-                    id="g2ReadAddr"
-                    value="0000"
-                    placeholder="0000"
-                  />
-                </div>
-                <div class="col-md-6">
-                  <label for="g2ReadLen" class="form-label">Read Length</label>
-                  <input
-                    type="text"
-                    class="form-control form-control-sm"
-                    id="g2ReadLen"
-                    value="04"
-                    placeholder="04"
-                  />
-                </div>
-                <div class="col-md-6">
-                  <label for="g2PSD" class="form-label">PSD</label>
-                  <input
-                    type="text"
-                    class="form-control form-control-sm"
-                    id="g2PSD"
-                    value="00000000"
-                    placeholder="00000000"
-                  />
-                </div>
-                <div class="col-md-6">
-                  <div class="form-check mt-4">
+              <!-- First Section: Mode Type Selection -->
+              <div class="mb-3">
+                <label class="form-label">Mode Type</label>
+                <div class="mode-selection">
+                  <div class="form-check form-check-inline">
                     <input
                       class="form-check-input"
-                      type="checkbox"
-                      id="g2EnablePhase"
+                      type="radio"
+                      name="g2ModeType"
+                      id="g2ModeEPC"
+                      value="epc"
+                      checked
+                      onchange="onG2ModeTypeChange()"
                     />
-                    <label class="form-check-label" for="g2EnablePhase"
-                      >Enable Phase</label
-                    >
+                    <label class="form-check-label" for="g2ModeEPC">EPC</label>
                   </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-check mt-4">
+                  <div class="form-check form-check-inline">
                     <input
                       class="form-check-input"
-                      type="checkbox"
-                      id="g2EnableRate"
+                      type="radio"
+                      name="g2ModeType"
+                      id="g2ModeTID"
+                      value="tid"
+                      onchange="onG2ModeTypeChange()"
                     />
-                    <label class="form-check-label" for="g2EnableRate"
-                      >Enable Rate</label
+                    <label class="form-check-label" for="g2ModeTID">TID</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="g2ModeType"
+                      id="g2ModeMix"
+                      value="mix"
+                      onchange="onG2ModeTypeChange()"
+                    />
+                    <label class="form-check-label" for="g2ModeMix">Mix</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="g2ModeType"
+                      id="g2ModeFastID"
+                      value="fastid"
+                      onchange="onG2ModeTypeChange()"
+                    />
+                    <label class="form-check-label" for="g2ModeFastID"
+                      >FastID</label
                     >
                   </div>
                 </div>
               </div>
 
+              <!-- Second Section: Mix/TID Section -->
+              <div class="mb-3" id="g2MixTidSection" style="display: none">
+                <div class="card">
+                  <div class="card-header">
+                    <span id="g2MixTidTitle">Mix/TID</span>
+                  </div>
+                  <div class="card-body">
+                    <div class="row g-2">
+                      <div class="col-md-6">
+                        <label for="g2MixMem" class="form-label">Mem</label>
+                        <select
+                          class="form-select form-select-sm"
+                          id="g2MixMem"
+                        >
+                          <option value="0">Reserve</option>
+                          <option value="1">EPC</option>
+                          <option value="2">TID</option>
+                          <option value="3">User</option>
+                        </select>
+                      </div>
+                      <div class="col-md-6">
+                        <label for="g2ReadAddr" class="form-label">Addr</label>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          id="g2ReadAddr"
+                          value="0000"
+                          placeholder="0000"
+                          maxlength="4"
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <label for="g2PSD" class="form-label">Password</label>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          id="g2PSD"
+                          value="00000000"
+                          placeholder="00000000"
+                          maxlength="8"
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <label for="g2ReadLen" class="form-label">Len</label>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          id="g2ReadLen"
+                          value="04"
+                          placeholder="04"
+                          maxlength="2"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Third Section: Parameters -->
+              <div class="mb-3">
+                <div class="card">
+                  <div class="card-header">Parameters</div>
+                  <div class="card-body">
+                    <div class="row g-2">
+                      <div class="col-md-6">
+                        <label for="g2QValue" class="form-label">Q</label>
+                        <select
+                          class="form-select form-select-sm"
+                          id="g2QValue"
+                        >
+                          <option value="0">0</option>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                          <option value="4" selected>4</option>
+                          <option value="5">5</option>
+                          <option value="6">6</option>
+                          <option value="7">7</option>
+                          <option value="8">8</option>
+                          <option value="9">9</option>
+                          <option value="10">10</option>
+                          <option value="11">11</option>
+                          <option value="12">12</option>
+                          <option value="13">13</option>
+                          <option value="14">14</option>
+                          <option value="15">15</option>
+                        </select>
+                      </div>
+                      <div class="col-md-6">
+                        <label for="g2Session" class="form-label"
+                          >Session</label
+                        >
+                        <select
+                          class="form-select form-select-sm"
+                          id="g2Session"
+                        >
+                          <option value="0">0</option>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                          <option value="4">Auto-1</option>
+                          <option value="5" selected>Auto-2</option>
+                          <option value="6">Auto-3</option>
+                        </select>
+                      </div>
+                      <div class="col-md-6">
+                        <label for="g2ScanTime" class="form-label"
+                          >ScanTime</label
+                        >
+                        <select
+                          class="form-select form-select-sm"
+                          id="g2ScanTime"
+                        >
+                          <option value="0">0*100ms</option>
+                          <option value="1">1*100ms</option>
+                          <option value="2">2*100ms</option>
+                          <option value="3">3*100ms</option>
+                          <option value="4">4*100ms</option>
+                          <option value="5">5*100ms</option>
+                          <option value="10">10*100ms</option>
+                          <option value="20">20*100ms</option>
+                          <option value="30">30*100ms</option>
+                          <option value="40">40*100ms</option>
+                          <option value="50" selected>50*100ms</option>
+                          <option value="60">60*100ms</option>
+                          <option value="70">70*100ms</option>
+                          <option value="80">80*100ms</option>
+                          <option value="90">90*100ms</option>
+                          <option value="100">100*100ms</option>
+                          <option value="150">150*100ms</option>
+                          <option value="200">200*100ms</option>
+                          <option value="255">255*100ms</option>
+                        </select>
+                      </div>
+                      <div class="col-md-6">
+                        <label for="g2Target" class="form-label">Target</label>
+                        <select
+                          class="form-select form-select-sm"
+                          id="g2Target"
+                        >
+                          <option value="0" selected>A</option>
+                          <option value="1">B</option>
+                        </select>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="g2EnableTargetTimes"
+                            checked
+                          />
+                          <label
+                            class="form-check-label"
+                            for="g2EnableTargetTimes"
+                          >
+                            Times no tag A/B conversion
+                          </label>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <label for="g2TargetTimes" class="form-label"
+                          >Value</label
+                        >
+                        <input
+                          type="number"
+                          class="form-control form-control-sm"
+                          id="g2TargetTimes"
+                          value="5"
+                          min="0"
+                          max="99"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Antenna Selection Section -->
+              <div class="mb-3">
+                <div class="card">
+                  <div class="card-header">Antenna Selection</div>
+                  <div class="card-body">
+                    <div class="row g-2">
+                      <div class="col-md-3">
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="check_ant1"
+                            checked
+                          />
+                          <label class="form-check-label" for="check_ant1"
+                            >Ant 1</label
+                          >
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="check_ant2"
+                          />
+                          <label class="form-check-label" for="check_ant2"
+                            >Ant 2</label
+                          >
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="check_ant3"
+                          />
+                          <label class="form-check-label" for="check_ant3"
+                            >Ant 3</label
+                          >
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="check_ant4"
+                          />
+                          <label class="form-check-label" for="check_ant4"
+                            >Ant 4</label
+                          >
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="check_ant5"
+                          />
+                          <label class="form-check-label" for="check_ant5"
+                            >Ant 5</label
+                          >
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="check_ant6"
+                          />
+                          <label class="form-check-label" for="check_ant6"
+                            >Ant 6</label
+                          >
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="check_ant7"
+                          />
+                          <label class="form-check-label" for="check_ant7"
+                            >Ant 7</label
+                          >
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="check_ant8"
+                          />
+                          <label class="form-check-label" for="check_ant8"
+                            >Ant 8</label
+                          >
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="check_ant9"
+                          />
+                          <label class="form-check-label" for="check_ant9"
+                            >Ant 9</label
+                          >
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="check_ant10"
+                          />
+                          <label class="form-check-label" for="check_ant10"
+                            >Ant 10</label
+                          >
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="check_ant11"
+                          />
+                          <label class="form-check-label" for="check_ant11"
+                            >Ant 11</label
+                          >
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="check_ant12"
+                          />
+                          <label class="form-check-label" for="check_ant12"
+                            >Ant 12</label
+                          >
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="check_ant13"
+                          />
+                          <label class="form-check-label" for="check_ant13"
+                            >Ant 13</label
+                          >
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="check_ant14"
+                          />
+                          <label class="form-check-label" for="check_ant14"
+                            >Ant 14</label
+                          >
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="check_ant15"
+                          />
+                          <label class="form-check-label" for="check_ant15"
+                            >Ant 15</label
+                          >
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="check_ant16"
+                          />
+                          <label class="form-check-label" for="check_ant16"
+                            >Ant 16</label
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Control Buttons -->
               <div class="mode-controls">
                 <div class="btn-group-vertical">
                   <button
@@ -1502,77 +1768,6 @@
       </div>
     </div>
 
-    <!-- Tags Inventory Modal -->
-    <div class="modal fade" id="tagsInventoryModal" tabindex="-1">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">
-              <i class="fas fa-cogs"></i> Tags Inventory Configuration
-            </h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label for="qValueInput" class="form-label">Q Value</label>
-                <input
-                  type="number"
-                  class="form-control"
-                  id="qValueInput"
-                  value="4"
-                  min="0"
-                  max="15"
-                />
-              </div>
-              <div class="col-md-6">
-                <label for="sessionInput" class="form-label">Session</label>
-                <select class="form-select" id="sessionInput">
-                  <option value="0">0</option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label for="scanTimeInput" class="form-label"
-                  >Scan Time (ms)</label
-                >
-                <input
-                  type="number"
-                  class="form-control"
-                  id="scanTimeInput"
-                  value="1000"
-                  min="100"
-                  max="10000"
-                />
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              onclick="startTagsInventory()"
-            >
-              <i class="fas fa-play"></i> Start Tags Inventory
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Alerts -->
     <div
       id="alertContainer"
@@ -1767,41 +1962,41 @@
 
       // Enable controls that require connection
       function enableConnectedControls() {
+        // Helper function to safely enable element
+        const safeEnable = (id) => {
+          const element = document.getElementById(id);
+          if (element) element.disabled = false;
+        };
+
         // Enable inventory buttons
-        // document.getElementById("startBtn").disabled = false; // General start button not implemented
-        document.getElementById("startFastModeBtn").disabled = false;
-        document.getElementById("startG2ModeBtn").disabled = false;
+        safeEnable("startFastModeBtn");
+        safeEnable("startG2ModeBtn");
 
         // Enable Fast Mode controls
-        document.getElementById("fastModeTarget").disabled = false;
+        safeEnable("fastModeTarget");
 
         // Enable configuration buttons
-        document.getElementById("fastModeConfigBtn").disabled = false;
-        document.getElementById("g2ModeConfigBtn").disabled = false;
+        safeEnable("fastModeConfigBtn");
 
         // Enable G2 mode form controls
-        document.getElementById("g2ScanTime").disabled = false;
-        document.getElementById("g2QValue").disabled = false;
-        document.getElementById("g2Session").disabled = false;
-        document.getElementById("g2Target").disabled = false;
-        document.getElementById("g2TargetTimes").disabled = false;
-        document.getElementById("g2MixMem").disabled = false;
-        document.getElementById("g2ReadAddr").disabled = false;
-        document.getElementById("g2ReadLen").disabled = false;
-        document.getElementById("g2PSD").disabled = false;
-        document.getElementById("g2EnablePhase").disabled = false;
-        document.getElementById("g2EnableRate").disabled = false;
+        safeEnable("g2ScanTime");
+        safeEnable("g2QValue");
+        safeEnable("g2Session");
+        safeEnable("g2Target");
+        safeEnable("g2TargetTimes");
+        safeEnable("g2EnableTargetTimes");
+        safeEnable("g2MixMem");
+        safeEnable("g2ReadAddr");
+        safeEnable("g2ReadLen");
+        safeEnable("g2PSD");
 
         // Enable power control
-        document.getElementById("powerInput").disabled = false;
-        document.getElementById("powerBtn").disabled = false;
+        safeEnable("powerInput");
+        safeEnable("powerBtn");
 
         // Enable profile control
-        document.getElementById("profileSelect").disabled = false;
-        document.getElementById("saveProfile").disabled = false;
-
-        // Enable buzzer control
-        // document.getElementById("buzzerBtn").disabled = false; // Buzzer button not implemented yet
+        safeEnable("profileSelect");
+        safeEnable("saveProfile");
 
         // Enable antenna controls
         const antennaCheckboxes = document.querySelectorAll(
@@ -1812,56 +2007,55 @@
         });
 
         // Enable get reader info button
-        document.getElementById("infoBtn").disabled = false;
+        safeEnable("infoBtn");
 
         // Enable get power info button
-        document.getElementById("powerInfoBtn").disabled = false;
+        safeEnable("powerInfoBtn");
 
         // Enable profile buttons
-        document.getElementById("profileBtn").disabled = false;
-        document.getElementById("getProfileBtn").disabled = false;
+        safeEnable("profileBtn");
+        safeEnable("getProfileBtn");
       }
 
       // Disable controls that require connection
       function disableConnectedControls() {
+        // Helper function to safely disable element
+        const safeDisable = (id) => {
+          const element = document.getElementById(id);
+          if (element) element.disabled = true;
+        };
+
         // Disable inventory buttons
-        // document.getElementById("startBtn").disabled = true; // General start button not implemented
-        // document.getElementById("stopBtn").disabled = true; // General stop button not implemented
-        document.getElementById("startFastModeBtn").disabled = true;
-        document.getElementById("stopFastModeBtn").disabled = true;
-        document.getElementById("startG2ModeBtn").disabled = true;
-        document.getElementById("stopG2ModeBtn").disabled = true;
+        safeDisable("startFastModeBtn");
+        safeDisable("stopFastModeBtn");
+        safeDisable("startG2ModeBtn");
+        safeDisable("stopG2ModeBtn");
 
         // Disable Fast Mode controls
-        document.getElementById("fastModeTarget").disabled = true;
+        safeDisable("fastModeTarget");
 
         // Disable configuration buttons
-        document.getElementById("fastModeConfigBtn").disabled = true;
-        document.getElementById("g2ModeConfigBtn").disabled = true;
+        safeDisable("fastModeConfigBtn");
 
         // Disable G2 mode form controls
-        document.getElementById("g2ScanTime").disabled = true;
-        document.getElementById("g2QValue").disabled = true;
-        document.getElementById("g2Session").disabled = true;
-        document.getElementById("g2Target").disabled = true;
-        document.getElementById("g2TargetTimes").disabled = true;
-        document.getElementById("g2MixMem").disabled = true;
-        document.getElementById("g2ReadAddr").disabled = true;
-        document.getElementById("g2ReadLen").disabled = true;
-        document.getElementById("g2PSD").disabled = true;
-        document.getElementById("g2EnablePhase").disabled = true;
-        document.getElementById("g2EnableRate").disabled = true;
+        safeDisable("g2ScanTime");
+        safeDisable("g2QValue");
+        safeDisable("g2Session");
+        safeDisable("g2Target");
+        safeDisable("g2TargetTimes");
+        safeDisable("g2EnableTargetTimes");
+        safeDisable("g2MixMem");
+        safeDisable("g2ReadAddr");
+        safeDisable("g2ReadLen");
+        safeDisable("g2PSD");
 
         // Disable power control
-        document.getElementById("powerInput").disabled = true;
-        document.getElementById("powerBtn").disabled = true;
+        safeDisable("powerInput");
+        safeDisable("powerBtn");
 
         // Disable profile control
-        document.getElementById("profileSelect").disabled = true;
-        document.getElementById("saveProfile").disabled = true;
-
-        // Disable buzzer control
-        // document.getElementById("buzzerBtn").disabled = true; // Buzzer button not implemented yet
+        safeDisable("profileSelect");
+        safeDisable("saveProfile");
 
         // Disable antenna controls
         const antennaCheckboxes = document.querySelectorAll(
@@ -1872,14 +2066,14 @@
         });
 
         // Disable get reader info button
-        document.getElementById("infoBtn").disabled = true;
+        safeDisable("infoBtn");
 
         // Disable get power info button
-        document.getElementById("powerInfoBtn").disabled = true;
+        safeDisable("powerInfoBtn");
 
         // Disable profile buttons
-        document.getElementById("profileBtn").disabled = true;
-        document.getElementById("getProfileBtn").disabled = true;
+        safeDisable("profileBtn");
+        safeDisable("getProfileBtn");
       }
 
       // Get reader info
@@ -2042,47 +2236,11 @@
         }
       }
 
-      // Start inventory (commented out - uses non-existent elements)
-      /*
-      async function startInventory() {
-        const target = document.getElementById("targetSelect").value;
-
-        // Stop any existing inventory first
-        try {
-          await apiCall("/api/stop_inventory", "POST");
-          // Wait a bit for the stop to take effect
-          await new Promise((resolve) => setTimeout(resolve, 500));
-        } catch (error) {
-          // Ignore stop errors
-        }
-
-        const result = await apiCall("/api/start_inventory", "POST", {
-          target: parseInt(target), // Convert to integer
-        });
-
-        if (result.success) {
-          showAlert(result.message, "success");
-          document.getElementById("stopBtn").disabled = false;
-          startTimer();
-        } else {
-          showAlert(result.message, "danger");
-        }
-      }
-
-      // Stop inventory
-      async function stopInventory() {
-        const result = await apiCall("/api/stop_inventory", "POST");
-        if (result.success) {
-          showAlert(result.message, "success");
-          stopTimer();
-        } else {
-          showAlert(result.message, "danger");
-        }
-      }
-      */
-
       // Fast Mode Inventory Functions
       async function startFastModeInventory() {
+        // Reset tag list and timer before starting
+        clearTags();
+        resetTimer();
         const target = document.getElementById("fastModeTarget").value;
 
         // Stop any existing inventory first
@@ -2121,6 +2279,9 @@
 
       // G2 Mode Inventory Functions
       async function startG2ModeInventory() {
+        // Reset tag list and timer before starting
+        clearTags();
+        resetTimer();
         const modeType = document.querySelector(
           'input[name="g2ModeType"]:checked'
         ).value;
@@ -2155,12 +2316,39 @@
         const targetTimes = parseInt(
           document.getElementById("g2TargetTimes").value
         );
-        const enablePhase = document.getElementById("g2EnablePhase").checked;
-        const enableRate = document.getElementById("g2EnableRate").checked;
-        const mixMem = parseInt(document.getElementById("g2MixMem").value);
-        const readAddr = document.getElementById("g2ReadAddr").value;
-        const readLen = document.getElementById("g2ReadLen").value;
-        const psd = document.getElementById("g2PSD").value;
+        const enableTargetTimes = document.getElementById(
+          "g2EnableTargetTimes"
+        ).checked;
+
+        // Get Mix/TID parameters if section is visible
+        let mixMem = 0;
+        let readAddr = "0000";
+        let readLen = "04";
+        let psd = "00000000";
+
+        if (
+          document.getElementById("g2MixTidSection").style.display !== "none"
+        ) {
+          mixMem = parseInt(document.getElementById("g2MixMem").value);
+          readAddr = document.getElementById("g2ReadAddr").value;
+          readLen = document.getElementById("g2ReadLen").value;
+          psd = document.getElementById("g2PSD").value;
+        }
+
+        // Debug logging to verify frontend parameters
+        console.log("[DEBUG] Frontend G2 Mode parameters being sent:");
+        console.log("  Mode type:", modeType);
+        console.log("  Scan time:", scanTime, `(${scanTime * 100}ms)`);
+        console.log("  Q value:", qValue);
+        console.log("  Session:", session);
+        console.log("  Target:", target);
+        console.log("  Target times:", targetTimes);
+        console.log("  Enable target times:", enableTargetTimes);
+        console.log("  Selected antennas:", selectedAntennas);
+        console.log("  Mix mem:", mixMem);
+        console.log("  Read addr:", readAddr);
+        console.log("  Read len:", readLen);
+        console.log("  PSD:", psd);
 
         const result = await apiCall("/api/start_inventory_g2", "POST", {
           mode_type: modeType,
@@ -2169,8 +2357,7 @@
           session: session,
           target: target,
           target_times: targetTimes,
-          enable_phase: enablePhase,
-          enable_rate: enableRate,
+          enable_target_times: enableTargetTimes,
           antennas: selectedAntennas,
           mix_mem: mixMem,
           read_addr: readAddr,
@@ -2492,60 +2679,6 @@
       // updateStartButtonText(); // Function commented out
       checkConnectionStatus();
 
-      function openTagsInventoryModal() {
-        var modal = new bootstrap.Modal(
-          document.getElementById("tagsInventoryModal")
-        );
-        modal.show();
-      }
-
-      async function startTagsInventory() {
-        const q_value = parseInt(document.getElementById("qValueInput").value);
-        const session = parseInt(document.getElementById("sessionInput").value);
-        const antenna = 1; // Mặc định sử dụng antenna 1
-        const scan_time = parseInt(
-          document.getElementById("scanTimeInput").value
-        );
-
-        const result = await apiCall("/api/tags_inventory", "POST", {
-          q_value,
-          session,
-          antenna,
-          scan_time,
-        });
-        if (result.success) {
-          showAlert(result.message, "success");
-          document.getElementById("stopBtn").disabled = false;
-          startTimer();
-          // Đóng modal
-          var modal = bootstrap.Modal.getInstance(
-            document.getElementById("tagsInventoryModal")
-          );
-          modal.hide();
-        } else {
-          showAlert(result.message, "danger");
-        }
-      }
-
-      async function stopTagsInventory() {
-        const result = await apiCall("/api/stop_tags_inventory", "POST");
-        if (result.success) {
-          showAlert(result.message, "success");
-          document.getElementById("stopBtn").disabled = true;
-          stopTimer();
-        } else {
-          showAlert(result.message, "danger");
-        }
-      }
-
-      // Parameter Configuration Functions
-      function openParamConfigModal() {
-        var modal = new bootstrap.Modal(
-          document.getElementById("paramConfigModal")
-        );
-        modal.show();
-      }
-
       async function setParam1() {
         const qValue = parseInt(document.getElementById("qValueParam").value);
         const session = parseInt(document.getElementById("sessionParam").value);
@@ -2649,186 +2782,74 @@
         }
       }
 
-      // function updateStartButtonText() {
-      //   const targetSelect = document.getElementById("targetSelect");
-      //   const startBtn = document.getElementById("startTargetABtn");
-      //   const target = targetSelect.value;
-      //   startBtn.innerHTML = `<i class="fas fa-play"></i> Start Inventory (Target ${
-      //     target === "0" ? "A" : "B"
-      //   })`;
-      // }
+      // G2 Mode Type Change Handler
+      function onG2ModeTypeChange() {
+        const modeType = document.querySelector(
+          'input[name="g2ModeType"]:checked'
+        ).value;
+        const mixTidSection = document.getElementById("g2MixTidSection");
+        const mixTidTitle = document.getElementById("g2MixTidTitle");
+        const sessionSelect = document.getElementById("g2Session");
+        const mixMemSelect = document.getElementById("g2MixMem");
+        const psdInput = document.getElementById("g2PSD");
+        const readAddrInput = document.getElementById("g2ReadAddr");
+        const readLenInput = document.getElementById("g2ReadLen");
 
-      // Test Select CMD function (commented out - uses non-existent elements)
-      /*
-      async function testSelectCmd() {
-        try {
-          const targetSelect = document.getElementById("targetSelect");
-          const target = parseInt(targetSelect.value);
-          const session = 0; // Default session 0
+        // Clear session options first
+        sessionSelect.innerHTML = "";
 
-          console.log(
-            `🧪 Testing select_cmd with target=${target}, session=${session}`
-          );
+        if (modeType === "epc" || modeType === "fastid") {
+          // EPC and FastID modes - hide Mix/TID section
+          mixTidSection.style.display = "none";
 
-          const result = await apiCall("/api/test_select_cmd", "POST", {
-            target: target,
-            session: session,
-          });
+          // Add session options for EPC/FastID modes
+          sessionSelect.innerHTML = `
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">Auto-1</option>
+            <option value="5" selected>Auto-2</option>
+            <option value="6">Auto-3</option>
+          `;
+        } else if (modeType === "tid") {
+          // TID mode - show TID section
+          mixTidSection.style.display = "block";
+          mixTidTitle.textContent = "TID";
 
-          console.log(result);
+          // Set TID defaults
+          mixMemSelect.value = "2"; // TID
+          mixMemSelect.disabled = true;
+          readAddrInput.value = "0002";
+          psdInput.value = "00000000";
+          psdInput.disabled = true;
+          readLenInput.value = "04";
 
-          if (result.success) {
-            console.log("✅ Select CMD test results:", result.results);
-            console.log("📋 Parameters used:", result.parameters);
+          // Add session options for TID mode
+          sessionSelect.innerHTML = `
+            <option value="0" selected>0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          `;
+        } else if (modeType === "mix") {
+          // Mix mode - show Mix section
+          mixTidSection.style.display = "block";
+          mixTidTitle.textContent = "Mix";
 
-            // Show results in alert
-            let message = "Select CMD Test Results:\n\n";
-            result.results.forEach((r) => {
-              const status =
-                r.result === 0 ? "SUCCESS" : `ERROR ${r.result_hex}`;
-              message += `Antenna ${r.antenna}: ${status}\n`;
-            });
+          // Enable controls for Mix mode
+          mixMemSelect.disabled = false;
+          psdInput.disabled = false;
 
-            showAlert(message, "info");
-          } else {
-            console.error("❌ Select CMD test failed:", result.error);
-            showAlert(`Test failed: ${result.error}`, "danger");
-          }
-        } catch (error) {
-          console.error("❌ Select CMD test error:", error);
-          showAlert(`Test error: ${error.message}`, "danger");
+          // Add session options for Mix mode
+          sessionSelect.innerHTML = `
+            <option value="0" selected>0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          `;
         }
       }
-      */
-      // Debug and test functions (commented out - uses non-existent elements)
-      /*
-      async function debugReader() {
-        try {
-          console.log("🔍 Debugging reader object...");
-
-          const result = await apiCall("/api/debug_reader", "POST", {});
-
-          if (result.success) {
-            console.log("📊 Reader Debug Results:");
-            console.log("Reader Type:", result.reader_type);
-            console.log("Total Methods:", result.total_methods);
-            console.log("Total Attributes:", result.total_attributes);
-            console.log("Select Methods:", result.select_methods);
-            console.log("All Methods:", result.all_methods);
-            console.log("Attributes:", result.attributes);
-
-            // Show results in alert
-            let message = `Reader Debug Results:\n\n`;
-            message += `Reader Type: ${result.reader_type}\n`;
-            message += `Total Methods: ${result.total_methods}\n`;
-            message += `Select Methods: ${result.select_methods.join(
-              ", "
-            )}\n\n`;
-            message += `Available Methods:\n${result.all_methods
-              .slice(0, 20)
-              .join(", ")}`;
-            if (result.all_methods.length > 20) {
-              message += `\n... and ${result.all_methods.length - 20} more`;
-            }
-
-            showAlert(message, "info");
-          } else {
-            console.error("❌ Reader debug failed:", result.error);
-            showAlert(`Debug failed: ${result.error}`, "danger");
-          }
-        } catch (error) {
-          console.error("❌ Reader debug error:", error);
-          showAlert(`Debug error: ${error.message}`, "danger");
-        }
-      }
-
-      async function testSelectCmdFixed() {
-        try {
-          const targetSelect = document.getElementById("targetSelect");
-          const target = parseInt(targetSelect.value);
-          const session = 0;
-
-          console.log(
-            `🧪 Testing fixed select_cmd with target=${target}, session=${session}`
-          );
-
-          const result = await apiCall("/api/test_select_cmd_fixed", "POST", {
-            target: target,
-            session: session,
-          });
-
-          console.log(result);
-
-          if (result.success) {
-            console.log("✅ Fixed Select CMD test results:", result.results);
-
-            let message = "Fixed Select CMD Test Results:\n\n";
-            result.results.forEach((r) => {
-              if (r.success) {
-                const status =
-                  r.result === 0 ? "SUCCESS" : `ERROR ${r.result_hex}`;
-                message += `Antenna ${r.antenna}: ${status}\n`;
-              } else {
-                message += `Antenna ${r.antenna}: FAILED - ${r.error}\n`;
-              }
-            });
-
-            showAlert(message, "info");
-          } else {
-            console.error("❌ Fixed Select CMD test failed:", result.error);
-            showAlert(`Test failed: ${result.error}`, "danger");
-          }
-        } catch (error) {
-          console.error("❌ Fixed Select CMD test error:", error);
-          showAlert(`Test error: ${error.message}`, "danger");
-        }
-      }
-
-      async function tryAlternativeSelect() {
-        try {
-          const targetSelect = document.getElementById("targetSelect");
-          const target = parseInt(targetSelect.value);
-          const session = 0;
-
-          console.log(`🔄 Trying alternative select methods...`);
-
-          const result = await apiCall("/api/try_alternative_select", "POST", {
-            target: target,
-            session: session,
-          });
-
-          console.log(result);
-
-          if (result.success) {
-            console.log("✅ Alternative select test results:", result.results);
-
-            let message = "Alternative Select Method Results:\n\n";
-            message += `Available Methods: ${result.available_methods.join(
-              ", "
-            )}\n\n`;
-
-            result.results.forEach((r) => {
-              const status = r.success ? "SUCCESS" : "FAILED";
-              message += `${r.method} (${r.parameter_style}): ${status}\n`;
-              if (r.error) {
-                message += `  Error: ${r.error}\n`;
-              }
-              if (r.result !== undefined) {
-                message += `  Result: ${r.result}\n`;
-              }
-            });
-
-            showAlert(message, "info");
-          } else {
-            console.error("❌ Alternative select test failed:", result.error);
-            showAlert(`Test failed: ${result.error}`, "danger");
-          }
-        } catch (error) {
-          console.error("❌ Alternative select test error:", error);
-          showAlert(`Test error: ${error.message}`, "danger");
-        }
-      }
-      */
 
       // Initialize the application
       document.addEventListener("DOMContentLoaded", function () {
@@ -2855,6 +2876,9 @@
             console.log(`Antenna ${this.id} changed to: ${this.checked}`);
           });
         });
+
+        // Initialize G2 mode type
+        onG2ModeTypeChange();
 
         console.log("✅ Initialization complete");
       });

@@ -265,7 +265,8 @@ class UHFReader:
     
     def inventory_g2(self, q_value: int = 4, session: int = 0, 
                     scan_time: int = 5, target: int = 0, 
-                    in_ant: int = 0) -> List[RFIDTag]:
+                    in_ant: int = 0, tid_flag: int = 0, 
+                    tid_addr: int = 0, tid_len: int = 0) -> List[RFIDTag]:
         """
         Perform Gen2 inventory operation
         
@@ -275,6 +276,9 @@ class UHFReader:
             scan_time: Scan time in 10-millisecond units (e.g., 20 = 200ms, 100 = 1s)
             target: Target flag (0-1)
             in_ant: Input antenna (0-255)
+            tid_flag: TID flag (0=EPC mode, 1=TID mode)
+            tid_addr: TID start address (when tid_flag=1)
+            tid_len: TID length (when tid_flag=1)
             
         Returns:
             List of RFIDTag objects found
@@ -291,9 +295,9 @@ class UHFReader:
         mask_len_bytes = bytes([0])
         mask_data = bytearray()
         mask_flag_bytes = bytes([0])
-        addr_tid_bytes = bytes([0])
-        len_tid_bytes = bytes([0])
-        tid_flag_bytes = bytes([0])
+        addr_tid_bytes = bytes([tid_addr])  # Use TID address parameter
+        len_tid_bytes = bytes([tid_len])    # Use TID length parameter
+        tid_flag_bytes = bytes([tid_flag])  # Use TID flag parameter
         target_bytes = bytes([target])
         in_ant_bytes = bytes([in_ant])
         scan_time_bytes = bytes([scan_time])
@@ -852,92 +856,6 @@ class UHFReader:
             data_len[0] = actual_len
         
         return status
-
-    def start_inventory_g2(self, target: int = 0, scan_time: int = 0, q_value: int = 4, 
-                          session: int = 0, read_mode: int = 0, scan_type: int = 0,
-                          tid_flag: int = 0, tid_addr: int = 0, tid_len: int = 0,
-                          select_antenna: int = 0xFFFF, mode_type: str = 'epc') -> int:
-        """
-        Start G2 mode inventory with comprehensive parameters
-        Based on C# btIventoryG2_Click implementation
-        """
-        if not self.is_connected:
-            raise ReaderNotConnectedError("Reader is not connected")
-        
-        try:
-            # TODO: Implement PresetTarget equivalent
-            # PresetTarget(readMode, SelectAntenna)
-            
-            # TODO: Implement the actual inventory start logic
-            # This would replace the C# inventory() method call
-            
-            # For now, use the basic start_inventory as a fallback
-            # but with the calculated parameters
-            logger.info(f"Starting G2 inventory: mode={mode_type}, scan_type={scan_type}, "
-                       f"q_value={q_value}, session={session}, target={target}")
-            
-            # TODO: Implement proper G2 inventory start
-            # This should call the appropriate UHF SDK method with all the calculated parameters
-            
-            # Placeholder implementation
-            result = self.start_inventory(target)
-            
-            if result == 0:
-                logger.info("G2 inventory started successfully")
-            else:
-                logger.error(f"Failed to start G2 inventory: {result}")
-            
-            return result
-            
-        except Exception as e:
-            logger.error(f"Error starting G2 inventory: {e}")
-            raise UHFReaderError(f"Start G2 inventory failed: {e}")
-
-    def stop_inventory_immediately(self) -> int:
-        """
-        Stop inventory immediately - equivalent to C# StopImmediately
-        """
-        if not self.is_connected:
-            raise ReaderNotConnectedError("Reader is not connected")
-        
-        try:
-            # TODO: Implement immediate stop logic
-            # This should be equivalent to C# RWDev.StopImmediately(ref fComAdr, frmcomportindex)
-            
-            # For now, use the existing stop_inventory method
-            result = self.stop_inventory()
-            
-            if result == 0:
-                logger.info("Inventory stopped immediately")
-            else:
-                logger.error(f"Failed to stop inventory immediately: {result}")
-            
-            return result
-            
-        except Exception as e:
-            logger.error(f"Error stopping inventory immediately: {e}")
-            raise UHFReaderError(f"Stop inventory immediately failed: {e}")
-
-    def preset_target(self, read_mode: int, select_antenna: int) -> int:
-        """
-        Preset target - equivalent to C# PresetTarget function
-        TODO: Implement this function based on C# PresetTarget implementation
-        """
-        if not self.is_connected:
-            raise ReaderNotConnectedError("Reader is not connected")
-        
-        try:
-            # TODO: Implement PresetTarget logic
-            # This should set up the target parameters before starting inventory
-            
-            logger.info(f"Preset target: read_mode={read_mode}, select_antenna={select_antenna}")
-            
-            # Placeholder implementation
-            return 0
-            
-        except Exception as e:
-            logger.error(f"Error in preset target: {e}")
-            raise UHFReaderError(f"Preset target failed: {e}")
 
     def hex_string_to_byte_array(self, hex_string: str) -> bytes:
         """

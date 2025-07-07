@@ -739,7 +739,7 @@ def api_start_inventory_g2():
             if len(read_addr) != 4 or len(read_len) != 2 or len(psd) != 8:
                 return jsonify({'success': False, 'message': 'Mix inventory parameter error!!!'}), 400
         
-        # Check if button text is "Start" (equivalent to C# btIventoryG2.Text == "Start")
+        # Check if inventory is already running (equivalent to C# btIventoryG2.Text == "Start")
         if g2_inventory_vars['fIsInventoryScan']:
             return jsonify({'success': False, 'message': 'Inventory is already running'}), 400
         
@@ -847,16 +847,18 @@ def api_start_inventory_g2():
         
         # Set target times and start time (exact C# logic)
         g2_inventory_vars['targettimes'] = target_times
+        g2_inventory_vars['enable_target_times'] = data.get('enable_target_times', True)  # Default to True like C#
         g2_inventory_vars['total_time'] = int(time.time() * 1000)  # System.Environment.TickCount equivalent
         
         # Set inventory scan flag and button state (exact C# logic)
         g2_inventory_vars['fIsInventoryScan'] = False
         g2_inventory_vars['toStopThread'] = False
         
-        # Build antenna configuration (exact C# logic)
+        # Build antenna configuration (exact C# logic with proper antenna mapping)
         g2_inventory_vars['antlist'] = bytearray(16)
         select_antenna = 0
         
+        # Map antenna numbers to C# style bit positions
         for ant_num in antennas:
             if 1 <= ant_num <= 16:
                 g2_inventory_vars['antlist'][ant_num - 1] = 1
@@ -868,6 +870,24 @@ def api_start_inventory_g2():
         
         # Set target (exact C# logic)
         g2_inventory_vars['Target'] = target
+        
+        # Debug logging to verify all parameters are set correctly
+        logger.info(f"[DEBUG] api_start_inventory_g2() - Final parameter verification:")
+        logger.info(f"  Mode type: {mode_type}")
+        logger.info(f"  Scan time: {g2_inventory_vars['Scantime']} (={g2_inventory_vars['Scantime']*100}ms)")
+        logger.info(f"  Q value: {g2_inventory_vars['Qvalue']}")
+        logger.info(f"  Session: {g2_inventory_vars['Session']}")
+        logger.info(f"  Target: {g2_inventory_vars['Target']}")
+        logger.info(f"  Target times: {g2_inventory_vars['targettimes']}")
+        logger.info(f"  Enable target times: {g2_inventory_vars.get('enable_target_times', True)}")
+        logger.info(f"  Antennas: {antennas}")
+        logger.info(f"  Ant list: {[i for i, val in enumerate(g2_inventory_vars['antlist']) if val == 1]}")
+        logger.info(f"  InAnt: {g2_inventory_vars['InAnt']} (0x{g2_inventory_vars['InAnt']:02X})")
+        logger.info(f"  TID flag: {g2_inventory_vars['TIDFlag']}")
+        logger.info(f"  TID addr: {g2_inventory_vars['tidAddr']} (0x{g2_inventory_vars['tidAddr']:02X})")
+        logger.info(f"  TID len: {g2_inventory_vars['tidLen']}")
+        logger.info(f"  Scan type: {g2_inventory_vars['scanType']}")
+        logger.info(f"  Read mode: {g2_inventory_vars['readMode']}")
         
         # Start inventory thread (exact C# logic)
         if not g2_inventory_vars['fIsInventoryScan']:
@@ -885,7 +905,8 @@ def api_start_inventory_g2():
                 'session': session,
                 'target': g2_inventory_vars['Target'],
                 'antennas': antennas,
-                'scan_time': g2_inventory_vars['Scantime']
+                'scan_time': g2_inventory_vars['Scantime'],
+                'target_times': g2_inventory_vars['targettimes']
             }
         })
             
@@ -1001,15 +1022,18 @@ def inventory_worker():
     global g2_inventory_vars, detected_tags
     
     g2_inventory_vars['fIsInventoryScan'] = True
+    
     while not g2_inventory_vars['toStopThread']:
         try:
             if g2_inventory_vars['Session'] == 255:
+                # Auto session mode (exact C# logic)
                 g2_inventory_vars['FastFlag'] = 0
                 if g2_inventory_vars.get('mode_type') == 'mix':
                     flash_mix_g2()
                 else:
                     flash_g2()
             else:
+                # Manual session mode (exact C# logic)
                 # Determine AntennaNum from reader type
                 version_info = bytearray(2)
                 reader_type = [0]
@@ -1039,25 +1063,36 @@ def inventory_worker():
                     elif reader_type_val in [0x26, 0x68, 0x76, 0x56, 0x38, 0x93, 0x41]:
                         antenna_num = 8
                     
+                    # Cycle through antennas (exact C# logic)
                     for m in range(antenna_num):
+                        if g2_inventory_vars['toStopThread']:
+                            break
+                            
                         g2_inventory_vars['InAnt'] = m | 0x80
                         g2_inventory_vars['FastFlag'] = 1
+                        
                         if g2_inventory_vars['antlist'][m] == 1:
-                            if g2_inventory_vars['Session'] > 1 and g2_inventory_vars['Session'] < 4:  # s2,s3
+                            # Handle session 2 and 3 target switching (exact C# logic)
+                            if (g2_inventory_vars['Session'] > 1 and g2_inventory_vars['Session'] < 4 and 
+                                g2_inventory_vars.get('enable_target_times', True)):  # s2,s3 with target times enabled
                                 if g2_inventory_vars['AA_times'] + 1 > g2_inventory_vars['targettimes']:
                                     g2_inventory_vars['Target'] = 1 - g2_inventory_vars['Target']  # A/B state switch
                                     g2_inventory_vars['AA_times'] = 0
                             
+                            # Call appropriate inventory function based on mode
                             if g2_inventory_vars.get('mode_type') == 'mix':
                                 flash_mix_g2()
                             else:
                                 flash_g2()
                                 preset_profile()
             
-            time.sleep(0.005)  # Thread.Sleep(5)
+            # Small delay between cycles (exact C# Thread.Sleep(5))
+            time.sleep(0.005)
             
         except Exception as ex:
             logger.error(f"Inventory error: {ex}")
+            # Continue running despite errors (exact C# behavior)
+            time.sleep(0.1)
     
     # Cleanup when thread stops (exact C# logic)
     # Get ModeType from reader info
@@ -1098,8 +1133,9 @@ def inventory_worker():
             g2_inventory_vars['Profile'] = g2_inventory_vars['RF_Profile'] | 0xC0
             result = reader.set_profile(profile=g2_inventory_vars['Profile'])
             if result != 0:
-                logger.warning(f"Cleanup set profile failed with code {result}")
+                logger.warning(f"Failed to restore profile: {result}")
     
+    # Final cleanup (exact C# logic)
     g2_inventory_vars['fIsInventoryScan'] = False
     g2_inventory_vars['mythread'] = None
 
@@ -1122,13 +1158,29 @@ def flash_g2():
     g2_inventory_vars['tagrate'] = 0
     g2_inventory_vars['NewCardNum'] = 0
     
+    # Debug logging to verify all parameters are being passed correctly
+    logger.info(f"[DEBUG] flash_g2() parameters:")
+    logger.info(f"  Q_value: {g2_inventory_vars['Qvalue']}")
+    logger.info(f"  Session: {g2_inventory_vars['Session']}")
+    logger.info(f"  Scan_time: {g2_inventory_vars['Scantime']} (={g2_inventory_vars['Scantime']*100}ms)")
+    logger.info(f"  Target: {g2_inventory_vars['Target']}")
+    logger.info(f"  In_ant: {g2_inventory_vars['InAnt']} (0x{g2_inventory_vars['InAnt']:02X})")
+    logger.info(f"  TID_flag: {g2_inventory_vars['TIDFlag']}")
+    logger.info(f"  TID_addr: {g2_inventory_vars['tidAddr']} (0x{g2_inventory_vars['tidAddr']:02X})")
+    logger.info(f"  TID_len: {g2_inventory_vars['tidLen']}")
+    logger.info(f"  Mode_type: {g2_inventory_vars.get('mode_type', 'unknown')}")
+    
     # Call inventory_g2 (exact C# RWDev.Inventory_G2 call)
+    # Pass all parameters including TID parameters that were set in api_start_inventory_g2
     tags = reader.inventory_g2(
         q_value=g2_inventory_vars['Qvalue'],
         session=g2_inventory_vars['Session'],
         scan_time=g2_inventory_vars['Scantime'],
         target=g2_inventory_vars['Target'],
-        in_ant=g2_inventory_vars['InAnt']
+        in_ant=g2_inventory_vars['InAnt'],
+        tid_flag=g2_inventory_vars['TIDFlag'],
+        tid_addr=g2_inventory_vars['tidAddr'],
+        tid_len=g2_inventory_vars['tidLen']
     )
     
     # C# style error handling - check if tags is a list (success) or error code
@@ -1142,7 +1194,10 @@ def flash_g2():
                 'epc': tag.epc,
                 'rssi': tag.rssi,
                 'antenna': tag.antenna,
-                'timestamp': time.strftime("%H:%M:%S")
+                'timestamp': time.strftime("%H:%M:%S"),
+                'phase_begin': getattr(tag, 'phase_begin', 0),
+                'phase_end': getattr(tag, 'phase_end', 0),
+                'freqkhz': getattr(tag, 'freqkhz', 0)
             }
             # Emit to WebSocket immediately (C# style real-time updates)
             socketio.emit('tag_detected', tag_data)
@@ -1160,13 +1215,13 @@ def flash_g2():
     # Handle result codes (exact C# logic)
     if result not in [0x01, 0x02, 0xF8, 0xF9, 0xEE, 0xFF]:
         # Handle connection issues (exact C# logic)
-        pass
+        logger.warning(f"Non-standard inventory result: {result}")
     
     if result == 0x30:
         g2_inventory_vars['CardNum'] = 0
     
     if g2_inventory_vars['CardNum'] == 0:
-        if g2_inventory_vars['Session'] > 1:
+        if g2_inventory_vars['Session'] > 1 and g2_inventory_vars.get('enable_target_times', True):
             g2_inventory_vars['AA_times'] += 1
     else:
         # Get ModeType from reader info
@@ -1208,6 +1263,7 @@ def flash_g2():
             else:
                 g2_inventory_vars['AA_times'] = 0
     
+    # Calculate tag rate (exact C# logic)
     if result in [1, 2, 0xFB, 0x26]:
         if cmd_time > g2_inventory_vars['CommunicationTime']:
             cmd_time = cmd_time - g2_inventory_vars['CommunicationTime']
@@ -1219,7 +1275,8 @@ def flash_g2():
         'cmd_ret': result,
         'tag_rate': g2_inventory_vars['tagrate'],
         'total_tags': g2_inventory_vars['total_tagnum'],
-        'cmd_time': cmd_time
+        'cmd_time': cmd_time,
+        'card_num': g2_inventory_vars['CardNum']
     })
 
 def flash_mix_g2():
@@ -1280,16 +1337,17 @@ def flash_mix_g2():
     # Handle result codes (exact C# logic)
     if result not in [0x01, 0x02, 0xF8, 0xF9, 0xEE, 0xFF]:
         # Handle connection issues (exact C# logic)
-        pass
+        logger.warning(f"Non-standard mix inventory result: {result}")
     
     g2_inventory_vars['NewCardNum'] = g2_inventory_vars['CardNum']
     
     if g2_inventory_vars['CardNum'] == 0:
-        if g2_inventory_vars['Session'] > 1:
+        if g2_inventory_vars['Session'] > 1 and g2_inventory_vars.get('enable_target_times', True):
             g2_inventory_vars['AA_times'] += 1
     else:
         g2_inventory_vars['AA_times'] = 0
     
+    # Calculate tag rate (exact C# logic)
     if result in [1, 2, 0xFB, 0x26]:
         if cmd_time > g2_inventory_vars['CommunicationTime']:
             cmd_time = cmd_time - g2_inventory_vars['CommunicationTime']
@@ -1301,7 +1359,8 @@ def flash_mix_g2():
         'cmd_ret': result,
         'tag_rate': g2_inventory_vars['tagrate'],
         'total_tags': g2_inventory_vars['total_tagnum'],
-        'cmd_time': cmd_time
+        'cmd_time': cmd_time,
+        'card_num': g2_inventory_vars['CardNum']
     })
 
 def preset_profile():
@@ -1397,12 +1456,12 @@ def api_stop_inventory_g2():
         # Set stop flag (exact C# logic)
         g2_inventory_vars['toStopThread'] = True
         
+        # Stop inventory immediately (exact C# RWDev.StopImmediately call)
+        result = reader.stop_inventory()
+        
         # Wait for thread to stop (exact C# logic)
         if g2_inventory_vars['mythread'] and g2_inventory_vars['mythread'].is_alive():
             g2_inventory_vars['mythread'].join(timeout=2)
-        
-        # Stop inventory (exact C# logic)
-        result = reader.stop_inventory()
         
         # Reset flags (exact C# logic)
         g2_inventory_vars['fIsInventoryScan'] = False
@@ -1411,31 +1470,13 @@ def api_stop_inventory_g2():
         if result == 0:
             return jsonify({'success': True, 'message': 'G2 Mode inventory stopped successfully'})
         else:
-            return jsonify({'success': False, 'error': f'Failed to stop G2 inventory: {result}'}), 400
+            error_desc = get_return_code_desc(result)
+            logger.warning(f"Stop inventory returned code {result}: {error_desc}")
+            return jsonify({'success': True, 'message': f'G2 Mode inventory stopped (warning: {error_desc})'})
             
     except Exception as e:
         logger.error(f"Stop G2 inventory error: {e}")
         return jsonify({'success': False, 'error': f'Error: {str(e)}'}), 500
-
-@app.route('/api/stop_tags_inventory', methods=['POST'])
-def api_stop_tags_inventory():
-    """API dừng tags inventory"""
-    global stop_inventory_flag
-    
-    try:
-        # Set flag để dừng inventory
-        stop_inventory_flag = True
-        
-        # Đợi thread kết thúc
-        if inventory_thread and inventory_thread.is_alive():
-            print(f"[DEBUG] Waiting for tags inventory thread to finish...")
-            inventory_thread.join(timeout=1.0)  # Đợi tối đa 3 giây
-        
-        print(f"Tags inventory stopped successfully")
-        return {"[DEBUG] success": True, "message": "Đã dừng tags inventory thành công"}
-    except Exception as e:
-        print(f"[DEBUG] Stop tags inventory error: {e}")
-        return {"success": False, "message": f"Lỗi: {str(e)}"}
 
 @app.route('/api/set_power', methods=['POST'])
 def api_set_power():
@@ -1468,24 +1509,6 @@ def api_get_tags():
         "data": detected_tags,
         "stats": inventory_stats
     })
-
-@app.route('/api/config', methods=['GET'])
-def api_get_config():
-    """API lấy cấu hình"""
-    try:
-        config_data = {
-            "default_port": config.DEFAULT_PORT,
-            "default_baudrate": config.DEFAULT_BAUDRATE,
-            "max_power": config.MAX_POWER,
-            "min_power": config.MIN_POWER,
-            "max_antennas": config.MAX_ANTENNAS,
-            "profiles": config.PROFILE_CONFIGS,
-            "max_tags_display": config.MAX_TAGS_DISPLAY
-        }
-        return {"success": True, "data": config_data}
-    except Exception as e:
-        logger.error(f"Config API error: {e}")
-        return {"success": False, "message": f"Lỗi: {str(e)}"}
 
 @app.route('/api/debug', methods=['GET'])
 def api_debug():
@@ -1577,38 +1600,6 @@ def handle_disconnect():
 def handle_message(message):
     """Xử lý message từ client"""
     logger.info(f"📨 Received WebSocket message: {message}")
-
-@app.route('/api/tags_inventory', methods=['POST'])
-def api_tags_inventory():
-    """API thực hiện một lượt inventory với cấu hình tuỳ chọn (không liên tục)"""
-    try:
-        data = request.get_json()
-        q_value = int(data.get("q_value", 4))
-        session = int(data.get("session", 0))
-        antenna = int(data.get("antenna", 1))
-        scan_time = int(data.get("scan_time", 10))
-
-        # Call inventory_g2 for a single scan
-        tags = reader.inventory_g2(q_value=q_value, session=session, scan_time=scan_time, in_ant=antenna)
-        
-        # Convert tags to list of dictionaries
-        tag_list = []
-        for tag in tags:
-            tag_list.append({
-                "epc": tag.epc,
-                "rssi": tag.rssi,
-                "antenna": tag.antenna,
-                "timestamp": time.strftime("%H:%M:%S")
-            })
-        
-        return jsonify({
-            "success": True,
-            "message": f"Found {len(tag_list)} tags",
-            "data": tag_list
-        })
-    except Exception as e:
-        logger.error(f"Tags inventory error: {e}")
-        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
 
 # Parameter Configuration API Endpoints
 @app.route('/api/set_param1', methods=['POST'])
