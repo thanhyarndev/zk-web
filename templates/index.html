@@ -848,7 +848,7 @@
               class="form-range"
               id="powerInput"
               min="0"
-              max="30"
+              max="33"
               value="20"
             />
             <div class="range-value">
@@ -1184,18 +1184,6 @@
                     <i class="fas fa-stop"></i> Stop G2 Mode
                   </button>
                 </div>
-
-                <div class="btn-group">
-                  <button
-                    class="btn btn-info"
-                    onclick="openG2ModeConfigModal()"
-                    id="g2ModeConfigBtn"
-                    disabled
-                    title="G2 Mode Config"
-                  >
-                    <i class="fas fa-sliders-h"></i>
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -1288,7 +1276,7 @@
                   </thead>
                   <tbody id="tagsTableBody">
                     <tr>
-                      <td colspan="5" class="text-center text-muted">
+                      <td colspan="7" class="text-center text-muted">
                         No tags detected yet
                       </td>
                     </tr>
@@ -1644,6 +1632,7 @@
           statusIndicator.className = "status-indicator status-connected";
           connectionStatus.textContent = "Connected";
           connectBtn.disabled = true;
+          connectBtn.innerHTML = '<i class="fas fa-plug"></i> Connect';
           disconnectBtn.disabled = false;
           enableControls();
         } else {
@@ -1744,9 +1733,12 @@
           showAlert("Connection failed: " + error.message, "danger");
           updateConnectionStatus(false);
         } finally {
-          document.getElementById("connectBtn").disabled = false;
-          document.getElementById("connectBtn").innerHTML =
-            '<i class="fas fa-plug"></i> Connect';
+          // Only reset the button if connection failed
+          if (!isConnected) {
+            document.getElementById("connectBtn").disabled = false;
+            document.getElementById("connectBtn").innerHTML =
+              '<i class="fas fa-plug"></i> Connect';
+          }
         }
       }
 
@@ -1780,13 +1772,33 @@
         document.getElementById("startFastModeBtn").disabled = false;
         document.getElementById("startG2ModeBtn").disabled = false;
 
+        // Enable Fast Mode controls
+        document.getElementById("fastModeTarget").disabled = false;
+
         // Enable configuration buttons
         document.getElementById("fastModeConfigBtn").disabled = false;
         document.getElementById("g2ModeConfigBtn").disabled = false;
 
+        // Enable G2 mode form controls
+        document.getElementById("g2ScanTime").disabled = false;
+        document.getElementById("g2QValue").disabled = false;
+        document.getElementById("g2Session").disabled = false;
+        document.getElementById("g2Target").disabled = false;
+        document.getElementById("g2TargetTimes").disabled = false;
+        document.getElementById("g2MixMem").disabled = false;
+        document.getElementById("g2ReadAddr").disabled = false;
+        document.getElementById("g2ReadLen").disabled = false;
+        document.getElementById("g2PSD").disabled = false;
+        document.getElementById("g2EnablePhase").disabled = false;
+        document.getElementById("g2EnableRate").disabled = false;
+
         // Enable power control
         document.getElementById("powerInput").disabled = false;
         document.getElementById("powerBtn").disabled = false;
+
+        // Enable profile control
+        document.getElementById("profileSelect").disabled = false;
+        document.getElementById("saveProfile").disabled = false;
 
         // Enable buzzer control
         // document.getElementById("buzzerBtn").disabled = false; // Buzzer button not implemented yet
@@ -1801,6 +1813,13 @@
 
         // Enable get reader info button
         document.getElementById("infoBtn").disabled = false;
+
+        // Enable get power info button
+        document.getElementById("powerInfoBtn").disabled = false;
+
+        // Enable profile buttons
+        document.getElementById("profileBtn").disabled = false;
+        document.getElementById("getProfileBtn").disabled = false;
       }
 
       // Disable controls that require connection
@@ -1813,13 +1832,33 @@
         document.getElementById("startG2ModeBtn").disabled = true;
         document.getElementById("stopG2ModeBtn").disabled = true;
 
+        // Disable Fast Mode controls
+        document.getElementById("fastModeTarget").disabled = true;
+
         // Disable configuration buttons
         document.getElementById("fastModeConfigBtn").disabled = true;
         document.getElementById("g2ModeConfigBtn").disabled = true;
 
+        // Disable G2 mode form controls
+        document.getElementById("g2ScanTime").disabled = true;
+        document.getElementById("g2QValue").disabled = true;
+        document.getElementById("g2Session").disabled = true;
+        document.getElementById("g2Target").disabled = true;
+        document.getElementById("g2TargetTimes").disabled = true;
+        document.getElementById("g2MixMem").disabled = true;
+        document.getElementById("g2ReadAddr").disabled = true;
+        document.getElementById("g2ReadLen").disabled = true;
+        document.getElementById("g2PSD").disabled = true;
+        document.getElementById("g2EnablePhase").disabled = true;
+        document.getElementById("g2EnableRate").disabled = true;
+
         // Disable power control
         document.getElementById("powerInput").disabled = true;
         document.getElementById("powerBtn").disabled = true;
+
+        // Disable profile control
+        document.getElementById("profileSelect").disabled = true;
+        document.getElementById("saveProfile").disabled = true;
 
         // Disable buzzer control
         // document.getElementById("buzzerBtn").disabled = true; // Buzzer button not implemented yet
@@ -1834,6 +1873,13 @@
 
         // Disable get reader info button
         document.getElementById("infoBtn").disabled = true;
+
+        // Disable get power info button
+        document.getElementById("powerInfoBtn").disabled = true;
+
+        // Disable profile buttons
+        document.getElementById("profileBtn").disabled = true;
+        document.getElementById("getProfileBtn").disabled = true;
       }
 
       // Get reader info
