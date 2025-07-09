@@ -730,7 +730,18 @@ class UHFReader:
         else:
             raise UHFReaderError(f"Get antenna power failed: {result}")
 
-    def set_profile(self, com_addr: int = None, profile: int = None) -> int:
+    def set_profile(self, com_addr: int = None, profile: int = None):
+        """
+        Set profile - exact C# SetProfile(ref byte fComAdr, ref byte Profile) implementation
+        
+        Args:
+            com_addr: Reader address (will be converted to byte)
+            profile: Profile value (will be converted to byte)
+        Returns:
+            (result_code, new_profile)
+            result_code: 0 on success, error code on failure
+            new_profile: updated profile value (only valid if result_code == 0)
+        """
         if not self.is_connected:
             raise ReaderNotConnectedError("Reader is not connected")
         
@@ -741,16 +752,24 @@ class UHFReader:
         # Use default profile if not provided
         if profile is None:
             profile = 1  # Default profile
-            
-        com_addr_bytearray = bytearray([com_addr])
-        profile_bytearray = bytearray([profile])
         
+        # Convert to bytes (C# byte type) - ensure values are in valid byte range (0-255)
+        com_addr_byte = com_addr & 0xFF
+        profile_byte = profile & 0xFF
+        
+        # Create bytearrays for C# ref parameter simulation
+        com_addr_bytearray = bytearray([com_addr_byte])
+        profile_bytearray = bytearray([profile_byte])
+        
+        # Call low-level function (exact C# SetProfile behavior)
         result = self.uhf.set_profile(com_addr_bytearray, profile_bytearray)
+        
+        # Update instance variables with response values (C# ref parameter behavior)
         if result == 0:
-            return profile_bytearray[0]
+            self.com_addr = com_addr_bytearray[0]
+            return 0, profile_bytearray[0]
         else:
-            # Return the result code instead of raising an exception
-            return result
+            return result, None
 
     def start_read(self, target: int = 0) -> int:
         if not self.is_connected:

@@ -1,558 +1,662 @@
-2025-07-08 11:31:41,610 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION START ===
-2025-07-08 11:31:41,611 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Input parameters | Params: {'read_mode': 254, 'select_antenna': '0x0001'}
-2025-07-08 11:31:41,611 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Current Session before preset | Params: {'current_session': 0}
-2025-07-08 11:31:41,611 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Read mode > 0, proceeding with target setup
-2025-07-08 11:31:41,611 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Getting reader information for ModeType
-2025-07-08 11:31:41,817 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:41,818 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:31:41,818 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Antenna number determined | Params: {'antenna_num': 1}
-2025-07-08 11:31:41,818 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Processing RRUx180 special mode (253/254)
-2025-07-08 11:31:41,818 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Switching to Session 254
-2025-07-08 11:31:41,818 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Setting Profile to 0xC5 for read_mode 254
-2025-07-08 11:31:42,020 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Set profile result | Params: {'profile': '0xC5', 'result': 5}
-2025-07-08 11:31:42,021 | g2_inventory_debug | WARNING | log_g2_debug | [11:31:4] Set profile failed | Params: {'result': 5}
-2025-07-08 11:31:42,021 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Final session value | Params: {'final_session': 254}
-2025-07-08 11:31:42,021 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION END ===
-2025-07-08 11:31:42,022 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION START ===
-2025-07-08 11:31:42,023 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Initial state | Params: {'session': 254, 'mode_type': 'epc', 'target': 0, 'to_stop_thread': False}
-2025-07-08 11:31:42,024 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] === CYCLE 1 START ===
-2025-07-08 11:31:42,024 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Manual session mode (Session 254)
-2025-07-08 11:31:42,230 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:42,230 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Antenna cycling | Params: {'antenna_num': 1, 'session': 254}
-2025-07-08 11:31:42,230 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
-2025-07-08 11:31:42,231 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling flash_g2() for antenna 1
-2025-07-08 11:31:42,231 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION START ===
-2025-07-08 11:31:42,231 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 254, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
-2025-07-08 11:31:42,231 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling reader.inventory_g2()
-2025-07-08 11:31:42,437 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Inventory successful | Params: {'tags_found': 1, 'result': 0}
-2025-07-08 11:31:42,438 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Processing tag 1 | Params: {'epc': 'E28278840000000000913C8D', 'rssi': 77, 'antenna': 1}
-2025-07-08 11:31:42,439 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Command execution time | Params: {'cmd_time': 208, 'result': 0}
-2025-07-08 11:31:42,439 | g2_inventory_debug | WARNING | log_g2_debug | [11:31:4] Non-standard inventory result | Params: {'result': 0}
-2025-07-08 11:31:42,439 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Tags found (1 tags), checking for RRUx180 special handling
-2025-07-08 11:31:42,646 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Reader type check | Params: {'reader_type': '0x71', 'mode_type': 2, 'read_mode': 254, 'new_card_num': 0}
-2025-07-08 11:31:42,647 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] AA_times reset to 0
-2025-07-08 11:31:42,647 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION END ===
-2025-07-08 11:31:42,648 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling preset_profile() for antenna 1
-2025-07-08 11:31:42,648 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION START ===
-2025-07-08 11:31:42,648 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Current state | Params: {'read_mode': 254, 'profile': 197, 'tagrate': 0, 'card_num': 1, 'new_card_num': 1, 'aa_times': 0, 'target_times': 5}
-2025-07-08 11:31:42,648 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Getting reader information
-2025-07-08 11:31:42,854 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:42,854 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:31:42,855 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Processing RRUx180 profile optimization
-2025-07-08 11:31:42,855 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION END ===
-2025-07-08 11:31:42,855 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] === CYCLE 1 END ===
-2025-07-08 11:31:42,861 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] === CYCLE 2 START ===
-2025-07-08 11:31:42,862 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Manual session mode (Session 254)
-2025-07-08 11:31:43,067 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:43,068 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Antenna cycling | Params: {'antenna_num': 1, 'session': 254}
-2025-07-08 11:31:43,068 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
-2025-07-08 11:31:43,068 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling flash_g2() for antenna 1
-2025-07-08 11:31:43,068 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION START ===
-2025-07-08 11:31:43,069 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 254, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
-2025-07-08 11:31:43,069 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling reader.inventory_g2()
-2025-07-08 11:31:43,270 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Inventory successful | Params: {'tags_found': 0, 'result': 0}
-2025-07-08 11:31:43,271 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Command execution time | Params: {'cmd_time': 202, 'result': 0}
-2025-07-08 11:31:43,271 | g2_inventory_debug | WARNING | log_g2_debug | [11:31:4] Non-standard inventory result | Params: {'result': 0}
-2025-07-08 11:31:43,271 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] AA_times incremented (no tags found) | Params: {'aa_times': 1}
-2025-07-08 11:31:43,272 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION END ===
-2025-07-08 11:31:43,272 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling preset_profile() for antenna 1
-2025-07-08 11:31:43,272 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION START ===
-2025-07-08 11:31:43,272 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Current state | Params: {'read_mode': 254, 'profile': 197, 'tagrate': 0, 'card_num': 0, 'new_card_num': 0, 'aa_times': 1, 'target_times': 5}
-2025-07-08 11:31:43,273 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Getting reader information
-2025-07-08 11:31:43,479 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:43,480 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:31:43,480 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Processing RRUx180 profile optimization
-2025-07-08 11:31:43,480 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION END ===
-2025-07-08 11:31:43,480 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] === CYCLE 2 END ===
-2025-07-08 11:31:43,486 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] === CYCLE 3 START ===
-2025-07-08 11:31:43,486 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Manual session mode (Session 254)
-2025-07-08 11:31:43,693 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:43,693 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Antenna cycling | Params: {'antenna_num': 1, 'session': 254}
-2025-07-08 11:31:43,694 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
-2025-07-08 11:31:43,694 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling flash_g2() for antenna 1
-2025-07-08 11:31:43,694 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION START ===
-2025-07-08 11:31:43,694 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 254, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
-2025-07-08 11:31:43,694 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling reader.inventory_g2()
-2025-07-08 11:31:43,900 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Inventory successful | Params: {'tags_found': 0, 'result': 0}
-2025-07-08 11:31:43,901 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Command execution time | Params: {'cmd_time': 207, 'result': 0}
-2025-07-08 11:31:43,901 | g2_inventory_debug | WARNING | log_g2_debug | [11:31:4] Non-standard inventory result | Params: {'result': 0}
-2025-07-08 11:31:43,901 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] AA_times incremented (no tags found) | Params: {'aa_times': 2}
-2025-07-08 11:31:43,901 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION END ===
-2025-07-08 11:31:43,902 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling preset_profile() for antenna 1
-2025-07-08 11:31:43,902 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION START ===
-2025-07-08 11:31:43,902 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Current state | Params: {'read_mode': 254, 'profile': 197, 'tagrate': 0, 'card_num': 0, 'new_card_num': 0, 'aa_times': 2, 'target_times': 5}
-2025-07-08 11:31:43,902 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Getting reader information
-2025-07-08 11:31:44,105 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:44,106 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:31:44,106 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Processing RRUx180 profile optimization
-2025-07-08 11:31:44,106 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION END ===
-2025-07-08 11:31:44,106 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] === CYCLE 3 END ===
-2025-07-08 11:31:44,113 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] === CYCLE 4 START ===
-2025-07-08 11:31:44,113 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Manual session mode (Session 254)
-2025-07-08 11:31:44,319 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:44,320 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Antenna cycling | Params: {'antenna_num': 1, 'session': 254}
-2025-07-08 11:31:44,320 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
-2025-07-08 11:31:44,320 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling flash_g2() for antenna 1
-2025-07-08 11:31:44,321 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION START ===
-2025-07-08 11:31:44,321 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 254, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
-2025-07-08 11:31:44,321 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling reader.inventory_g2()
-2025-07-08 11:31:44,528 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Inventory successful | Params: {'tags_found': 3, 'result': 0}
-2025-07-08 11:31:44,528 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Processing tag 1 | Params: {'epc': 'E28278840000000000913990', 'rssi': 62, 'antenna': 1}
-2025-07-08 11:31:44,529 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Processing tag 2 | Params: {'epc': 'E28278840000000000913C18', 'rssi': 79, 'antenna': 1}
-2025-07-08 11:31:44,530 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Processing tag 3 | Params: {'epc': 'E28278840000000000911A9E', 'rssi': 77, 'antenna': 1}
-2025-07-08 11:31:44,530 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Command execution time | Params: {'cmd_time': 209, 'result': 0}
-2025-07-08 11:31:44,530 | g2_inventory_debug | WARNING | log_g2_debug | [11:31:4] Non-standard inventory result | Params: {'result': 0}
-2025-07-08 11:31:44,530 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Tags found (3 tags), checking for RRUx180 special handling
-2025-07-08 11:31:44,737 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Reader type check | Params: {'reader_type': '0x71', 'mode_type': 2, 'read_mode': 254, 'new_card_num': 0}
-2025-07-08 11:31:44,737 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] AA_times reset to 0
-2025-07-08 11:31:44,738 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION END ===
-2025-07-08 11:31:44,738 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling preset_profile() for antenna 1
-2025-07-08 11:31:44,738 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION START ===
-2025-07-08 11:31:44,738 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Current state | Params: {'read_mode': 254, 'profile': 197, 'tagrate': 0, 'card_num': 3, 'new_card_num': 3, 'aa_times': 0, 'target_times': 5}
-2025-07-08 11:31:44,738 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Getting reader information
-2025-07-08 11:31:44,945 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:44,945 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:31:44,945 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Processing RRUx180 profile optimization
-2025-07-08 11:31:44,945 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION END ===
-2025-07-08 11:31:44,946 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] === CYCLE 4 END ===
-2025-07-08 11:31:44,952 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] === CYCLE 5 START ===
-2025-07-08 11:31:44,952 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Manual session mode (Session 254)
-2025-07-08 11:31:45,154 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:45,154 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Antenna cycling | Params: {'antenna_num': 1, 'session': 254}
-2025-07-08 11:31:45,154 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
-2025-07-08 11:31:45,154 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling flash_g2() for antenna 1
-2025-07-08 11:31:45,154 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION START ===
-2025-07-08 11:31:45,154 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 254, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
-2025-07-08 11:31:45,154 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling reader.inventory_g2()
-2025-07-08 11:31:45,361 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Inventory successful | Params: {'tags_found': 1, 'result': 0}
-2025-07-08 11:31:45,361 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Processing tag 1 | Params: {'epc': 'E28278840000000000917457', 'rssi': 79, 'antenna': 1}
-2025-07-08 11:31:45,362 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Command execution time | Params: {'cmd_time': 208, 'result': 0}
-2025-07-08 11:31:45,362 | g2_inventory_debug | WARNING | log_g2_debug | [11:31:4] Non-standard inventory result | Params: {'result': 0}
-2025-07-08 11:31:45,362 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Tags found (1 tags), checking for RRUx180 special handling
-2025-07-08 11:31:45,568 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Reader type check | Params: {'reader_type': '0x71', 'mode_type': 2, 'read_mode': 254, 'new_card_num': 0}
-2025-07-08 11:31:45,569 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] AA_times reset to 0
-2025-07-08 11:31:45,570 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION END ===
-2025-07-08 11:31:45,570 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling preset_profile() for antenna 1
-2025-07-08 11:31:45,570 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION START ===
-2025-07-08 11:31:45,570 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Current state | Params: {'read_mode': 254, 'profile': 197, 'tagrate': 0, 'card_num': 1, 'new_card_num': 1, 'aa_times': 0, 'target_times': 5}
-2025-07-08 11:31:45,571 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Getting reader information
-2025-07-08 11:31:45,777 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:45,777 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:31:45,777 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Processing RRUx180 profile optimization
-2025-07-08 11:31:45,778 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION END ===
-2025-07-08 11:31:45,778 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] === CYCLE 5 END ===
-2025-07-08 11:31:45,784 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] === CYCLE 6 START ===
-2025-07-08 11:31:45,784 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Manual session mode (Session 254)
-2025-07-08 11:31:45,990 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:45,990 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Antenna cycling | Params: {'antenna_num': 1, 'session': 254}
-2025-07-08 11:31:45,990 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
-2025-07-08 11:31:45,990 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling flash_g2() for antenna 1
-2025-07-08 11:31:45,991 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION START ===
-2025-07-08 11:31:45,991 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 254, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
-2025-07-08 11:31:45,991 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling reader.inventory_g2()
-2025-07-08 11:31:46,196 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Inventory successful | Params: {'tags_found': 0, 'result': 0}
-2025-07-08 11:31:46,197 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Command execution time | Params: {'cmd_time': 206, 'result': 0}
-2025-07-08 11:31:46,197 | g2_inventory_debug | WARNING | log_g2_debug | [11:31:4] Non-standard inventory result | Params: {'result': 0}
-2025-07-08 11:31:46,197 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] AA_times incremented (no tags found) | Params: {'aa_times': 1}
-2025-07-08 11:31:46,197 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION END ===
-2025-07-08 11:31:46,198 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling preset_profile() for antenna 1
-2025-07-08 11:31:46,198 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION START ===
-2025-07-08 11:31:46,198 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Current state | Params: {'read_mode': 254, 'profile': 197, 'tagrate': 0, 'card_num': 0, 'new_card_num': 0, 'aa_times': 1, 'target_times': 5}
-2025-07-08 11:31:46,198 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Getting reader information
-2025-07-08 11:31:46,404 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:46,404 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:31:46,405 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Processing RRUx180 profile optimization
-2025-07-08 11:31:46,405 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION END ===
-2025-07-08 11:31:46,405 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] === CYCLE 6 END ===
-2025-07-08 11:31:46,411 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] === CYCLE 7 START ===
-2025-07-08 11:31:46,412 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Manual session mode (Session 254)
-2025-07-08 11:31:46,618 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:46,618 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Antenna cycling | Params: {'antenna_num': 1, 'session': 254}
-2025-07-08 11:31:46,619 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
-2025-07-08 11:31:46,619 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling flash_g2() for antenna 1
-2025-07-08 11:31:46,619 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION START ===
-2025-07-08 11:31:46,619 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 254, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
-2025-07-08 11:31:46,619 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling reader.inventory_g2()
-2025-07-08 11:31:46,825 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Inventory successful | Params: {'tags_found': 0, 'result': 0}
-2025-07-08 11:31:46,826 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Command execution time | Params: {'cmd_time': 207, 'result': 0}
-2025-07-08 11:31:46,826 | g2_inventory_debug | WARNING | log_g2_debug | [11:31:4] Non-standard inventory result | Params: {'result': 0}
-2025-07-08 11:31:46,826 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] AA_times incremented (no tags found) | Params: {'aa_times': 2}
-2025-07-08 11:31:46,827 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION END ===
-2025-07-08 11:31:46,828 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Calling preset_profile() for antenna 1
-2025-07-08 11:31:46,828 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION START ===
-2025-07-08 11:31:46,828 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Current state | Params: {'read_mode': 254, 'profile': 197, 'tagrate': 0, 'card_num': 0, 'new_card_num': 0, 'aa_times': 2, 'target_times': 5}
-2025-07-08 11:31:46,828 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Getting reader information
-2025-07-08 11:31:47,034 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:47,034 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:31:47,034 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Processing RRUx180 profile optimization
-2025-07-08 11:31:47,034 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION END ===
-2025-07-08 11:31:47,034 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] === CYCLE 7 END ===
-2025-07-08 11:31:47,040 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Main loop ended, starting cleanup
-2025-07-08 11:31:47,244 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Cleanup reader info result | Params: {'result': 0}
-2025-07-08 11:31:47,245 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:4] Cleanup mode type | Params: {'mode_type': 2, 'reader_type': '0x71'}
-2025-07-08 11:31:47,451 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] Profile restoration | Params: {'old_profile': 197, 'new_profile': 192, 'result': 255}
-2025-07-08 11:31:47,452 | g2_inventory_debug | WARNING | log_g2_debug | [11:31:4] Failed to restore profile | Params: {'result': 255}
-2025-07-08 11:31:47,452 | g2_inventory_debug | INFO | log_g2_debug | [11:31:4] === FUNCTION END ===
-2025-07-08 11:31:55,406 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION START ===
-2025-07-08 11:31:55,408 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Input parameters | Params: {'read_mode': 0, 'select_antenna': '0x0001'}
-2025-07-08 11:31:55,408 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Current Session before preset | Params: {'current_session': 254}
-2025-07-08 11:31:55,408 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Read mode <= 0, setting session directly
-2025-07-08 11:31:55,408 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Final session value | Params: {'final_session': 0}
-2025-07-08 11:31:55,409 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION END ===
-2025-07-08 11:31:55,410 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION START ===
-2025-07-08 11:31:55,411 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Initial state | Params: {'session': 0, 'mode_type': 'epc', 'target': 0, 'to_stop_thread': False}
-2025-07-08 11:31:55,411 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] === CYCLE 1 START ===
-2025-07-08 11:31:55,411 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Manual session mode (Session 0)
-2025-07-08 11:31:55,617 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:55,618 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Antenna cycling | Params: {'antenna_num': 1, 'session': 0}
-2025-07-08 11:31:55,618 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
-2025-07-08 11:31:55,618 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Calling flash_g2() for antenna 1
-2025-07-08 11:31:55,618 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION START ===
-2025-07-08 11:31:55,619 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
-2025-07-08 11:31:55,619 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Calling reader.inventory_g2()
-2025-07-08 11:31:55,821 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Inventory successful | Params: {'tags_found': 5, 'result': 0}
-2025-07-08 11:31:55,822 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 1 | Params: {'epc': '22204519D1743716271FFFFFFFF00001', 'rssi': 75, 'antenna': 1}
-2025-07-08 11:31:55,823 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 2 | Params: {'epc': 'E28278840000000000913C8D', 'rssi': 78, 'antenna': 1}
-2025-07-08 11:31:55,823 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 3 | Params: {'epc': 'AAAAFFFFFFFFFFFF00000053', 'rssi': 77, 'antenna': 1}
-2025-07-08 11:31:55,824 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 4 | Params: {'epc': 'E2827884000000000090FB77', 'rssi': 66, 'antenna': 1}
-2025-07-08 11:31:55,825 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 5 | Params: {'epc': 'E28278840000000000915AA2', 'rssi': 75, 'antenna': 1}
-2025-07-08 11:31:55,827 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Command execution time | Params: {'cmd_time': 209, 'result': 0}
-2025-07-08 11:31:55,827 | g2_inventory_debug | WARNING | log_g2_debug | [11:31:5] Non-standard inventory result | Params: {'result': 0}
-2025-07-08 11:31:55,827 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Tags found (5 tags), checking for RRUx180 special handling
-2025-07-08 11:31:56,033 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Reader type check | Params: {'reader_type': '0x71', 'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
-2025-07-08 11:31:56,033 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] AA_times reset to 0
-2025-07-08 11:31:56,034 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION END ===
-2025-07-08 11:31:56,034 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Calling preset_profile() for antenna 1
-2025-07-08 11:31:56,034 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION START ===
-2025-07-08 11:31:56,034 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 5, 'new_card_num': 5, 'aa_times': 0, 'target_times': 5}
-2025-07-08 11:31:56,034 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Getting reader information
-2025-07-08 11:31:56,236 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:56,236 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:31:56,236 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Not RRUx180 or not special readMode, skipping profile optimization
-2025-07-08 11:31:56,237 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION END ===
-2025-07-08 11:31:56,237 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] === CYCLE 1 END ===
-2025-07-08 11:31:56,243 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] === CYCLE 2 START ===
-2025-07-08 11:31:56,243 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Manual session mode (Session 0)
-2025-07-08 11:31:56,445 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:56,446 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Antenna cycling | Params: {'antenna_num': 1, 'session': 0}
-2025-07-08 11:31:56,446 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
-2025-07-08 11:31:56,446 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Calling flash_g2() for antenna 1
-2025-07-08 11:31:56,447 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION START ===
-2025-07-08 11:31:56,447 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
-2025-07-08 11:31:56,447 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Calling reader.inventory_g2()
-2025-07-08 11:31:56,653 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Inventory successful | Params: {'tags_found': 4, 'result': 0}
-2025-07-08 11:31:56,653 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 1 | Params: {'epc': '22204519D1743716271FFFFFFFF00001', 'rssi': 81, 'antenna': 1}
-2025-07-08 11:31:56,654 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 2 | Params: {'epc': 'E28278840000000000911D0A', 'rssi': 79, 'antenna': 1}
-2025-07-08 11:31:56,654 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 3 | Params: {'epc': 'E2827884000000000090FB77', 'rssi': 61, 'antenna': 1}
-2025-07-08 11:31:56,654 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 4 | Params: {'epc': 'E28278840000000000913C8D', 'rssi': 78, 'antenna': 1}
-2025-07-08 11:31:56,654 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Command execution time | Params: {'cmd_time': 207, 'result': 0}
-2025-07-08 11:31:56,654 | g2_inventory_debug | WARNING | log_g2_debug | [11:31:5] Non-standard inventory result | Params: {'result': 0}
-2025-07-08 11:31:56,654 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Tags found (4 tags), checking for RRUx180 special handling
-2025-07-08 11:31:56,860 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Reader type check | Params: {'reader_type': '0x71', 'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
-2025-07-08 11:31:56,861 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] AA_times reset to 0
-2025-07-08 11:31:56,861 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION END ===
-2025-07-08 11:31:56,862 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Calling preset_profile() for antenna 1
-2025-07-08 11:31:56,862 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION START ===
-2025-07-08 11:31:56,862 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 4, 'new_card_num': 4, 'aa_times': 0, 'target_times': 5}
-2025-07-08 11:31:56,862 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Getting reader information
-2025-07-08 11:31:57,068 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:57,069 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:31:57,069 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Not RRUx180 or not special readMode, skipping profile optimization
-2025-07-08 11:31:57,069 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION END ===
-2025-07-08 11:31:57,069 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] === CYCLE 2 END ===
-2025-07-08 11:31:57,074 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] === CYCLE 3 START ===
-2025-07-08 11:31:57,075 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Manual session mode (Session 0)
-2025-07-08 11:31:57,281 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:57,281 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Antenna cycling | Params: {'antenna_num': 1, 'session': 0}
-2025-07-08 11:31:57,282 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
-2025-07-08 11:31:57,283 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Calling flash_g2() for antenna 1
-2025-07-08 11:31:57,283 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION START ===
-2025-07-08 11:31:57,283 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
-2025-07-08 11:31:57,283 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Calling reader.inventory_g2()
-2025-07-08 11:31:57,487 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Inventory successful | Params: {'tags_found': 4, 'result': 0}
-2025-07-08 11:31:57,488 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 1 | Params: {'epc': 'E2827884000000000090FB77', 'rssi': 72, 'antenna': 1}
-2025-07-08 11:31:57,488 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 2 | Params: {'epc': '22204519D1743716271FFFFFFFF00001', 'rssi': 73, 'antenna': 1}
-2025-07-08 11:31:57,489 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 3 | Params: {'epc': 'E28278840000000000911D0A', 'rssi': 74, 'antenna': 1}
-2025-07-08 11:31:57,490 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 4 | Params: {'epc': 'E28278840000000000915AA2', 'rssi': 78, 'antenna': 1}
-2025-07-08 11:31:57,491 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Command execution time | Params: {'cmd_time': 208, 'result': 0}
-2025-07-08 11:31:57,491 | g2_inventory_debug | WARNING | log_g2_debug | [11:31:5] Non-standard inventory result | Params: {'result': 0}
-2025-07-08 11:31:57,491 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Tags found (4 tags), checking for RRUx180 special handling
-2025-07-08 11:31:57,697 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Reader type check | Params: {'reader_type': '0x71', 'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
-2025-07-08 11:31:57,698 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] AA_times reset to 0
-2025-07-08 11:31:57,699 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION END ===
-2025-07-08 11:31:57,699 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Calling preset_profile() for antenna 1
-2025-07-08 11:31:57,699 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION START ===
-2025-07-08 11:31:57,699 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 4, 'new_card_num': 4, 'aa_times': 0, 'target_times': 5}
-2025-07-08 11:31:57,700 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Getting reader information
-2025-07-08 11:31:57,904 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:57,904 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:31:57,904 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Not RRUx180 or not special readMode, skipping profile optimization
-2025-07-08 11:31:57,905 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION END ===
-2025-07-08 11:31:57,905 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] === CYCLE 3 END ===
-2025-07-08 11:31:57,911 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] === CYCLE 4 START ===
-2025-07-08 11:31:57,911 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Manual session mode (Session 0)
-2025-07-08 11:31:58,118 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:58,118 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Antenna cycling | Params: {'antenna_num': 1, 'session': 0}
-2025-07-08 11:31:58,118 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
-2025-07-08 11:31:58,118 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Calling flash_g2() for antenna 1
-2025-07-08 11:31:58,119 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION START ===
-2025-07-08 11:31:58,119 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
-2025-07-08 11:31:58,119 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Calling reader.inventory_g2()
-2025-07-08 11:31:58,321 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Inventory successful | Params: {'tags_found': 8, 'result': 0}
-2025-07-08 11:31:58,321 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 1 | Params: {'epc': 'AAAAFFFFFFFFFFFF00000053', 'rssi': 77, 'antenna': 1}
-2025-07-08 11:31:58,322 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 2 | Params: {'epc': 'E2827884000000000090DED9', 'rssi': 78, 'antenna': 1}
-2025-07-08 11:31:58,322 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 3 | Params: {'epc': 'E28278840000000000913C8D', 'rssi': 79, 'antenna': 1}
-2025-07-08 11:31:58,322 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 4 | Params: {'epc': 'E28278840000000000915AA2', 'rssi': 74, 'antenna': 1}
-2025-07-08 11:31:58,323 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 5 | Params: {'epc': '22204519D1743716271FFFFFFFF00001', 'rssi': 76, 'antenna': 1}
-2025-07-08 11:31:58,323 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 6 | Params: {'epc': 'E2827884000000000090FB84', 'rssi': 82, 'antenna': 1}
-2025-07-08 11:31:58,323 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 7 | Params: {'epc': 'E2827884000000000090FE15', 'rssi': 76, 'antenna': 1}
-2025-07-08 11:31:58,323 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 8 | Params: {'epc': 'E2827884000000000090FB77', 'rssi': 71, 'antenna': 1}
-2025-07-08 11:31:58,324 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Command execution time | Params: {'cmd_time': 205, 'result': 0}
-2025-07-08 11:31:58,324 | g2_inventory_debug | WARNING | log_g2_debug | [11:31:5] Non-standard inventory result | Params: {'result': 0}
-2025-07-08 11:31:58,324 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Tags found (8 tags), checking for RRUx180 special handling
-2025-07-08 11:31:58,530 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Reader type check | Params: {'reader_type': '0x71', 'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
-2025-07-08 11:31:58,530 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] AA_times reset to 0
-2025-07-08 11:31:58,531 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION END ===
-2025-07-08 11:31:58,531 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Calling preset_profile() for antenna 1
-2025-07-08 11:31:58,531 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION START ===
-2025-07-08 11:31:58,531 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 8, 'new_card_num': 8, 'aa_times': 0, 'target_times': 5}
-2025-07-08 11:31:58,532 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Getting reader information
-2025-07-08 11:31:58,736 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:58,736 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:31:58,736 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Not RRUx180 or not special readMode, skipping profile optimization
-2025-07-08 11:31:58,737 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION END ===
-2025-07-08 11:31:58,737 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] === CYCLE 4 END ===
-2025-07-08 11:31:58,743 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] === CYCLE 5 START ===
-2025-07-08 11:31:58,744 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Manual session mode (Session 0)
-2025-07-08 11:31:58,950 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:58,950 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Antenna cycling | Params: {'antenna_num': 1, 'session': 0}
-2025-07-08 11:31:58,951 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
-2025-07-08 11:31:58,951 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Calling flash_g2() for antenna 1
-2025-07-08 11:31:58,951 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION START ===
-2025-07-08 11:31:58,951 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
-2025-07-08 11:31:58,951 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Calling reader.inventory_g2()
-2025-07-08 11:31:59,154 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Inventory successful | Params: {'tags_found': 7, 'result': 0}
-2025-07-08 11:31:59,154 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 1 | Params: {'epc': 'E282788400000000009157F2', 'rssi': 78, 'antenna': 1}
-2025-07-08 11:31:59,155 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 2 | Params: {'epc': 'AAAAFFFFFFFFFFFF00000053', 'rssi': 78, 'antenna': 1}
-2025-07-08 11:31:59,155 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 3 | Params: {'epc': '22204519D1743716271FFFFFFFF00001', 'rssi': 79, 'antenna': 1}
-2025-07-08 11:31:59,156 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 4 | Params: {'epc': 'E2827884000000000090FB84', 'rssi': 77, 'antenna': 1}
-2025-07-08 11:31:59,156 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 5 | Params: {'epc': 'E2827884000000000090FB77', 'rssi': 71, 'antenna': 1}
-2025-07-08 11:31:59,156 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 6 | Params: {'epc': 'E28278840000000000913C8D', 'rssi': 78, 'antenna': 1}
-2025-07-08 11:31:59,157 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 7 | Params: {'epc': '000672371723B17416362001', 'rssi': 70, 'antenna': 1}
-2025-07-08 11:31:59,157 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Command execution time | Params: {'cmd_time': 206, 'result': 0}
-2025-07-08 11:31:59,157 | g2_inventory_debug | WARNING | log_g2_debug | [11:31:5] Non-standard inventory result | Params: {'result': 0}
-2025-07-08 11:31:59,157 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Tags found (7 tags), checking for RRUx180 special handling
-2025-07-08 11:31:59,364 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Reader type check | Params: {'reader_type': '0x71', 'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
-2025-07-08 11:31:59,364 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] AA_times reset to 0
-2025-07-08 11:31:59,364 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION END ===
-2025-07-08 11:31:59,364 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Calling preset_profile() for antenna 1
-2025-07-08 11:31:59,364 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION START ===
-2025-07-08 11:31:59,364 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 7, 'new_card_num': 7, 'aa_times': 0, 'target_times': 5}
-2025-07-08 11:31:59,364 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Getting reader information
-2025-07-08 11:31:59,570 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:59,571 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:31:59,571 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Not RRUx180 or not special readMode, skipping profile optimization
-2025-07-08 11:31:59,571 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION END ===
-2025-07-08 11:31:59,571 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] === CYCLE 5 END ===
-2025-07-08 11:31:59,577 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] === CYCLE 6 START ===
-2025-07-08 11:31:59,578 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Manual session mode (Session 0)
-2025-07-08 11:31:59,781 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:31:59,782 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Antenna cycling | Params: {'antenna_num': 1, 'session': 0}
-2025-07-08 11:31:59,782 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
-2025-07-08 11:31:59,782 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Calling flash_g2() for antenna 1
-2025-07-08 11:31:59,782 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] === FUNCTION START ===
-2025-07-08 11:31:59,782 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
-2025-07-08 11:31:59,782 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Calling reader.inventory_g2()
-2025-07-08 11:31:59,988 | g2_inventory_debug | INFO | log_g2_debug | [11:31:5] Inventory successful | Params: {'tags_found': 10, 'result': 0}
-2025-07-08 11:31:59,989 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 1 | Params: {'epc': 'E2827884000000000090DED9', 'rssi': 67, 'antenna': 1}
-2025-07-08 11:31:59,990 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 2 | Params: {'epc': '22204519D1743716271FFFFFFFF00001', 'rssi': 79, 'antenna': 1}
-2025-07-08 11:31:59,990 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 3 | Params: {'epc': 'E28278840000000000915AB0', 'rssi': 68, 'antenna': 1}
-2025-07-08 11:31:59,991 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 4 | Params: {'epc': 'AAAAFFFFFFFFFFFF00000053', 'rssi': 78, 'antenna': 1}
-2025-07-08 11:31:59,991 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 5 | Params: {'epc': 'E2827884000000000090DAD4', 'rssi': 61, 'antenna': 1}
-2025-07-08 11:31:59,993 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 6 | Params: {'epc': 'E2827884000000000090FB84', 'rssi': 78, 'antenna': 1}
-2025-07-08 11:31:59,993 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 7 | Params: {'epc': 'E282788400000000009157F2', 'rssi': 77, 'antenna': 1}
-2025-07-08 11:31:59,994 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 8 | Params: {'epc': 'E2827884000000000090FB77', 'rssi': 70, 'antenna': 1}
-2025-07-08 11:31:59,994 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 9 | Params: {'epc': 'E28278840000000000913C8D', 'rssi': 75, 'antenna': 1}
-2025-07-08 11:31:59,995 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Processing tag 10 | Params: {'epc': 'E2827884000000000090FE15', 'rssi': 73, 'antenna': 1}
-2025-07-08 11:31:59,995 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Command execution time | Params: {'cmd_time': 213, 'result': 0}
-2025-07-08 11:31:59,995 | g2_inventory_debug | WARNING | log_g2_debug | [11:31:5] Non-standard inventory result | Params: {'result': 0}
-2025-07-08 11:31:59,995 | g2_inventory_debug | DEBUG | log_g2_debug | [11:31:5] Tags found (10 tags), checking for RRUx180 special handling
-2025-07-08 11:32:00,202 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Reader type check | Params: {'reader_type': '0x71', 'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
-2025-07-08 11:32:00,202 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] AA_times reset to 0
-2025-07-08 11:32:00,203 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION END ===
-2025-07-08 11:32:00,203 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Calling preset_profile() for antenna 1
-2025-07-08 11:32:00,204 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION START ===
-2025-07-08 11:32:00,204 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 10, 'new_card_num': 10, 'aa_times': 0, 'target_times': 5}
-2025-07-08 11:32:00,204 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Getting reader information
-2025-07-08 11:32:00,410 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:32:00,410 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:32:00,411 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Not RRUx180 or not special readMode, skipping profile optimization
-2025-07-08 11:32:00,411 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION END ===
-2025-07-08 11:32:00,411 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] === CYCLE 6 END ===
-2025-07-08 11:32:00,417 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] === CYCLE 7 START ===
-2025-07-08 11:32:00,417 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Manual session mode (Session 0)
-2025-07-08 11:32:00,623 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:32:00,623 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Antenna cycling | Params: {'antenna_num': 1, 'session': 0}
-2025-07-08 11:32:00,624 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
-2025-07-08 11:32:00,624 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Calling flash_g2() for antenna 1
-2025-07-08 11:32:00,624 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION START ===
-2025-07-08 11:32:00,624 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
-2025-07-08 11:32:00,624 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Calling reader.inventory_g2()
-2025-07-08 11:32:00,831 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Inventory successful | Params: {'tags_found': 6, 'result': 0}
-2025-07-08 11:32:00,832 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 1 | Params: {'epc': 'E28278840000000000915AA2', 'rssi': 70, 'antenna': 1}
-2025-07-08 11:32:00,832 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 2 | Params: {'epc': 'E28278840000000000913C8D', 'rssi': 79, 'antenna': 1}
-2025-07-08 11:32:00,833 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 3 | Params: {'epc': 'E2827884000000000090FB77', 'rssi': 71, 'antenna': 1}
-2025-07-08 11:32:00,833 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 4 | Params: {'epc': 'E2827884000000000090FB84', 'rssi': 77, 'antenna': 1}
-2025-07-08 11:32:00,834 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 5 | Params: {'epc': 'AAAAFFFFFFFFFFFF00000053', 'rssi': 78, 'antenna': 1}
-2025-07-08 11:32:00,834 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 6 | Params: {'epc': '22204519D1743716271FFFFFFFF00001', 'rssi': 78, 'antenna': 1}
-2025-07-08 11:32:00,835 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Command execution time | Params: {'cmd_time': 211, 'result': 0}
-2025-07-08 11:32:00,835 | g2_inventory_debug | WARNING | log_g2_debug | [11:32:0] Non-standard inventory result | Params: {'result': 0}
-2025-07-08 11:32:00,835 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Tags found (6 tags), checking for RRUx180 special handling
-2025-07-08 11:32:01,041 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Reader type check | Params: {'reader_type': '0x71', 'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
-2025-07-08 11:32:01,041 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] AA_times reset to 0
-2025-07-08 11:32:01,042 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION END ===
-2025-07-08 11:32:01,042 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Calling preset_profile() for antenna 1
-2025-07-08 11:32:01,042 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION START ===
-2025-07-08 11:32:01,042 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 6, 'new_card_num': 6, 'aa_times': 0, 'target_times': 5}
-2025-07-08 11:32:01,042 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Getting reader information
-2025-07-08 11:32:01,248 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:32:01,248 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:32:01,248 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Not RRUx180 or not special readMode, skipping profile optimization
-2025-07-08 11:32:01,249 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION END ===
-2025-07-08 11:32:01,249 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] === CYCLE 7 END ===
-2025-07-08 11:32:01,255 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] === CYCLE 8 START ===
-2025-07-08 11:32:01,255 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Manual session mode (Session 0)
-2025-07-08 11:32:01,462 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:32:01,462 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Antenna cycling | Params: {'antenna_num': 1, 'session': 0}
-2025-07-08 11:32:01,462 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
-2025-07-08 11:32:01,462 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Calling flash_g2() for antenna 1
-2025-07-08 11:32:01,462 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION START ===
-2025-07-08 11:32:01,462 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
-2025-07-08 11:32:01,463 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Calling reader.inventory_g2()
-2025-07-08 11:32:01,670 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Inventory successful | Params: {'tags_found': 6, 'result': 0}
-2025-07-08 11:32:01,670 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 1 | Params: {'epc': 'E2827884000000000090FB84', 'rssi': 77, 'antenna': 1}
-2025-07-08 11:32:01,671 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 2 | Params: {'epc': 'E28278840000000000913C8D', 'rssi': 76, 'antenna': 1}
-2025-07-08 11:32:01,672 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 3 | Params: {'epc': 'AAAAFFFFFFFFFFFF00000053', 'rssi': 78, 'antenna': 1}
-2025-07-08 11:32:01,673 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 4 | Params: {'epc': 'E2827884000000000090FB77', 'rssi': 72, 'antenna': 1}
-2025-07-08 11:32:01,675 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 5 | Params: {'epc': 'E28278840000000000915AA2', 'rssi': 75, 'antenna': 1}
-2025-07-08 11:32:01,675 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 6 | Params: {'epc': '22204519D1743716271FFFFFFFF00001', 'rssi': 76, 'antenna': 1}
-2025-07-08 11:32:01,675 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Command execution time | Params: {'cmd_time': 213, 'result': 0}
-2025-07-08 11:32:01,676 | g2_inventory_debug | WARNING | log_g2_debug | [11:32:0] Non-standard inventory result | Params: {'result': 0}
-2025-07-08 11:32:01,676 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Tags found (6 tags), checking for RRUx180 special handling
-2025-07-08 11:32:01,882 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Reader type check | Params: {'reader_type': '0x71', 'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
-2025-07-08 11:32:01,883 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] AA_times reset to 0
-2025-07-08 11:32:01,883 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION END ===
-2025-07-08 11:32:01,884 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Calling preset_profile() for antenna 1
-2025-07-08 11:32:01,884 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION START ===
-2025-07-08 11:32:01,884 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 6, 'new_card_num': 6, 'aa_times': 0, 'target_times': 5}
-2025-07-08 11:32:01,884 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Getting reader information
-2025-07-08 11:32:02,091 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:32:02,092 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:32:02,092 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Not RRUx180 or not special readMode, skipping profile optimization
-2025-07-08 11:32:02,092 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION END ===
-2025-07-08 11:32:02,092 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] === CYCLE 8 END ===
-2025-07-08 11:32:02,098 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] === CYCLE 9 START ===
-2025-07-08 11:32:02,098 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Manual session mode (Session 0)
-2025-07-08 11:32:02,303 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:32:02,303 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Antenna cycling | Params: {'antenna_num': 1, 'session': 0}
-2025-07-08 11:32:02,303 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
-2025-07-08 11:32:02,303 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Calling flash_g2() for antenna 1
-2025-07-08 11:32:02,303 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION START ===
-2025-07-08 11:32:02,303 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
-2025-07-08 11:32:02,303 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Calling reader.inventory_g2()
-2025-07-08 11:32:02,507 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Inventory successful | Params: {'tags_found': 6, 'result': 0}
-2025-07-08 11:32:02,508 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 1 | Params: {'epc': 'AAAAFFFFFFFFFFFF00000053', 'rssi': 79, 'antenna': 1}
-2025-07-08 11:32:02,508 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 2 | Params: {'epc': 'E28278840000000000913C8D', 'rssi': 77, 'antenna': 1}
-2025-07-08 11:32:02,509 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 3 | Params: {'epc': 'E2827884000000000090FB77', 'rssi': 73, 'antenna': 1}
-2025-07-08 11:32:02,509 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 4 | Params: {'epc': '22204519D1743716271FFFFFFFF00001', 'rssi': 79, 'antenna': 1}
-2025-07-08 11:32:02,510 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 5 | Params: {'epc': '000672371723B17416362001', 'rssi': 70, 'antenna': 1}
-2025-07-08 11:32:02,510 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 6 | Params: {'epc': 'E28278840000000000915AA2', 'rssi': 74, 'antenna': 1}
-2025-07-08 11:32:02,510 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Command execution time | Params: {'cmd_time': 207, 'result': 0}
-2025-07-08 11:32:02,511 | g2_inventory_debug | WARNING | log_g2_debug | [11:32:0] Non-standard inventory result | Params: {'result': 0}
-2025-07-08 11:32:02,511 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Tags found (6 tags), checking for RRUx180 special handling
-2025-07-08 11:32:02,713 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Reader type check | Params: {'reader_type': '0x71', 'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
-2025-07-08 11:32:02,714 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] AA_times reset to 0
-2025-07-08 11:32:02,714 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION END ===
-2025-07-08 11:32:02,715 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Calling preset_profile() for antenna 1
-2025-07-08 11:32:02,715 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION START ===
-2025-07-08 11:32:02,715 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 6, 'new_card_num': 6, 'aa_times': 0, 'target_times': 5}
-2025-07-08 11:32:02,715 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Getting reader information
-2025-07-08 11:32:02,921 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:32:02,922 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:32:02,922 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Not RRUx180 or not special readMode, skipping profile optimization
-2025-07-08 11:32:02,922 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION END ===
-2025-07-08 11:32:02,922 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] === CYCLE 9 END ===
-2025-07-08 11:32:02,929 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] === CYCLE 10 START ===
-2025-07-08 11:32:02,929 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Manual session mode (Session 0)
-2025-07-08 11:32:03,136 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:32:03,136 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Antenna cycling | Params: {'antenna_num': 1, 'session': 0}
-2025-07-08 11:32:03,136 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
-2025-07-08 11:32:03,136 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Calling flash_g2() for antenna 1
-2025-07-08 11:32:03,136 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION START ===
-2025-07-08 11:32:03,137 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
-2025-07-08 11:32:03,137 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Calling reader.inventory_g2()
-2025-07-08 11:32:03,343 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Inventory successful | Params: {'tags_found': 6, 'result': 0}
-2025-07-08 11:32:03,343 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 1 | Params: {'epc': 'AAAAFFFFFFFFFFFF00000053', 'rssi': 78, 'antenna': 1}
-2025-07-08 11:32:03,344 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 2 | Params: {'epc': 'E28278840000000000917457', 'rssi': 71, 'antenna': 1}
-2025-07-08 11:32:03,345 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 3 | Params: {'epc': '22204519D1743716271FFFFFFFF00001', 'rssi': 79, 'antenna': 1}
-2025-07-08 11:32:03,345 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 4 | Params: {'epc': 'E28278840000000000915AA2', 'rssi': 72, 'antenna': 1}
-2025-07-08 11:32:03,345 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 5 | Params: {'epc': 'E28278840000000000913C8D', 'rssi': 76, 'antenna': 1}
-2025-07-08 11:32:03,346 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 6 | Params: {'epc': 'E2827884000000000090FB77', 'rssi': 75, 'antenna': 1}
-2025-07-08 11:32:03,346 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Command execution time | Params: {'cmd_time': 209, 'result': 0}
-2025-07-08 11:32:03,346 | g2_inventory_debug | WARNING | log_g2_debug | [11:32:0] Non-standard inventory result | Params: {'result': 0}
-2025-07-08 11:32:03,347 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Tags found (6 tags), checking for RRUx180 special handling
-2025-07-08 11:32:03,553 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Reader type check | Params: {'reader_type': '0x71', 'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
-2025-07-08 11:32:03,553 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] AA_times reset to 0
-2025-07-08 11:32:03,554 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION END ===
-2025-07-08 11:32:03,555 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Calling preset_profile() for antenna 1
-2025-07-08 11:32:03,555 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION START ===
-2025-07-08 11:32:03,555 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 6, 'new_card_num': 6, 'aa_times': 0, 'target_times': 5}
-2025-07-08 11:32:03,555 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Getting reader information
-2025-07-08 11:32:03,762 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:32:03,762 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:32:03,762 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Not RRUx180 or not special readMode, skipping profile optimization
-2025-07-08 11:32:03,762 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION END ===
-2025-07-08 11:32:03,763 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] === CYCLE 10 END ===
-2025-07-08 11:32:03,769 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] === CYCLE 11 START ===
-2025-07-08 11:32:03,769 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Manual session mode (Session 0)
-2025-07-08 11:32:03,976 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:32:03,977 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Antenna cycling | Params: {'antenna_num': 1, 'session': 0}
-2025-07-08 11:32:03,977 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
-2025-07-08 11:32:03,977 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Calling flash_g2() for antenna 1
-2025-07-08 11:32:03,977 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION START ===
-2025-07-08 11:32:03,978 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
-2025-07-08 11:32:03,978 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Calling reader.inventory_g2()
-2025-07-08 11:32:04,185 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Inventory successful | Params: {'tags_found': 6, 'result': 0}
-2025-07-08 11:32:04,185 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 1 | Params: {'epc': 'E28278840000000000913C8D', 'rssi': 76, 'antenna': 1}
-2025-07-08 11:32:04,186 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 2 | Params: {'epc': 'E2827884000000000090FB77', 'rssi': 78, 'antenna': 1}
-2025-07-08 11:32:04,187 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 3 | Params: {'epc': 'E2827884000000000090FB84', 'rssi': 71, 'antenna': 1}
-2025-07-08 11:32:04,188 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 4 | Params: {'epc': 'E28278840000000000915AA2', 'rssi': 75, 'antenna': 1}
-2025-07-08 11:32:04,188 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 5 | Params: {'epc': 'AAAAFFFFFFFFFFFF00000053', 'rssi': 78, 'antenna': 1}
-2025-07-08 11:32:04,189 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Processing tag 6 | Params: {'epc': '22204519D1743716271FFFFFFFF00001', 'rssi': 78, 'antenna': 1}
-2025-07-08 11:32:04,189 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Command execution time | Params: {'cmd_time': 212, 'result': 0}
-2025-07-08 11:32:04,189 | g2_inventory_debug | WARNING | log_g2_debug | [11:32:0] Non-standard inventory result | Params: {'result': 0}
-2025-07-08 11:32:04,190 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Tags found (6 tags), checking for RRUx180 special handling
-2025-07-08 11:32:04,395 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Reader type check | Params: {'reader_type': '0x71', 'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
-2025-07-08 11:32:04,396 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] AA_times reset to 0
-2025-07-08 11:32:04,397 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION END ===
-2025-07-08 11:32:04,397 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Calling preset_profile() for antenna 1
-2025-07-08 11:32:04,397 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION START ===
-2025-07-08 11:32:04,398 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 6, 'new_card_num': 6, 'aa_times': 0, 'target_times': 5}
-2025-07-08 11:32:04,398 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Getting reader information
-2025-07-08 11:32:04,604 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:32:04,604 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Mode type determined | Params: {'reader_type': '0x71', 'mode_type': 2}
-2025-07-08 11:32:04,604 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Not RRUx180 or not special readMode, skipping profile optimization
-2025-07-08 11:32:04,604 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION END ===
-2025-07-08 11:32:04,605 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] === CYCLE 11 END ===
-2025-07-08 11:32:04,611 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] === CYCLE 12 START ===
-2025-07-08 11:32:04,611 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Manual session mode (Session 0)
-2025-07-08 11:32:04,817 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Reader info result | Params: {'result': 0, 'reader_type': 113}
-2025-07-08 11:32:04,818 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Antenna cycling | Params: {'antenna_num': 1, 'session': 0}
-2025-07-08 11:32:04,818 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Stop flag detected, breaking antenna loop
-2025-07-08 11:32:04,818 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] === CYCLE 12 END ===
-2025-07-08 11:32:04,824 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Main loop ended, starting cleanup
-2025-07-08 11:32:05,031 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Cleanup reader info result | Params: {'result': 0}
-2025-07-08 11:32:05,031 | g2_inventory_debug | DEBUG | log_g2_debug | [11:32:0] Cleanup mode type | Params: {'mode_type': 2, 'reader_type': '0x71'}
-2025-07-08 11:32:05,236 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] Profile restoration | Params: {'old_profile': 192, 'new_profile': 192, 'result': 255}
-2025-07-08 11:32:05,236 | g2_inventory_debug | WARNING | log_g2_debug | [11:32:0] Failed to restore profile | Params: {'result': 255}
-2025-07-08 11:32:05,236 | g2_inventory_debug | INFO | log_g2_debug | [11:32:0] === FUNCTION END ===
+2025-07-09 12:24:30,978 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:30,979 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Input parameters | Params: {'read_mode': 0, 'select_antenna': '0x0001'}
+2025-07-09 12:24:30,979 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current Session before preset | Params: {'current_session': 0}
+2025-07-09 12:24:30,979 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Read mode <= 0, setting session directly
+2025-07-09 12:24:30,979 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Final session value | Params: {'final_session': 0}
+2025-07-09 12:24:30,980 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:30,981 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:30,982 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Initial state | Params: {'session': 0, 'mode_type': 'epc', 'target': 0, 'to_stop_thread': False}
+2025-07-09 12:24:30,982 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 1 START ===
+2025-07-09 12:24:30,983 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:30,983 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:30,983 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:30,983 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:30,983 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:30,983 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:30,986 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:31,188 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 7, 'result': 0}
+2025-07-09 12:24:31,189 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0160', 'rssi': 66, 'antenna': 1}
+2025-07-09 12:24:31,189 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0339', 'rssi': 89, 'antenna': 1}
+2025-07-09 12:24:31,189 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0078', 'rssi': 63, 'antenna': 1}
+2025-07-09 12:24:31,190 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0304', 'rssi': 73, 'antenna': 1}
+2025-07-09 12:24:31,190 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0010', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:31,191 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0204', 'rssi': 94, 'antenna': 1}
+2025-07-09 12:24:31,191 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 7 | Params: {'epc': 'ABCD0119', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:31,191 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 208, 'result': 0}
+2025-07-09 12:24:31,191 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:31,191 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (7 tags), checking for RRUx180 special handling
+2025-07-09 12:24:31,191 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:31,191 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:31,191 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:31,191 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:31,191 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:31,191 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 7, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:31,191 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:31,191 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:31,191 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:31,191 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 1 END ===
+2025-07-09 12:24:31,198 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 2 START ===
+2025-07-09 12:24:31,198 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:31,198 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:31,198 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:31,198 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:31,198 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:31,198 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:31,198 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:31,403 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 5, 'result': 0}
+2025-07-09 12:24:31,403 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0339', 'rssi': 89, 'antenna': 1}
+2025-07-09 12:24:31,404 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0204', 'rssi': 94, 'antenna': 1}
+2025-07-09 12:24:31,407 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0119', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:31,409 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0010', 'rssi': 86, 'antenna': 1}
+2025-07-09 12:24:31,409 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0304', 'rssi': 75, 'antenna': 1}
+2025-07-09 12:24:31,410 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 212, 'result': 0}
+2025-07-09 12:24:31,410 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:31,416 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (5 tags), checking for RRUx180 special handling
+2025-07-09 12:24:31,417 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:31,417 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:31,418 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:31,418 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:31,418 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:31,418 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 5, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:31,419 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:31,419 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:31,419 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:31,419 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 2 END ===
+2025-07-09 12:24:31,424 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 3 START ===
+2025-07-09 12:24:31,424 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:31,424 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:31,424 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:31,424 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:31,424 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:31,424 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:31,424 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:31,630 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 5, 'result': 0}
+2025-07-09 12:24:31,630 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0339', 'rssi': 90, 'antenna': 1}
+2025-07-09 12:24:31,631 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0119', 'rssi': 86, 'antenna': 1}
+2025-07-09 12:24:31,632 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0010', 'rssi': 85, 'antenna': 1}
+2025-07-09 12:24:31,633 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0304', 'rssi': 76, 'antenna': 1}
+2025-07-09 12:24:31,633 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0204', 'rssi': 94, 'antenna': 1}
+2025-07-09 12:24:31,634 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 210, 'result': 0}
+2025-07-09 12:24:31,634 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:31,634 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (5 tags), checking for RRUx180 special handling
+2025-07-09 12:24:31,634 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:31,634 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:31,635 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:31,635 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:31,635 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:31,635 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 5, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:31,635 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:31,635 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:31,640 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:31,640 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 3 END ===
+2025-07-09 12:24:31,646 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 4 START ===
+2025-07-09 12:24:31,646 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:31,647 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:31,647 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:31,647 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:31,647 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:31,647 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:31,647 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:31,853 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 5, 'result': 0}
+2025-07-09 12:24:31,853 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0119', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:31,854 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0304', 'rssi': 73, 'antenna': 1}
+2025-07-09 12:24:31,855 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0339', 'rssi': 89, 'antenna': 1}
+2025-07-09 12:24:31,856 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0204', 'rssi': 94, 'antenna': 1}
+2025-07-09 12:24:31,856 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0010', 'rssi': 86, 'antenna': 1}
+2025-07-09 12:24:31,857 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 209, 'result': 0}
+2025-07-09 12:24:31,857 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:31,857 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (5 tags), checking for RRUx180 special handling
+2025-07-09 12:24:31,857 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:31,857 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:31,857 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:31,857 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:31,857 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:31,858 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 5, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:31,858 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:31,858 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:31,858 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:31,858 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 4 END ===
+2025-07-09 12:24:31,865 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 5 START ===
+2025-07-09 12:24:31,865 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:31,865 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:31,865 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:31,865 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:31,866 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:31,866 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:31,866 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:32,072 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 4, 'result': 0}
+2025-07-09 12:24:32,072 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0010', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:32,073 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0204', 'rssi': 94, 'antenna': 1}
+2025-07-09 12:24:32,074 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0339', 'rssi': 89, 'antenna': 1}
+2025-07-09 12:24:32,075 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0119', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:32,075 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 209, 'result': 0}
+2025-07-09 12:24:32,075 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:32,075 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (4 tags), checking for RRUx180 special handling
+2025-07-09 12:24:32,075 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:32,075 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:32,076 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:32,076 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:32,076 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:32,076 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 4, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:32,076 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:32,076 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:32,076 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:32,076 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 5 END ===
+2025-07-09 12:24:32,084 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 6 START ===
+2025-07-09 12:24:32,085 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:32,085 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:32,085 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:32,085 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:32,085 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:32,085 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:32,086 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:32,291 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 7, 'result': 0}
+2025-07-09 12:24:32,292 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0010', 'rssi': 90, 'antenna': 1}
+2025-07-09 12:24:32,293 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0119', 'rssi': 86, 'antenna': 1}
+2025-07-09 12:24:32,293 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0304', 'rssi': 72, 'antenna': 1}
+2025-07-09 12:24:32,294 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0160', 'rssi': 69, 'antenna': 1}
+2025-07-09 12:24:32,294 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0078', 'rssi': 63, 'antenna': 1}
+2025-07-09 12:24:32,295 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0204', 'rssi': 93, 'antenna': 1}
+2025-07-09 12:24:32,297 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 7 | Params: {'epc': 'ABCD0339', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:32,298 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 213, 'result': 0}
+2025-07-09 12:24:32,298 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:32,298 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (7 tags), checking for RRUx180 special handling
+2025-07-09 12:24:32,298 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:32,299 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:32,299 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:32,299 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:32,299 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:32,299 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 7, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:32,299 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:32,300 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:32,300 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:32,300 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 6 END ===
+2025-07-09 12:24:32,307 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 7 START ===
+2025-07-09 12:24:32,307 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:32,307 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:32,308 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:32,308 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:32,308 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:32,308 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:32,308 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:32,512 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 6, 'result': 0}
+2025-07-09 12:24:32,512 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0204', 'rssi': 94, 'antenna': 1}
+2025-07-09 12:24:32,513 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0119', 'rssi': 86, 'antenna': 1}
+2025-07-09 12:24:32,513 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0339', 'rssi': 89, 'antenna': 1}
+2025-07-09 12:24:32,514 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0304', 'rssi': 71, 'antenna': 1}
+2025-07-09 12:24:32,514 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0010', 'rssi': 88, 'antenna': 1}
+2025-07-09 12:24:32,514 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0078', 'rssi': 60, 'antenna': 1}
+2025-07-09 12:24:32,515 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 207, 'result': 0}
+2025-07-09 12:24:32,515 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:32,515 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (6 tags), checking for RRUx180 special handling
+2025-07-09 12:24:32,515 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:32,515 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:32,516 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:32,516 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:32,516 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:32,516 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 6, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:32,516 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:32,516 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:32,516 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:32,516 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 7 END ===
+2025-07-09 12:24:32,522 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 8 START ===
+2025-07-09 12:24:32,522 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:32,522 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:32,522 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:32,522 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:32,523 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:32,523 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:32,523 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:32,729 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 7, 'result': 0}
+2025-07-09 12:24:32,730 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0204', 'rssi': 94, 'antenna': 1}
+2025-07-09 12:24:32,731 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0339', 'rssi': 88, 'antenna': 1}
+2025-07-09 12:24:32,731 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0304', 'rssi': 71, 'antenna': 1}
+2025-07-09 12:24:32,732 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0010', 'rssi': 90, 'antenna': 1}
+2025-07-09 12:24:32,733 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0160', 'rssi': 68, 'antenna': 1}
+2025-07-09 12:24:32,733 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0119', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:32,734 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 7 | Params: {'epc': 'ABCD0078', 'rssi': 57, 'antenna': 1}
+2025-07-09 12:24:32,744 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 221, 'result': 0}
+2025-07-09 12:24:32,744 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:32,744 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (7 tags), checking for RRUx180 special handling
+2025-07-09 12:24:32,744 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:32,745 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:32,745 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:32,745 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:32,745 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:32,745 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 7, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:32,745 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:32,745 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:32,745 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:32,745 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 8 END ===
+2025-07-09 12:24:32,752 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 9 START ===
+2025-07-09 12:24:32,752 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:32,752 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:32,752 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:32,752 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:32,752 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:32,752 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:32,752 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:32,958 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 6, 'result': 0}
+2025-07-09 12:24:32,959 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0204', 'rssi': 92, 'antenna': 1}
+2025-07-09 12:24:32,959 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0160', 'rssi': 68, 'antenna': 1}
+2025-07-09 12:24:32,960 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0010', 'rssi': 89, 'antenna': 1}
+2025-07-09 12:24:32,960 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0119', 'rssi': 86, 'antenna': 1}
+2025-07-09 12:24:32,961 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0339', 'rssi': 89, 'antenna': 1}
+2025-07-09 12:24:32,961 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0304', 'rssi': 72, 'antenna': 1}
+2025-07-09 12:24:32,962 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 210, 'result': 0}
+2025-07-09 12:24:32,962 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:32,962 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (6 tags), checking for RRUx180 special handling
+2025-07-09 12:24:32,962 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:32,962 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:32,963 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:32,963 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:32,963 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:32,963 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 6, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:32,963 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:32,963 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:32,963 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:32,963 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 9 END ===
+2025-07-09 12:24:32,970 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 10 START ===
+2025-07-09 12:24:32,970 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:32,970 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:32,970 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:32,970 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:32,970 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:32,970 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:32,970 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:33,177 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 7, 'result': 0}
+2025-07-09 12:24:33,177 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0010', 'rssi': 90, 'antenna': 1}
+2025-07-09 12:24:33,178 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0204', 'rssi': 94, 'antenna': 1}
+2025-07-09 12:24:33,179 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0078', 'rssi': 55, 'antenna': 1}
+2025-07-09 12:24:33,180 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0160', 'rssi': 68, 'antenna': 1}
+2025-07-09 12:24:33,180 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0339', 'rssi': 88, 'antenna': 1}
+2025-07-09 12:24:33,180 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0119', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:33,181 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 7 | Params: {'epc': 'ABCD0304', 'rssi': 71, 'antenna': 1}
+2025-07-09 12:24:33,181 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 211, 'result': 0}
+2025-07-09 12:24:33,182 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:33,182 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (7 tags), checking for RRUx180 special handling
+2025-07-09 12:24:33,182 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:33,182 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:33,182 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:33,183 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:33,184 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:33,184 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 7, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:33,184 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:33,185 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:33,185 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:33,185 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 10 END ===
+2025-07-09 12:24:33,191 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 11 START ===
+2025-07-09 12:24:33,191 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:33,192 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:33,192 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:33,192 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:33,192 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:33,192 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:33,192 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:33,398 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 7, 'result': 0}
+2025-07-09 12:24:33,398 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0119', 'rssi': 86, 'antenna': 1}
+2025-07-09 12:24:33,399 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0204', 'rssi': 94, 'antenna': 1}
+2025-07-09 12:24:33,400 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0339', 'rssi': 90, 'antenna': 1}
+2025-07-09 12:24:33,400 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0160', 'rssi': 67, 'antenna': 1}
+2025-07-09 12:24:33,401 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0304', 'rssi': 72, 'antenna': 1}
+2025-07-09 12:24:33,401 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0010', 'rssi': 88, 'antenna': 1}
+2025-07-09 12:24:33,401 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 7 | Params: {'epc': 'ABCD0078', 'rssi': 59, 'antenna': 1}
+2025-07-09 12:24:33,402 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 210, 'result': 0}
+2025-07-09 12:24:33,402 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:33,402 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (7 tags), checking for RRUx180 special handling
+2025-07-09 12:24:33,402 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:33,403 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:33,403 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:33,403 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:33,404 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:33,404 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 7, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:33,404 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:33,404 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:33,404 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:33,405 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 11 END ===
+2025-07-09 12:24:33,411 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 12 START ===
+2025-07-09 12:24:33,412 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:33,412 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:33,412 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:33,412 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:33,412 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:33,412 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:33,412 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:33,615 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 7, 'result': 0}
+2025-07-09 12:24:33,616 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0339', 'rssi': 89, 'antenna': 1}
+2025-07-09 12:24:33,616 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0119', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:33,617 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0304', 'rssi': 72, 'antenna': 1}
+2025-07-09 12:24:33,617 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0204', 'rssi': 94, 'antenna': 1}
+2025-07-09 12:24:33,619 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0160', 'rssi': 68, 'antenna': 1}
+2025-07-09 12:24:33,620 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0010', 'rssi': 88, 'antenna': 1}
+2025-07-09 12:24:33,620 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 7 | Params: {'epc': 'ABCD0078', 'rssi': 59, 'antenna': 1}
+2025-07-09 12:24:33,620 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 208, 'result': 0}
+2025-07-09 12:24:33,621 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:33,621 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (7 tags), checking for RRUx180 special handling
+2025-07-09 12:24:33,621 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:33,621 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:33,621 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:33,621 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:33,621 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:33,621 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 7, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:33,622 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:33,622 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:33,622 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:33,622 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 12 END ===
+2025-07-09 12:24:33,629 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 13 START ===
+2025-07-09 12:24:33,629 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:33,629 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:33,629 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:33,629 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:33,629 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:33,629 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:33,630 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:33,836 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 6, 'result': 0}
+2025-07-09 12:24:33,836 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0304', 'rssi': 72, 'antenna': 1}
+2025-07-09 12:24:33,837 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0339', 'rssi': 89, 'antenna': 1}
+2025-07-09 12:24:33,837 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0204', 'rssi': 94, 'antenna': 1}
+2025-07-09 12:24:33,837 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0160', 'rssi': 67, 'antenna': 1}
+2025-07-09 12:24:33,838 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0119', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:33,838 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0010', 'rssi': 88, 'antenna': 1}
+2025-07-09 12:24:33,839 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 210, 'result': 0}
+2025-07-09 12:24:33,839 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:33,839 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (6 tags), checking for RRUx180 special handling
+2025-07-09 12:24:33,839 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:33,839 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:33,839 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:33,840 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:33,840 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:33,840 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 6, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:33,840 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:33,840 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:33,840 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:33,840 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 13 END ===
+2025-07-09 12:24:33,849 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 14 START ===
+2025-07-09 12:24:33,849 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:33,850 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:33,850 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:33,850 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:33,850 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:33,850 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:33,850 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:34,056 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 6, 'result': 0}
+2025-07-09 12:24:34,057 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0010', 'rssi': 88, 'antenna': 1}
+2025-07-09 12:24:34,057 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0304', 'rssi': 71, 'antenna': 1}
+2025-07-09 12:24:34,058 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0119', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:34,058 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0160', 'rssi': 67, 'antenna': 1}
+2025-07-09 12:24:34,059 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0339', 'rssi': 90, 'antenna': 1}
+2025-07-09 12:24:34,059 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0204', 'rssi': 94, 'antenna': 1}
+2025-07-09 12:24:34,060 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 210, 'result': 0}
+2025-07-09 12:24:34,060 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:34,060 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (6 tags), checking for RRUx180 special handling
+2025-07-09 12:24:34,060 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:34,060 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:34,061 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:34,061 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:34,061 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:34,062 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 6, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:34,062 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:34,062 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:34,062 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:34,062 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 14 END ===
+2025-07-09 12:24:34,068 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 15 START ===
+2025-07-09 12:24:34,069 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:34,069 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:34,071 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:34,071 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:34,071 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:34,071 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:34,071 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:34,273 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 7, 'result': 0}
+2025-07-09 12:24:34,273 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0160', 'rssi': 66, 'antenna': 1}
+2025-07-09 12:24:34,274 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0339', 'rssi': 89, 'antenna': 1}
+2025-07-09 12:24:34,275 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0204', 'rssi': 91, 'antenna': 1}
+2025-07-09 12:24:34,275 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0078', 'rssi': 61, 'antenna': 1}
+2025-07-09 12:24:34,276 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0304', 'rssi': 72, 'antenna': 1}
+2025-07-09 12:24:34,276 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0010', 'rssi': 89, 'antenna': 1}
+2025-07-09 12:24:34,276 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 7 | Params: {'epc': 'ABCD0119', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:34,284 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 213, 'result': 0}
+2025-07-09 12:24:34,286 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:34,286 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (7 tags), checking for RRUx180 special handling
+2025-07-09 12:24:34,286 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:34,286 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:34,287 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:34,287 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:34,287 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:34,287 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 7, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:34,287 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:34,287 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:34,287 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:34,287 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 15 END ===
+2025-07-09 12:24:34,293 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 16 START ===
+2025-07-09 12:24:34,293 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:34,293 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:34,293 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:34,293 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:34,293 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:34,294 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:34,294 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:34,497 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 6, 'result': 0}
+2025-07-09 12:24:34,498 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0160', 'rssi': 68, 'antenna': 1}
+2025-07-09 12:24:34,499 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0119', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:34,499 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0339', 'rssi': 89, 'antenna': 1}
+2025-07-09 12:24:34,500 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0204', 'rssi': 94, 'antenna': 1}
+2025-07-09 12:24:34,501 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0304', 'rssi': 71, 'antenna': 1}
+2025-07-09 12:24:34,501 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0010', 'rssi': 89, 'antenna': 1}
+2025-07-09 12:24:34,503 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 209, 'result': 0}
+2025-07-09 12:24:34,503 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:34,504 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (6 tags), checking for RRUx180 special handling
+2025-07-09 12:24:34,504 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:34,504 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:34,505 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:34,505 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:34,505 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:34,505 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 6, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:34,505 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:34,505 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:34,505 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:34,506 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 16 END ===
+2025-07-09 12:24:34,512 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 17 START ===
+2025-07-09 12:24:34,512 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:34,512 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:34,513 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:34,513 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:34,513 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:34,513 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:34,513 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:34,719 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 7, 'result': 0}
+2025-07-09 12:24:34,719 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0119', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:34,719 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0204', 'rssi': 94, 'antenna': 1}
+2025-07-09 12:24:34,719 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0304', 'rssi': 72, 'antenna': 1}
+2025-07-09 12:24:34,719 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0339', 'rssi': 89, 'antenna': 1}
+2025-07-09 12:24:34,720 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0078', 'rssi': 61, 'antenna': 1}
+2025-07-09 12:24:34,720 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0010', 'rssi': 88, 'antenna': 1}
+2025-07-09 12:24:34,720 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 7 | Params: {'epc': 'ABCD0160', 'rssi': 68, 'antenna': 1}
+2025-07-09 12:24:34,720 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 207, 'result': 0}
+2025-07-09 12:24:34,720 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:34,720 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (7 tags), checking for RRUx180 special handling
+2025-07-09 12:24:34,720 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:34,720 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:34,720 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:34,720 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:34,720 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:34,720 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 7, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:34,720 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:34,720 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:34,721 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:34,721 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 17 END ===
+2025-07-09 12:24:34,726 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 18 START ===
+2025-07-09 12:24:34,726 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:34,726 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:34,726 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:34,726 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:34,726 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:34,726 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:34,726 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:34,929 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 6, 'result': 0}
+2025-07-09 12:24:34,929 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0160', 'rssi': 67, 'antenna': 1}
+2025-07-09 12:24:34,930 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0204', 'rssi': 92, 'antenna': 1}
+2025-07-09 12:24:34,930 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0339', 'rssi': 89, 'antenna': 1}
+2025-07-09 12:24:34,930 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0010', 'rssi': 89, 'antenna': 1}
+2025-07-09 12:24:34,930 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0119', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:34,930 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0304', 'rssi': 71, 'antenna': 1}
+2025-07-09 12:24:34,930 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 204, 'result': 0}
+2025-07-09 12:24:34,930 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:34,930 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (6 tags), checking for RRUx180 special handling
+2025-07-09 12:24:34,930 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:34,930 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:34,931 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:34,931 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:34,931 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:34,931 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 6, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:34,931 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:34,931 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:34,931 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:34,931 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 18 END ===
+2025-07-09 12:24:34,937 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 19 START ===
+2025-07-09 12:24:34,937 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:34,937 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:34,937 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:34,937 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:34,937 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:34,937 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:34,937 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:35,143 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 6, 'result': 0}
+2025-07-09 12:24:35,144 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0078', 'rssi': 62, 'antenna': 1}
+2025-07-09 12:24:35,144 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0204', 'rssi': 93, 'antenna': 1}
+2025-07-09 12:24:35,144 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0339', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:35,145 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0119', 'rssi': 86, 'antenna': 1}
+2025-07-09 12:24:35,145 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0010', 'rssi': 90, 'antenna': 1}
+2025-07-09 12:24:35,145 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0304', 'rssi': 72, 'antenna': 1}
+2025-07-09 12:24:35,146 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 209, 'result': 0}
+2025-07-09 12:24:35,146 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:35,146 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (6 tags), checking for RRUx180 special handling
+2025-07-09 12:24:35,146 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:35,146 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:35,147 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:35,147 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:35,147 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:35,147 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 6, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:35,147 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:35,147 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:35,147 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:35,147 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 19 END ===
+2025-07-09 12:24:35,153 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 20 START ===
+2025-07-09 12:24:35,153 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:35,153 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:35,153 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:35,153 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:35,153 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:35,154 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:35,154 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:35,356 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 7, 'result': 0}
+2025-07-09 12:24:35,356 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0010', 'rssi': 91, 'antenna': 1}
+2025-07-09 12:24:35,356 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0119', 'rssi': 86, 'antenna': 1}
+2025-07-09 12:24:35,357 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0204', 'rssi': 93, 'antenna': 1}
+2025-07-09 12:24:35,357 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0304', 'rssi': 71, 'antenna': 1}
+2025-07-09 12:24:35,357 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0078', 'rssi': 61, 'antenna': 1}
+2025-07-09 12:24:35,358 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0339', 'rssi': 88, 'antenna': 1}
+2025-07-09 12:24:35,362 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 7 | Params: {'epc': 'ABCD0160', 'rssi': 67, 'antenna': 1}
+2025-07-09 12:24:35,362 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 209, 'result': 0}
+2025-07-09 12:24:35,362 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:35,363 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (7 tags), checking for RRUx180 special handling
+2025-07-09 12:24:35,363 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:35,363 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:35,363 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:35,363 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:35,363 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:35,363 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 7, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:35,363 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:35,363 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:35,363 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:35,364 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 20 END ===
+2025-07-09 12:24:35,370 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 21 START ===
+2025-07-09 12:24:35,370 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:35,370 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:35,370 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:35,370 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:35,370 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:35,370 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:35,370 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:35,576 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 7, 'result': 0}
+2025-07-09 12:24:35,576 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0119', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:35,577 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0204', 'rssi': 94, 'antenna': 1}
+2025-07-09 12:24:35,578 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0339', 'rssi': 88, 'antenna': 1}
+2025-07-09 12:24:35,578 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0304', 'rssi': 71, 'antenna': 1}
+2025-07-09 12:24:35,579 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0010', 'rssi': 90, 'antenna': 1}
+2025-07-09 12:24:35,580 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0160', 'rssi': 68, 'antenna': 1}
+2025-07-09 12:24:35,580 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 7 | Params: {'epc': 'ABCD0078', 'rssi': 62, 'antenna': 1}
+2025-07-09 12:24:35,580 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 210, 'result': 0}
+2025-07-09 12:24:35,580 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:35,581 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (7 tags), checking for RRUx180 special handling
+2025-07-09 12:24:35,581 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:35,581 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:35,581 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:35,581 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:35,581 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:35,582 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 7, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:35,582 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:35,582 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:35,582 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:35,582 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 21 END ===
+2025-07-09 12:24:35,588 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 22 START ===
+2025-07-09 12:24:35,588 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:35,588 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:35,588 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:35,588 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:35,588 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:35,588 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:35,588 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:35,796 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 6, 'result': 0}
+2025-07-09 12:24:35,796 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0204', 'rssi': 93, 'antenna': 1}
+2025-07-09 12:24:35,798 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0339', 'rssi': 86, 'antenna': 1}
+2025-07-09 12:24:35,798 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0010', 'rssi': 90, 'antenna': 1}
+2025-07-09 12:24:35,799 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0304', 'rssi': 71, 'antenna': 1}
+2025-07-09 12:24:35,799 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0160', 'rssi': 68, 'antenna': 1}
+2025-07-09 12:24:35,801 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0119', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:35,801 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 213, 'result': 0}
+2025-07-09 12:24:35,802 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:35,802 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (6 tags), checking for RRUx180 special handling
+2025-07-09 12:24:35,802 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:35,802 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:35,803 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:35,803 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:35,803 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:35,803 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 6, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:35,803 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:35,803 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:35,803 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:35,803 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 22 END ===
+2025-07-09 12:24:35,810 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 23 START ===
+2025-07-09 12:24:35,810 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Manual session mode (Session 0)
+2025-07-09 12:24:35,810 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Antenna cycling | Params: {'antenna_num': 1, 'session': 0, 'mode_type': 2}
+2025-07-09 12:24:35,810 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing antenna 1 | Params: {'in_ant': 128, 'fast_flag': 1, 'ant_enabled': True}
+2025-07-09 12:24:35,810 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling flash_g2() for antenna 1
+2025-07-09 12:24:35,810 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:35,810 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Parameters for inventory_g2 call | Params: {'q_value': 4, 'session': 0, 'scan_time': 50, 'scan_time_ms': 5000, 'target': 0, 'target_name': 'Target A', 'in_ant': 128, 'in_ant_hex': '0x80', 'tid_flag': 0, 'tid_addr': 0, 'tid_addr_hex': '0x00', 'tid_len': 0, 'mode_type': 'epc'}
+2025-07-09 12:24:35,810 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling reader.inventory_g2()
+2025-07-09 12:24:36,016 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Inventory successful | Params: {'tags_found': 6, 'result': 0}
+2025-07-09 12:24:36,016 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 1 | Params: {'epc': 'ABCD0160', 'rssi': 69, 'antenna': 1}
+2025-07-09 12:24:36,017 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 2 | Params: {'epc': 'ABCD0119', 'rssi': 87, 'antenna': 1}
+2025-07-09 12:24:36,018 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 3 | Params: {'epc': 'ABCD0204', 'rssi': 93, 'antenna': 1}
+2025-07-09 12:24:36,018 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 4 | Params: {'epc': 'ABCD0010', 'rssi': 90, 'antenna': 1}
+2025-07-09 12:24:36,019 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 5 | Params: {'epc': 'ABCD0339', 'rssi': 89, 'antenna': 1}
+2025-07-09 12:24:36,019 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Processing tag 6 | Params: {'epc': 'ABCD0304', 'rssi': 72, 'antenna': 1}
+2025-07-09 12:24:36,020 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Command execution time | Params: {'cmd_time': 209, 'result': 0}
+2025-07-09 12:24:36,020 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Non-standard inventory result | Params: {'result': 0}
+2025-07-09 12:24:36,020 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Tags found (6 tags), checking for RRUx180 special handling
+2025-07-09 12:24:36,020 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Reader type check | Params: {'mode_type': 2, 'read_mode': 0, 'new_card_num': 0}
+2025-07-09 12:24:36,020 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] AA_times reset to 0
+2025-07-09 12:24:36,021 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:36,021 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Calling preset_profile() for antenna 1
+2025-07-09 12:24:36,021 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION START ===
+2025-07-09 12:24:36,022 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Current state | Params: {'read_mode': 0, 'profile': 192, 'tagrate': 0, 'card_num': 6, 'new_card_num': 0, 'aa_times': 0, 'target_times': 5}
+2025-07-09 12:24:36,022 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Mode type determined | Params: {'mode_type': 2}
+2025-07-09 12:24:36,022 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Not RRUx180 or not special readMode, skipping profile optimization
+2025-07-09 12:24:36,022 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===
+2025-07-09 12:24:36,022 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] === CYCLE 23 END ===
+2025-07-09 12:24:36,029 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Main loop ended, starting cleanup
+2025-07-09 12:24:36,029 | g2_inventory_debug | DEBUG | log_g2_debug | [12:24:3] Cleanup mode type | Params: {'mode_type': 2}
+2025-07-09 12:24:36,235 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] Profile restoration | Params: {'new_profile': 192, 'result': (255, None)}
+2025-07-09 12:24:36,235 | g2_inventory_debug | WARNING | log_g2_debug | [12:24:3] Failed to restore profile | Params: {'result': (255, None)}
+2025-07-09 12:24:36,236 | g2_inventory_debug | INFO | log_g2_debug | [12:24:3] === FUNCTION END ===

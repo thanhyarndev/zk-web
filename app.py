@@ -25,6 +25,32 @@ stop_inventory_flag = False
 detected_tags = []
 inventory_stats = {"read_rate": 0, "total_count": 0}
 connected_clients = set()
+reader_mode_type = None  # Global variable to store reader mode type
+
+def determine_mode_type(reader_type_val: int) -> int:
+    """
+    Determine mode type from reader type value
+    
+    Args:
+        reader_type_val: Reader type value from get_reader_information
+        
+    Returns:
+        Mode type (0=C6, 1=R2000, 2=RRUx180, 3=9810, 4=FD)
+    """
+    if reader_type_val in [0x62, 0x61, 0x64, 0x66, 0x65, 0x67, 0x68]:  # C6
+        return 0
+    elif reader_type_val in [0x71, 0x31, 0x70, 0x72, 0x5F, 0x7F, 0x76, 0x56, 0x38,
+                            0x57, 0x77, 0x39, 0x55, 0x75, 0x35, 0x33, 0x53, 0x73,
+                            0x3A, 0x5A, 0x7A, 0x3B, 0x5B, 0x7B, 0x3C, 0x5C, 0x7C,
+                            0x3D, 0x5D, 0x7D, 0x3E, 0x5E, 0x7E, 0x40, 0x41, 0x42,
+                            0x6A, 0x6B, 0x6C]:  # RRUx180
+        return 2
+    elif reader_type_val == 0x11:  # 9810
+        return 3
+    elif reader_type_val in [0x91, 0x92, 0x93, 0x94]:  # FD
+        return 4
+    else:  # Default R2000
+        return 1
 
 def get_return_code_desc(result_code: int) -> str:
     """
@@ -511,20 +537,10 @@ def api_reader_info():
         elif reader_type_val == 0x41:
             model_name = f"UHF7189MPH--{version_str}"
         
-        # Determine mode type like C# code
-        mode_type = 1  # Default R2000
-        if reader_type_val in [0x62, 0x61, 0x64, 0x66, 0x65, 0x67, 0x68]:  # C6
-            mode_type = 0
-        elif reader_type_val in [0x71, 0x31, 0x70, 0x72, 0x5F, 0x7F, 0x76, 0x56, 0x38,
-                                0x57, 0x77, 0x39, 0x55, 0x75, 0x35, 0x33, 0x53, 0x73,
-                                0x3A, 0x5A, 0x7A, 0x3B, 0x5B, 0x7B, 0x3C, 0x5C, 0x7C,
-                                0x3D, 0x5D, 0x7D, 0x3E, 0x5E, 0x7E, 0x40, 0x41, 0x42,
-                                0x6A, 0x6B, 0x6C]:  # RRUx180
-            mode_type = 2
-        elif reader_type_val == 0x11:  # 9810
-            mode_type = 3
-        elif reader_type_val in [0x91, 0x92, 0x93, 0x94]:  # FD
-            mode_type = 4
+        # Determine mode type like C# code and set global variable
+        global reader_mode_type
+        mode_type = determine_mode_type(reader_type_val)
+        reader_mode_type = mode_type  # Set global variable for reuse
         
         # Determine antenna count like C# code
         antenna_count = 4  # Default
@@ -773,9 +789,8 @@ def api_start_inventory_g2():
         psd = data.get('psd', '00000000')  # text_readpsd.Text
         
         # Validate mix mode parameters (exact C# validation)
-        if mode_type == 'mix':
-            if len(read_addr) != 4 or len(read_len) != 2 or len(psd) != 8:
-                return jsonify({'success': False, 'message': 'Mix inventory parameter error!!!'}), 400
+        if len(read_addr) != 4 or len(read_len) != 2 or len(psd) != 8:
+            return jsonify({'success': False, 'message': 'Mix inventory parameter error!!!'}), 400
         
         # Check if inventory is already running (equivalent to C# btIventoryG2.Text == "Start")
         if g2_inventory_vars['fIsInventoryScan']:
@@ -809,46 +824,35 @@ def api_start_inventory_g2():
             g2_inventory_vars['Qvalue'] = q_value
         
         # Set profile for ModeType 2 (exact C# logic)
-        # Get ModeType from reader info
-        version_info = bytearray(2)
-        reader_type = [0]
-        tr_type = [0]
-        dmax_fre = [0]
-        dmin_fre = [0]
-        power_dbm = [0]
-        scan_time = [0]
-        ant_cfg0 = [0]
-        beep_en = [0]
-        output_rep = [0]
-        check_ant = [0]
-        
-        reader_info_result = reader.get_reader_information(
-            reader.com_addr, version_info, reader_type, tr_type,
-            dmax_fre, dmin_fre, power_dbm, scan_time,
-            ant_cfg0, beep_en, output_rep, check_ant
-        )
-        if reader_info_result == 0:
-            # Determine ModeType from reader type (exact C# logic)
-            reader_type_val = reader_type[0]
-            mode_type_val = 1  # Default R2000
-            if reader_type_val in [0x62, 0x61, 0x64, 0x66, 0x65, 0x67, 0x68]:  # C6
-                mode_type_val = 0
-            elif reader_type_val in [0x71, 0x31, 0x70, 0x72, 0x5F, 0x7F, 0x76, 0x56, 0x38,
-                                0x57, 0x77, 0x39, 0x55, 0x75, 0x35, 0x33, 0x53, 0x73,
-                                0x3A, 0x5A, 0x7A, 0x3B, 0x5B, 0x7B, 0x3C, 0x5C, 0x7C,
-                                0x3D, 0x5D, 0x7D, 0x3E, 0x5E, 0x7E, 0x40, 0x41, 0x42,
-                                0x6A, 0x6B, 0x6C]:  # RRUx180
-                mode_type_val = 2
-            elif reader_type_val == 0x11:  # 9810
-                mode_type_val = 3
-            elif reader_type_val in [0x91, 0x92, 0x93, 0x94]:  # FD
-                mode_type_val = 4
+        # Use global reader_mode_type instead of calling get_reader_information
+        global reader_mode_type
+        if reader_mode_type is None:
+            # If global mode type is not set, get it from reader info
+            version_info = bytearray(2)
+            reader_type = [0]
+            tr_type = [0]
+            dmax_fre = [0]
+            dmin_fre = [0]
+            power_dbm = [0]
+            scan_time = [0]
+            ant_cfg0 = [0]
+            beep_en = [0]
+            output_rep = [0]
+            check_ant = [0]
             
-            if mode_type_val == 2:
-                g2_inventory_vars['Profile'] = g2_inventory_vars['RF_Profile'] | 0xC0
-                result = reader.set_profile(profile=g2_inventory_vars['Profile'])
-                if result != 0:
-                    logger.warning(f"Failed to set profile: {result}")
+            reader_info_result = reader.get_reader_information(
+                reader.com_addr, version_info, reader_type, tr_type,
+                dmax_fre, dmin_fre, power_dbm, scan_time,
+                ant_cfg0, beep_en, output_rep, check_ant
+            )
+            if reader_info_result == 0:
+                reader_mode_type = determine_mode_type(reader_type[0])
+        
+        if reader_mode_type == 2:
+            g2_inventory_vars['Profile'] = g2_inventory_vars['RF_Profile'] | 0xC0
+            result = reader.set_profile(profile=g2_inventory_vars['Profile'])
+            if result != 0:
+                logger.warning(f"Failed to set profile: {result}")
         
         # Set read mode based on session (exact C# logic)
         if session == 4:
@@ -973,48 +977,44 @@ def preset_target(read_mode, select_antenna):
         
         log_g2_debug("preset_target", "Getting reader information for ModeType", level="DEBUG")
         
-        # Get ModeType from reader info
-        version_info = bytearray(2)
-        reader_type = [0]
-        tr_type = [0]
-        dmax_fre = [0]
-        dmin_fre = [0]
-        power_dbm = [0]
-        scan_time = [0]
-        ant_cfg0 = [0]
-        beep_en = [0]
-        output_rep = [0]
-        check_ant = [0]
+        # Use global reader_mode_type instead of calling get_reader_information
+        global reader_mode_type
+        reader_type_val = None
+        reader_info_result = 0
         
-        reader_info_result = reader.get_reader_information(
-            reader.com_addr, version_info, reader_type, tr_type,
-            dmax_fre, dmin_fre, power_dbm, scan_time,
-            ant_cfg0, beep_en, output_rep, check_ant
-        )
-        
-        log_g2_debug("preset_target", f"Reader info result", level="DEBUG", 
-                     result=reader_info_result, reader_type=reader_type[0])
-        
-        if reader_info_result == 0:
-            reader_type_val = reader_type[0]
-            mode_type_val = 1  # Default R2000
-            if reader_type_val in [0x62, 0x61, 0x64, 0x66, 0x65, 0x67, 0x68]:  # C6
-                mode_type_val = 0
-            elif reader_type_val in [0x71, 0x31, 0x70, 0x72, 0x5F, 0x7F, 0x76, 0x56, 0x38,
-                                0x57, 0x77, 0x39, 0x55, 0x75, 0x35, 0x33, 0x53, 0x73,
-                                0x3A, 0x5A, 0x7A, 0x3B, 0x5B, 0x7B, 0x3C, 0x5C, 0x7C,
-                                0x3D, 0x5D, 0x7D, 0x3E, 0x5E, 0x7E, 0x40, 0x41, 0x42,
-                                0x6A, 0x6B, 0x6C]:  # RRUx180
-                mode_type_val = 2
-            elif reader_type_val == 0x11:  # 9810
-                mode_type_val = 3
-            elif reader_type_val in [0x91, 0x92, 0x93, 0x94]:  # FD
-                mode_type_val = 4
+        if reader_mode_type is None:
+            # Get ModeType from reader info if not already set
+            version_info = bytearray(2)
+            reader_type = [0]
+            tr_type = [0]
+            dmax_fre = [0]
+            dmin_fre = [0]
+            power_dbm = [0]
+            scan_time = [0]
+            ant_cfg0 = [0]
+            beep_en = [0]
+            output_rep = [0]
+            check_ant = [0]
             
-            log_g2_debug("preset_target", f"Mode type determined", level="INFO", 
-                         reader_type=f"0x{reader_type_val:02X}", mode_type=mode_type_val)
+            reader_info_result = reader.get_reader_information(
+                reader.com_addr, version_info, reader_type, tr_type,
+                dmax_fre, dmin_fre, power_dbm, scan_time,
+                ant_cfg0, beep_en, output_rep, check_ant
+            )
             
-            # Determine AntennaNum from reader type
+            log_g2_debug("preset_target", f"Reader info result", level="DEBUG", 
+                         result=reader_info_result, reader_type=reader_type[0] if reader_info_result == 0 else "N/A")
+            
+            if reader_info_result == 0:
+                reader_mode_type = determine_mode_type(reader_type[0])
+                reader_type_val = reader_type[0]
+        
+        mode_type_val = reader_mode_type
+        log_g2_debug("preset_target", f"Mode type determined", level="INFO", 
+                     mode_type=mode_type_val)
+            
+        # Determine AntennaNum from reader type
+        if reader_type_val is not None:
             antenna_num = 1  # Default
             if reader_type_val in [0x11, 0x8A, 0x8B, 0x0C, 0x20, 0x62, 0x67, 0x73, 0x53, 
                               0x75, 0x55, 0x7B, 0x5B, 0x3B, 0x35, 0x33, 0x92, 0x40]:
@@ -1023,86 +1023,97 @@ def preset_target(read_mode, select_antenna):
                 antenna_num = 16
             elif reader_type_val in [0x26, 0x68, 0x76, 0x56, 0x38, 0x93, 0x41]:
                 antenna_num = 8
-            
-            log_g2_debug("preset_target", f"Antenna number determined", level="INFO", 
-                         antenna_num=antenna_num)
-            
-            if (read_mode == 254 or read_mode == 253) and (mode_type_val == 2):
-                log_g2_debug("preset_target", "Processing RRUx180 special mode (253/254)", level="INFO")
-                
-                if g2_inventory_vars['Session'] == 254:
-                    g2_inventory_vars['Session'] = 253
-                    cur_session = 2
-                    log_g2_debug("preset_target", "Switching from Session 254 to 253", level="INFO")
-                else:
-                    g2_inventory_vars['Session'] = 254
-                    cur_session = 3
-                    log_g2_debug("preset_target", "Switching to Session 254", level="INFO")
-                
-                if read_mode == 253:
-                    g2_inventory_vars['Profile'] = 0xC1
-                    log_g2_debug("preset_target", "Setting Profile to 0xC1 for read_mode 253", level="INFO")
-                else:
-                    g2_inventory_vars['Profile'] = 0xC5
-                    log_g2_debug("preset_target", "Setting Profile to 0xC5 for read_mode 254", level="INFO")
-                
-                result = reader.set_profile(profile=g2_inventory_vars['Profile'])
-                log_g2_debug("preset_target", f"Set profile result", level="INFO", 
-                             profile=f"0x{g2_inventory_vars['Profile']:02X}", result=result)
-                
-                if result != 0:
-                    log_g2_debug("preset_target", f"Set profile failed", level="WARNING", 
-                                 result=result)
-                
-            elif read_mode == 255:
-                log_g2_debug("preset_target", "Processing Fast Mode (255) - using both session 2 and 3", level="INFO")
-                
-                cur_session = 2
-                g2_inventory_vars['Session'] = read_mode
-                
-                log_g2_debug("preset_target", "Sending select_cmd for session 2 (2 iterations)", level="DEBUG")
-                for m in range(2):
-                    result = reader.select_cmd(
-                        antenna=select_antenna, session=cur_session, sel_action=0,
-                        mask_mem=mask_mem, mask_addr=bytes(mask_addr), mask_len=mask_len,
-                        mask_data=bytes(mask_data), truncate=0, antenna_num=antenna_num
-                    )
-                    log_g2_debug("preset_target", f"Session 2 select_cmd iteration {m+1}", level="DEBUG", 
-                                 result=result)
-                    time.sleep(0.005)  # Thread.Sleep(5)
-                
-                cur_session = 3
-                log_g2_debug("preset_target", "Sending select_cmd for session 3 (2 iterations)", level="DEBUG")
-                for m in range(2):
-                    result = reader.select_cmd(
-                        antenna=select_antenna, session=cur_session, sel_action=0,
-                        mask_mem=mask_mem, mask_addr=bytes(mask_addr), mask_len=mask_len,
-                        mask_data=bytes(mask_data), truncate=0, antenna_num=antenna_num
-                    )
-                    log_g2_debug("preset_target", f"Session 3 select_cmd iteration {m+1}", level="DEBUG", 
-                                 result=result)
-                    time.sleep(0.005)  # Thread.Sleep(5)
-                    
-            elif read_mode < 4:
-                log_g2_debug("preset_target", f"Processing standard session mode {read_mode}", level="INFO")
-                
-                cur_session = read_mode
-                g2_inventory_vars['Session'] = cur_session
-                
-                log_g2_debug("preset_target", f"Sending select_cmd for session {cur_session} (4 iterations)", level="DEBUG")
-                for m in range(4):
-                    result = reader.select_cmd(
-                        antenna=select_antenna, session=cur_session, sel_action=0,
-                        mask_mem=mask_mem, mask_addr=bytes(mask_addr), mask_len=mask_len,
-                        mask_data=bytes(mask_data), truncate=0, antenna_num=antenna_num
-                    )
-                    log_g2_debug("preset_target", f"Session {cur_session} select_cmd iteration {m+1}", level="DEBUG", 
-                                 result=result)
-                    time.sleep(0.005)  # Thread.Sleep(5)
         else:
-            log_g2_debug("preset_target", f"Reader info failed", level="ERROR", 
-                         result=reader_info_result)
+            # If we don't have reader info, use a default antenna number based on mode type
+            if mode_type_val == 0:  # C6
+                antenna_num = 4
+            elif mode_type_val == 2:  # RRUx180
+                antenna_num = 1  # Default for RRUx180
+            elif mode_type_val == 3:  # 9810
+                antenna_num = 4
+            elif mode_type_val == 4:  # FD
+                antenna_num = 16  # Default for FD
+            else:  # R2000
+                antenna_num = 1
+            
+            log_g2_debug("preset_target", f"Using default antenna number based on mode type", level="INFO", 
+                         antenna_num=antenna_num, mode_type=mode_type_val)
+        
+        log_g2_debug("preset_target", f"Antenna number determined", level="INFO", 
+                     antenna_num=antenna_num)
+        
+        if (read_mode == 254 or read_mode == 253) and (mode_type_val == 2):
+            log_g2_debug("preset_target", "Processing RRUx180 special mode (253/254)", level="INFO")
+            
+            if g2_inventory_vars['Session'] == 254:
+                g2_inventory_vars['Session'] = 253
+                cur_session = 2
+                log_g2_debug("preset_target", "Switching from Session 254 to 253", level="INFO")
+            else:
+                g2_inventory_vars['Session'] = 254
+                cur_session = 3
+                log_g2_debug("preset_target", "Switching to Session 254", level="INFO")
+            
+            if read_mode == 253:
+                g2_inventory_vars['Profile'] = 0xC1
+                log_g2_debug("preset_target", "Setting Profile to 0xC1 for read_mode 253", level="INFO")
+            else:
+                g2_inventory_vars['Profile'] = 0xC5
+                log_g2_debug("preset_target", "Setting Profile to 0xC5 for read_mode 254", level="INFO")
+            
+            result = reader.set_profile(profile=g2_inventory_vars['Profile'])
+            log_g2_debug("preset_target", f"Set profile result", level="INFO", 
+                         profile=f"0x{g2_inventory_vars['Profile']:02X}", result=result)
+            
+            if result != 0:
+                log_g2_debug("preset_target", f"Set profile failed", level="WARNING", 
+                             result=result)
+            
+        elif read_mode == 255:
+            log_g2_debug("preset_target", "Processing Fast Mode (255) - using both session 2 and 3", level="INFO")
+            
+            cur_session = 2
             g2_inventory_vars['Session'] = read_mode
+            
+            log_g2_debug("preset_target", "Sending select_cmd for session 2 (2 iterations)", level="DEBUG")
+            for m in range(2):
+                result = reader.select_cmd(
+                    antenna=select_antenna, session=cur_session, sel_action=0,
+                    mask_mem=mask_mem, mask_addr=bytes(mask_addr), mask_len=mask_len,
+                    mask_data=bytes(mask_data), truncate=0, antenna_num=antenna_num
+                )
+                log_g2_debug("preset_target", f"Session 2 select_cmd iteration {m+1}", level="DEBUG", 
+                             result=result)
+                time.sleep(0.005)  # Thread.Sleep(5)
+            
+            cur_session = 3
+            log_g2_debug("preset_target", "Sending select_cmd for session 3 (2 iterations)", level="DEBUG")
+            for m in range(2):
+                result = reader.select_cmd(
+                    antenna=select_antenna, session=cur_session, sel_action=0,
+                    mask_mem=mask_mem, mask_addr=bytes(mask_addr), mask_len=mask_len,
+                    mask_data=bytes(mask_data), truncate=0, antenna_num=antenna_num
+                )
+                log_g2_debug("preset_target", f"Session 3 select_cmd iteration {m+1}", level="DEBUG", 
+                             result=result)
+                time.sleep(0.005)  # Thread.Sleep(5)
+                
+        elif read_mode < 4:
+            log_g2_debug("preset_target", f"Processing standard session mode {read_mode}", level="INFO")
+            
+            cur_session = read_mode
+            g2_inventory_vars['Session'] = cur_session
+            
+            log_g2_debug("preset_target", f"Sending select_cmd for session {cur_session} (4 iterations)", level="DEBUG")
+            for m in range(4):
+                result = reader.select_cmd(
+                    antenna=select_antenna, session=cur_session, sel_action=0,
+                    mask_mem=mask_mem, mask_addr=bytes(mask_addr), mask_len=mask_len,
+                    mask_data=bytes(mask_data), truncate=0, antenna_num=antenna_num
+                )
+                log_g2_debug("preset_target", f"Session {cur_session} select_cmd iteration {m+1}", level="DEBUG", 
+                             result=result)
+                time.sleep(0.005)  # Thread.Sleep(5)
     else:
         log_g2_debug("preset_target", "Read mode <= 0, setting session directly", level="INFO")
         g2_inventory_vars['Session'] = read_mode
@@ -1113,7 +1124,7 @@ def preset_target(read_mode, select_antenna):
 
 def inventory_worker():
     """Exact C# inventory() method implementation"""
-    global g2_inventory_vars, detected_tags
+    global g2_inventory_vars, detected_tags, reader_mode_type
     
     log_g2_debug("inventory_worker", "=== FUNCTION START ===", level="INFO")
     log_g2_debug("inventory_worker", "Initial state", level="INFO", 
@@ -1145,89 +1156,58 @@ def inventory_worker():
             else:
                 log_g2_debug("inventory_worker", f"Manual session mode (Session {g2_inventory_vars['Session']})", level="INFO")
                 # Manual session mode (exact C# logic)
-                # Determine AntennaNum from reader type
-                version_info = bytearray(2)
-                reader_type = [0]
-                tr_type = [0]
-                dmax_fre = [0]
-                dmin_fre = [0]
-                power_dbm = [0]
-                scan_time = [0]
-                ant_cfg0 = [0]
-                beep_en = [0]
-                output_rep = [0]
-                check_ant = [0]
+                # Use global reader_mode_type to determine antenna number
                 
-                reader_info_result = reader.get_reader_information(
-                    reader.com_addr, version_info, reader_type, tr_type,
-                    dmax_fre, dmin_fre, power_dbm, scan_time,
-                    ant_cfg0, beep_en, output_rep, check_ant
-                )
+                # Determine antenna number based on mode type (AntennaNum in C#)
+                if reader_mode_type == 0:  # C6
+                    antenna_num = 4
+                elif reader_mode_type == 2:  # RRUx180
+                    antenna_num = 1  # Default for RRUx180
+                elif reader_mode_type == 3:  # 9810
+                    antenna_num = 4
+                elif reader_mode_type == 4:  # FD
+                    antenna_num = 16  # Default for FD
+                else:  # R2000
+                    antenna_num = 1
                 
-                log_g2_debug("inventory_worker", f"Reader info result", level="DEBUG", 
-                             result=reader_info_result, reader_type=reader_type[0] if reader_info_result == 0 else "N/A")
+                log_g2_debug("inventory_worker", f"Antenna cycling", level="INFO", 
+                             antenna_num=antenna_num, session=g2_inventory_vars['Session'], mode_type=reader_mode_type)
                 
-                if reader_info_result == 0:
-                    reader_type_val = reader_type[0]
-                    antenna_num = 1  # Default
-                    if reader_type_val in [0x11, 0x8A, 0x8B, 0x0C, 0x20, 0x62, 0x67, 0x73, 0x53, 
-                                          0x75, 0x55, 0x7B, 0x5B, 0x3B, 0x35, 0x33, 0x92, 0x40]:
-                        antenna_num = 4
-                    elif reader_type_val in [0x27, 0x65, 0x77, 0x57, 0x39, 0x94, 0x42]:
-                        antenna_num = 16
-                    elif reader_type_val in [0x26, 0x68, 0x76, 0x56, 0x38, 0x93, 0x41]:
-                        antenna_num = 8
+                # Cycle through antennas (exact C# logic)
+                for m in range(antenna_num):
+                    g2_inventory_vars['InAnt'] = m | 0x80  # InAnt = (byte)(m | 0x80)
+                    g2_inventory_vars['FastFlag'] = 1      # FastFlag = 1
                     
-                    log_g2_debug("inventory_worker", f"Antenna cycling", level="INFO", 
-                                 antenna_num=antenna_num, session=g2_inventory_vars['Session'])
+                    log_g2_debug("inventory_worker", f"Processing antenna {m+1}", level="DEBUG", 
+                                 in_ant=g2_inventory_vars['InAnt'], fast_flag=g2_inventory_vars['FastFlag'],
+                                 ant_enabled=g2_inventory_vars['antlist'][m] == 1)
                     
-                    # Cycle through antennas (exact C# logic)
-                    for m in range(antenna_num):
-                        if g2_inventory_vars['toStopThread']:
-                            log_g2_debug("inventory_worker", "Stop flag detected, breaking antenna loop", level="INFO")
-                            break
+                    if g2_inventory_vars['antlist'][m] == 1:
+                        # Handle session 2 and 3 target switching (exact C# logic)
+                        if (g2_inventory_vars['Session'] > 1 and g2_inventory_vars['Session'] < 4):  # s2,s3
+                            log_g2_debug("inventory_worker", f"Checking target switching", level="DEBUG", 
+                                         aa_times=g2_inventory_vars['AA_times'], target_times=g2_inventory_vars['targettimes'])
                             
-                        g2_inventory_vars['InAnt'] = m | 0x80
-                        g2_inventory_vars['FastFlag'] = 1
-                        
-                        log_g2_debug("inventory_worker", f"Processing antenna {m+1}", level="DEBUG", 
-                                     in_ant=g2_inventory_vars['InAnt'], fast_flag=g2_inventory_vars['FastFlag'],
-                                     ant_enabled=g2_inventory_vars['antlist'][m] == 1)
-                        
-                        if g2_inventory_vars['antlist'][m] == 1:
-                            # Handle session 2 and 3 target switching (exact C# logic)
-                            if (g2_inventory_vars['Session'] > 1 and g2_inventory_vars['Session'] < 4 and 
-                                g2_inventory_vars.get('enable_target_times', True)):  # s2,s3 with target times enabled
+                            # Exact C# logic: if ((check_num.Checked) && (AA_times + 1 > targettimes))
+                            if (g2_inventory_vars.get('enable_target_times', True) and 
+                                (g2_inventory_vars['AA_times'] + 1 > g2_inventory_vars['targettimes'])):
+                                g2_inventory_vars['Target'] = 1 - g2_inventory_vars['Target']  # Target = Convert.ToByte(1 - Target)
+                                g2_inventory_vars['AA_times'] = 0
                                 
-                                log_g2_debug("inventory_worker", f"Checking target switching", level="DEBUG", 
-                                             aa_times=g2_inventory_vars['AA_times'], target_times=g2_inventory_vars['targettimes'])
-                                
-                                # Fix: Check if AA_times has reached the threshold for target switching
-                                if g2_inventory_vars['AA_times'] >= g2_inventory_vars['targettimes']:
-                                    old_target = g2_inventory_vars['Target']
-                                    g2_inventory_vars['Target'] = 1 - g2_inventory_vars['Target']  # A/B state switch
-                                    g2_inventory_vars['AA_times'] = 0
-                                    
-                                    log_g2_debug("inventory_worker", f"Target switched", level="INFO", 
-                                                 old_target=old_target, new_target=g2_inventory_vars['Target'])
-                                else:
-                                    log_g2_debug("inventory_worker", f"Target switching not yet triggered", level="DEBUG", 
-                                                 aa_times=g2_inventory_vars['AA_times'], target_times=g2_inventory_vars['targettimes'])
-                            
-                            # Call appropriate inventory function based on mode
-                            if g2_inventory_vars.get('mode_type') == 'mix':
-                                log_g2_debug("inventory_worker", f"Calling flash_mix_g2() for antenna {m+1}", level="INFO")
-                                flash_mix_g2()
-                            else:
-                                log_g2_debug("inventory_worker", f"Calling flash_g2() for antenna {m+1}", level="INFO")
-                                flash_g2()
-                                log_g2_debug("inventory_worker", f"Calling preset_profile() for antenna {m+1}", level="INFO")
-                                preset_profile()
+                                log_g2_debug("inventory_worker", f"Target switched", level="INFO", 
+                                             new_target=g2_inventory_vars['Target'])
+                        
+                        # Call appropriate inventory function based on mode (exact C# logic)
+                        if g2_inventory_vars.get('mode_type') == 'mix':  # if (rb_mix.Checked)
+                            log_g2_debug("inventory_worker", f"Calling flash_mix_g2() for antenna {m+1}", level="INFO")
+                            flash_mix_g2()
                         else:
-                            log_g2_debug("inventory_worker", f"Antenna {m+1} disabled, skipping", level="DEBUG")
-                else:
-                    log_g2_debug("inventory_worker", f"Reader info failed", level="ERROR", 
-                                 result=reader_info_result)
+                            log_g2_debug("inventory_worker", f"Calling flash_g2() for antenna {m+1}", level="INFO")
+                            flash_g2()
+                            log_g2_debug("inventory_worker", f"Calling preset_profile() for antenna {m+1}", level="INFO")
+                            preset_profile()
+                    else:
+                        log_g2_debug("inventory_worker", f"Antenna {m+1} disabled, skipping", level="DEBUG")
             
             log_g2_debug("inventory_worker", f"=== CYCLE {cycle_count} END ===", level="DEBUG")
             # Small delay between cycles (exact C# Thread.Sleep(5))
@@ -1242,58 +1222,20 @@ def inventory_worker():
     log_g2_debug("inventory_worker", "Main loop ended, starting cleanup", level="INFO")
     
     # Cleanup when thread stops (exact C# logic)
-    # Get ModeType from reader info
-    version_info = bytearray(2)
-    reader_type = [0]
-    tr_type = [0]
-    dmax_fre = [0]
-    dmin_fre = [0]
-    power_dbm = [0]
-    scan_time = [0]
-    ant_cfg0 = [0]
-    beep_en = [0]
-    output_rep = [0]
-    check_ant = [0]
+    # Use global reader_mode_type instead of calling get_reader_information
+    log_g2_debug("inventory_worker", f"Cleanup mode type", level="DEBUG", 
+                 mode_type=reader_mode_type)
     
-    reader_info_result = reader.get_reader_information(
-        reader.com_addr, version_info, reader_type, tr_type,
-        dmax_fre, dmin_fre, power_dbm, scan_time,
-        ant_cfg0, beep_en, output_rep, check_ant
-    )
-    
-    log_g2_debug("inventory_worker", f"Cleanup reader info result", level="DEBUG", 
-                 result=reader_info_result)
-    
-    if reader_info_result == 0:
-        reader_type_val = reader_type[0]
-        mode_type_val = 1  # Default R2000
-        if reader_type_val in [0x62, 0x61, 0x64, 0x66, 0x65, 0x67, 0x68]:  # C6
-            mode_type_val = 0
-        elif reader_type_val in [0x71, 0x31, 0x70, 0x72, 0x5F, 0x7F, 0x76, 0x56, 0x38,
-                            0x57, 0x77, 0x39, 0x55, 0x75, 0x35, 0x33, 0x53, 0x73,
-                            0x3A, 0x5A, 0x7A, 0x3B, 0x5B, 0x7B, 0x3C, 0x5C, 0x7C,
-                            0x3D, 0x5D, 0x7D, 0x3E, 0x5E, 0x7E, 0x40, 0x41, 0x42,
-                            0x6A, 0x6B, 0x6C]:  # RRUx180
-            mode_type_val = 2
-        elif reader_type_val == 0x11:  # 9810
-            mode_type_val = 3
-        elif reader_type_val in [0x91, 0x92, 0x93, 0x94]:  # FD
-            mode_type_val = 4
+    if reader_mode_type == 2:  # if (ModeType == 2)
+        g2_inventory_vars['Profile'] = g2_inventory_vars['RF_Profile'] | 0xC0  # Profile = (byte)(RF_Profile | 0xC0)
+        result = reader.set_profile(profile=g2_inventory_vars['Profile'])
         
-        log_g2_debug("inventory_worker", f"Cleanup mode type", level="DEBUG", 
-                     mode_type=mode_type_val, reader_type=f"0x{reader_type_val:02X}")
+        log_g2_debug("inventory_worker", f"Profile restoration", level="INFO", 
+                     new_profile=g2_inventory_vars['Profile'], result=result)
         
-        if mode_type_val == 2:
-            old_profile = g2_inventory_vars.get('Profile', 'undefined')
-            g2_inventory_vars['Profile'] = g2_inventory_vars['RF_Profile'] | 0xC0
-            result = reader.set_profile(profile=g2_inventory_vars['Profile'])
-            
-            log_g2_debug("inventory_worker", f"Profile restoration", level="INFO", 
-                         old_profile=old_profile, new_profile=g2_inventory_vars['Profile'], result=result)
-            
-            if result != 0:
-                log_g2_debug("inventory_worker", f"Failed to restore profile", level="WARNING", 
-                             result=result)
+        if result != 0:
+            log_g2_debug("inventory_worker", f"Failed to restore profile", level="WARNING", 
+                         result=result)
     
     # Final cleanup (exact C# logic)
     g2_inventory_vars['fIsInventoryScan'] = False
@@ -1303,7 +1245,7 @@ def inventory_worker():
 
 def flash_g2():
     """Exact C# flash_G2() method implementation"""
-    global g2_inventory_vars, detected_tags
+    global g2_inventory_vars, detected_tags, reader_mode_type
     
     log_g2_debug("flash_g2", "=== FUNCTION START ===", level="INFO")
     
@@ -1395,67 +1337,32 @@ def flash_g2():
         # Handle connection issues (exact C# logic)
         log_g2_debug("flash_g2", f"Non-standard inventory result", level="WARNING", 
                      result=result)
+        # Note: C# has TCP reconnection logic here, but we don't have TCP support
     
     if result == 0x30:
         g2_inventory_vars['CardNum'] = 0
         log_g2_debug("flash_g2", "No tags found (0x30), setting CardNum to 0", level="INFO")
     
     if g2_inventory_vars['CardNum'] == 0:
-        if g2_inventory_vars['Session'] > 1 and g2_inventory_vars.get('enable_target_times', True):
+        if g2_inventory_vars['Session'] > 1:
             g2_inventory_vars['AA_times'] += 1
             log_g2_debug("flash_g2", f"AA_times incremented (no tags found)", level="DEBUG", 
                          aa_times=g2_inventory_vars['AA_times'])
     else:
         log_g2_debug("flash_g2", f"Tags found ({g2_inventory_vars['CardNum']} tags), checking for RRUx180 special handling", level="DEBUG")
         
-        # Get ModeType from reader info
-        version_info = bytearray(2)
-        reader_type = [0]
-        tr_type = [0]
-        dmax_fre = [0]
-        dmin_fre = [0]
-        power_dbm = [0]
-        scan_time = [0]
-        ant_cfg0 = [0]
-        beep_en = [0]
-        output_rep = [0]
-        check_ant = [0]
+        log_g2_debug("flash_g2", f"Reader type check", level="DEBUG", 
+                     mode_type=reader_mode_type,
+                     read_mode=g2_inventory_vars['readMode'], new_card_num=g2_inventory_vars['NewCardNum'])
         
-        reader_info_result = reader.get_reader_information(
-            reader.com_addr, version_info, reader_type, tr_type,
-            dmax_fre, dmin_fre, power_dbm, scan_time,
-            ant_cfg0, beep_en, output_rep, check_ant
-        )
-        if reader_info_result == 0:
-            reader_type_val = reader_type[0]
-            mode_type_val = 1  # Default R2000
-            if reader_type_val in [0x62, 0x61, 0x64, 0x66, 0x65, 0x67, 0x68]:  # C6
-                mode_type_val = 0
-            elif reader_type_val in [0x71, 0x31, 0x70, 0x72, 0x5F, 0x7F, 0x76, 0x56, 0x38,
-                                0x57, 0x77, 0x39, 0x55, 0x75, 0x35, 0x33, 0x53, 0x73,
-                                0x3A, 0x5A, 0x7A, 0x3B, 0x5B, 0x7B, 0x3C, 0x5C, 0x7C,
-                                0x3D, 0x5D, 0x7D, 0x3E, 0x5E, 0x7E, 0x40, 0x41, 0x42,
-                                0x6A, 0x6B, 0x6C]:  # RRUx180
-                mode_type_val = 2
-            elif reader_type_val == 0x11:  # 9810
-                mode_type_val = 3
-            elif reader_type_val in [0x91, 0x92, 0x93, 0x94]:  # FD
-                mode_type_val = 4
-            
-            log_g2_debug("flash_g2", f"Reader type check", level="DEBUG", 
-                         reader_type=f"0x{reader_type_val:02X}", mode_type=mode_type_val,
-                         read_mode=g2_inventory_vars['readMode'], new_card_num=g2_inventory_vars['NewCardNum'])
-            
-            # Fix: NewCardNum should be set to CardNum for proper comparison
-            g2_inventory_vars['NewCardNum'] = g2_inventory_vars['CardNum']
-            
-            if (mode_type_val == 2) and (g2_inventory_vars['readMode'] == 253 or g2_inventory_vars['readMode'] == 254) and (g2_inventory_vars['NewCardNum'] == 0):
-                g2_inventory_vars['AA_times'] += 1
-                log_g2_debug("flash_g2", f"RRUx180 special case: AA_times incremented", level="DEBUG", 
-                             aa_times=g2_inventory_vars['AA_times'])
-            else:
-                g2_inventory_vars['AA_times'] = 0
-                log_g2_debug("flash_g2", f"AA_times reset to 0", level="DEBUG")
+        # Exact C# logic: if ((ModeType == 2) && (readMode == 253 || readMode == 254) && (NewCardNum == 0))
+        if (reader_mode_type == 2) and (g2_inventory_vars['readMode'] == 253 or g2_inventory_vars['readMode'] == 254) and (g2_inventory_vars['NewCardNum'] == 0):
+            g2_inventory_vars['AA_times'] += 1
+            log_g2_debug("flash_g2", f"RRUx180 special case: AA_times incremented", level="DEBUG", 
+                         aa_times=g2_inventory_vars['AA_times'])
+        else:
+            g2_inventory_vars['AA_times'] = 0
+            log_g2_debug("flash_g2", f"AA_times reset to 0", level="DEBUG")
     
     # Calculate tag rate (exact C# logic)
     if result in [1, 2, 0xFB, 0x26]:
@@ -1563,7 +1470,7 @@ def flash_mix_g2():
 
 def preset_profile():
     """Exact C# PresetProfile() method implementation"""
-    global g2_inventory_vars
+    global g2_inventory_vars, reader_mode_type
     
     log_g2_debug("preset_profile", "=== FUNCTION START ===", level="INFO")
     log_g2_debug("preset_profile", "Current state", level="INFO", 
@@ -1575,50 +1482,10 @@ def preset_profile():
                  aa_times=g2_inventory_vars.get('AA_times'),
                  target_times=g2_inventory_vars.get('targettimes'))
     
-    # Get ModeType from reader info
-    version_info = bytearray(2)
-    reader_type = [0]
-    tr_type = [0]
-    dmax_fre = [0]
-    dmin_fre = [0]
-    power_dbm = [0]
-    scan_time = [0]
-    ant_cfg0 = [0]
-    beep_en = [0]
-    output_rep = [0]
-    check_ant = [0]
+    log_g2_debug("preset_profile", f"Mode type determined", level="INFO", 
+                 mode_type=reader_mode_type)
     
-    log_g2_debug("preset_profile", "Getting reader information", level="DEBUG")
-    
-    reader_info_result = reader.get_reader_information(
-        reader.com_addr, version_info, reader_type, tr_type,
-        dmax_fre, dmin_fre, power_dbm, scan_time,
-        ant_cfg0, beep_en, output_rep, check_ant
-    )
-    
-    log_g2_debug("preset_profile", f"Reader info result", level="DEBUG", 
-                 result=reader_info_result, reader_type=reader_type[0] if reader_info_result == 0 else "N/A")
-    
-    if reader_info_result == 0:
-        reader_type_val = reader_type[0]
-        mode_type_val = 1  # Default R2000
-        if reader_type_val in [0x62, 0x61, 0x64, 0x66, 0x65, 0x67, 0x68]:  # C6
-            mode_type_val = 0
-        elif reader_type_val in [0x71, 0x31, 0x70, 0x72, 0x5F, 0x7F, 0x76, 0x56, 0x38,
-                            0x57, 0x77, 0x39, 0x55, 0x75, 0x35, 0x33, 0x53, 0x73,
-                            0x3A, 0x5A, 0x7A, 0x3B, 0x5B, 0x7B, 0x3C, 0x5C, 0x7C,
-                            0x3D, 0x5D, 0x7D, 0x3E, 0x5E, 0x7E, 0x40, 0x41, 0x42,
-                            0x6A, 0x6B, 0x6C]:  # RRUx180
-            mode_type_val = 2
-        elif reader_type_val == 0x11:  # 9810
-            mode_type_val = 3
-        elif reader_type_val in [0x91, 0x92, 0x93, 0x94]:  # FD
-            mode_type_val = 4
-        
-        log_g2_debug("preset_profile", f"Mode type determined", level="INFO", 
-                     reader_type=f"0x{reader_type_val:02X}", mode_type=mode_type_val)
-        
-        if (g2_inventory_vars['readMode'] == 254 or g2_inventory_vars['readMode'] == 253) and (mode_type_val == 2):
+    if (g2_inventory_vars['readMode'] == 254 or g2_inventory_vars['readMode'] == 253) and (reader_mode_type == 2):
             log_g2_debug("preset_profile", "Processing RRUx180 profile optimization", level="INFO")
             
             if (g2_inventory_vars['Profile'] == 0x01) and (g2_inventory_vars['readMode'] == 253):
@@ -1699,12 +1566,9 @@ def preset_profile():
                                  aa_times=g2_inventory_vars['AA_times'], old_target=old_target, new_target=g2_inventory_vars['Target'])
                 else:
                     log_g2_debug("preset_profile", "No profile change needed", level="DEBUG")
-        else:
-            log_g2_debug("preset_profile", "Not RRUx180 or not special readMode, skipping profile optimization", level="DEBUG")
     else:
-        log_g2_debug("preset_profile", f"Reader info failed", level="ERROR", 
-                     result=reader_info_result)
-    
+        log_g2_debug("preset_profile", "Not RRUx180 or not special readMode, skipping profile optimization", level="DEBUG")
+
     log_g2_debug("preset_profile", "=== FUNCTION END ===", level="INFO")
 
 @app.route('/api/stop_inventory', methods=['POST'])

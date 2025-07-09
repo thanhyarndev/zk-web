@@ -1117,27 +1117,55 @@ class Reader:
             return self.recv_buffer[3]
         return 49
 
-    def set_profile(self, com_addr: int, profile: bytearray) -> int:
+    def set_profile(self, com_addr: bytearray, profile: bytearray) -> int:
         """Set profile (C# command 127)
         
         Args:
-            com_addr: Reader address
+            com_addr: Reader address as bytearray[0] (will be updated with response value)
             profile: Profile value as bytearray[0] (will be updated with response value if status=0)
         """
+        # Build command exactly like C#: SendBuff[0] = 5; SendBuff[1] = ComAdr; SendBuff[2] = 127; SendBuff[3] = Profile;
         cmd = bytearray([5, com_addr[0], 127, profile[0]])
+        
+        # Add CRC exactly like C#: GetCRC(SendBuff, SendBuff[0] - 1)
         crc = self._get_crc(cmd, len(cmd))
         cmd.extend(crc)
+        
+        # Send command exactly like C#: SendDataToPort(SendBuff, SendBuff[0] + 1)
         result = self._send_data(cmd, len(cmd))
         if result != 0:
-            return result
+            return result  # Return send error immediately (C# returns num if GetDataFromPort fails)
+        
+        # Get response exactly like C#: num = GetDataFromPort(127, 1500)
         result = self._get_data_from_port(127, 1500)
         if result != 0:
-            return result
-        if self.recv_length >= 5 and self.recv_buffer[2] == 127:
-            if self.recv_buffer[3] == 0:
-                profile[0] = self.recv_buffer[4]  # Update profile with response value (C# Profile = RecvBuff[4])
-            return self.recv_buffer[3]
-        return 49
+            return result  # Return timeout/communication error (C# returns num)
+        
+        # Process response exactly like C#: if (num == 0) { if (CheckCRC(RecvBuff, RecvLength) == 0) { ... } }
+        if self._check_crc(self.recv_buffer, self.recv_length) != 0:
+            return 49  # CRC error (C# returns 49)
+        
+        # Check command response exactly like C#: if (RecvBuff[2] == 127)
+        if self.recv_length >= 6 and self.recv_buffer[2] == 127:  # SDK: Len=0x06, so need at least 6 bytes
+            com_addr[0] = self.recv_buffer[1]  # Update com_addr with response value (C# ComAdr = RecvBuff[1])
+            
+            # According to SDK: Status field should be 0x00 for success
+            status = self.recv_buffer[3]
+            if status == 0:
+                # Success: update profile with Data[] field (SDK: Data[] contains profile)
+                if self.recv_length >= 5:
+                    profile[0] = self.recv_buffer[4]  # Data[] field contains profile value
+                return 0  # SDK: Succeed: 0
+            else:
+                # Error: return the status code
+                return status
+        else:
+            # Command mismatch or insufficient data
+            if self.recv_length >= 4:
+                return self.recv_buffer[3]  # Return status code
+            return 49  # Default error
+        
+        return 49  # Fallback (should not reach here)
 
     def start_read(self, com_addr: bytearray, target: bytes) -> int:
         """Start read (C# StartRead method)

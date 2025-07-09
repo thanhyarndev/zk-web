@@ -16,7 +16,7 @@ class Config:
     PORT = int(os.environ.get('PORT', 3000))
     
     # Serial Configuration
-    DEFAULT_PORT = os.environ.get('DEFAULT_SERIAL_PORT', 'COM1')
+    DEFAULT_PORT = os.environ.get('DEFAULT_SERIAL_PORT', '/dev/tty.usbserial-10')
     DEFAULT_BAUDRATE = int(os.environ.get('DEFAULT_BAUDRATE', 57600))
     
     # RFID Reader Configuration
