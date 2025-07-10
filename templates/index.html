@@ -943,11 +943,7 @@
               </div>
 
               <label for="fastModeTarget" class="form-label">Target</label>
-              <select
-                class="form-select"
-                id="fastModeTarget"
-                onchange="updateFastModeButtonText()"
-              >
+              <select class="form-select" id="fastModeTarget">
                 <option value="0">Target A</option>
                 <option value="1">Target B</option>
               </select>
@@ -2404,15 +2400,6 @@
       function openG2ModeConfigModal() {
         // TODO: Implement G2 Mode configuration modal
         showAlert("G2 Mode configuration modal - to be implemented", "info");
-      }
-
-      // Button text update functions
-      function updateFastModeButtonText() {
-        const target = document.getElementById("fastModeTarget").value;
-        const startBtn = document.getElementById("startFastModeBtn");
-        startBtn.innerHTML = `<i class="fas fa-play"></i> Start Fast Mode (Target ${
-          target === "0" ? "A" : "B"
-        })`;
       }
 
       // Set power (for single antenna)

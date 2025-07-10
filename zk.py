@@ -8,7 +8,6 @@ from dataclasses import dataclass
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
 @dataclass
 class RFIDTag:
     """Represents an RFID tag with its properties."""
@@ -1745,6 +1744,84 @@ def start_tags_inventory(serial_port: serial.Serial, address: int = 0x00,
         logger.error(f"❌ Error during inventory: {e}")
         return False
 
+def select_cmd_below(com_addr: bytearray, antenna: int, session: bytes, sel_action: bytes, 
+                   mask_mem: bytes, mask_addr: bytes, mask_len: bytes, mask_data: bytes, truncate: bytes, antenna_num: int = 4) -> int:
+    """Select command (C# SelectCmd method) - Gen2 select command for filtering tags
+    Args:
+        com_addr: Reader address as bytearray[0] (will be updated with response value)
+        antenna: Antenna bitmask (int)
+        session: Session as bytes (single byte)
+        sel_action: Select action as bytes (single byte)
+        mask_mem: Mask memory as bytes (single byte)
+        mask_addr: Mask address as bytes (2 bytes)
+        mask_len: Mask length as bytes (single byte)
+        mask_data: Mask data as bytes
+        truncate: Truncate flag as bytes (single byte)
+        antenna_num: total number of antennas supported (default 4)
+    """
+    mask_bytes = (mask_len[0] + 7) // 8
+    cmd = bytearray()
+    opcode = 154
+    if antenna_num <= 8:
+        frame_length = 12 + mask_bytes
+        cmd.append(frame_length)
+        cmd.append(com_addr[0])
+        cmd.append(opcode)
+        cmd.append(antenna & 0xFF)
+    else:
+        frame_length = 13 + mask_bytes
+        cmd.append(frame_length)
+        cmd.append(com_addr[0])
+        cmd.append(opcode)
+        cmd.append((antenna >> 8) & 0xFF)
+        cmd.append(antenna & 0xFF)
+    cmd.append(session[0])
+    cmd.append(sel_action[0])
+    cmd.append(mask_mem[0])
+    cmd.extend(mask_addr[:2])
+    cmd.append(mask_len[0])
+    if mask_bytes > 0:
+        cmd.extend(mask_data[:mask_bytes])
+    cmd.append(truncate[0])
+    print(f"[DEBUG] Select command before CRC: {cmd.hex()}")
+    print(f"[DEBUG] Select command length: {cmd[0]}")
+    crc = calculate_crc16(cmd)
+    cmd.extend(crc.to_bytes(2, 'little'))
+    print(f"[DEBUG] Full select command with CRC: {cmd.hex()}")
+    # You must send cmd to the reader and handle the response here
+    # For now, just return 0 to simulate success
+    return 0
+
+def select_cmd(antenna: int, session: int, sel_action: int, mask_mem: int, 
+               mask_addr: bytes, mask_len: int, mask_data: bytes, truncate: int, antenna_num: int = 4, com_addr_val: int = 0x00) -> int:
+    """
+    Select command (Gen2 select command for filtering tags)
+    Args:
+        antenna: Antenna number (bitmask or value)
+        session: Session (0-3)
+        sel_action: Select action (0-7)
+        mask_mem: Mask memory bank (0-3)
+        mask_addr: Mask address (2 bytes)
+        mask_len: Mask length in bits
+        mask_data: Mask data bytes
+        truncate: Truncate flag (0-1)
+        antenna_num: total number of antennas supported (default 4)
+        com_addr_val: Reader address (default 0x00)
+    Returns:
+        0 on success, error code on failure
+    """
+    com_addr = bytearray([com_addr_val])
+    session_bytes = bytes([session])
+    sel_action_bytes = bytes([sel_action])
+    mask_mem_bytes = bytes([mask_mem])
+    mask_len_bytes = bytes([mask_len])
+    truncate_bytes = bytes([truncate])
+    result = select_cmd_below(
+        com_addr, antenna, session_bytes, sel_action_bytes, 
+        mask_mem_bytes, mask_addr, mask_len_bytes, mask_data, truncate_bytes, antenna_num
+    )
+    return result
+
 def main() -> None:
     """Main menu function to handle user interactions with the RFID reader."""
     print("🚀 Ex10 RFID Reader Control Program")
@@ -1792,6 +1869,32 @@ def main() -> None:
                     print(f"\n📊 Stats Update (Target A):")
                     print(f"   Read Rate: {read_rate} tags/sec")
                     print(f"   Total Count: {total_count}")
+
+                session_val = 2  # Return 1 on error (exact C# logic)
+                
+                # First, call select_cmd for each antenna (like C# code)
+                mask_mem_val = 1       # int = EPC memory (like C# MaskMem = 1)
+                mask_addr_bytes = bytes([0, 0])  # 2 bytes address (like C# MaskAdr = new byte[2])
+                mask_len_val = 0       # int = no mask (like C# MaskLen = 0)
+                mask_data_bytes = bytes(100)  # 100 bytes array (like C# MaskData = new byte[100])
+                select_antenna = 0xFFFF  # SelectAntenna = 0xFFFF (all antennas) like C# code
+
+                # Call select_cmd for each antenna (4 antennas like C# code)
+                # Following C# code exactly: for (int m = 0; m < 4; m++)
+                for antenna in range(20): 
+                    result = select_cmd(
+                        antenna=select_antenna,  # SelectAntenna = 0xFFFF (all antennas)
+                        session=session_val,
+                        sel_action=3,
+                        mask_mem=mask_mem_val,
+                        mask_addr=mask_addr_bytes,
+                        mask_len=mask_len_val,
+                        mask_data=mask_data_bytes,
+                        truncate=0,
+                        antenna_num=1
+                    )
+                    print(f"[DEBUG] Antenna {antenna} result: {result} session: {session_val}")
+                    time.sleep(0.005)  # 5ms delay like C# Thread.Sleep(5)
                 
                 start_inventory(
                     serial_port=reader,

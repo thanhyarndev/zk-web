@@ -441,9 +441,10 @@ class UHFReader:
             raise UHFReaderError("No callback function set")
 
         # Gọi start_read trước (giống C# StartRead)
-        result = self.start_read(target)
+
+        result = self.uhf.start_read(bytearray([self.com_addr]), bytes([target]))
         if result != 0:
-            return result  # Nếu lỗi thì trả về mã lỗi luôn
+            return 0
 
         self.is_scanning = True
         self.to_stop_thread = False
@@ -582,6 +583,21 @@ class UHFReader:
                     if now - start_time > 10000:
                         print("[DEBUG] 10s timeout reached, resetting start_time.")
                         start_time = now
+
+                        version_info = bytearray(2)
+                        reader_type = [0]
+                        tr_type = [0]
+                        dmax_fre = [0]
+                        dmin_fre = [0]
+                        power_dbm = [0]
+                        scan_time = [0]
+                        ant_cfg0 = [0]
+                        beep_en = [0]
+                        output_rep = [0]
+                        check_ant = [0]
+                        fCmdRet = self.uhf.get_reader_information(self.com_addr, version_info, reader_type, tr_type,
+                                             dmax_fre, dmin_fre, power_dbm, scan_time,
+                                             ant_cfg0, beep_en, output_rep, check_ant)
                 time.sleep(0.05)
             except Exception as e:
                 print(f"Error in work process: {e}")
@@ -770,13 +786,6 @@ class UHFReader:
             return 0, profile_bytearray[0]
         else:
             return result, None
-
-    def start_read(self, target: int = 0) -> int:
-        if not self.is_connected:
-            raise ReaderNotConnectedError("Reader is not connected")
-        com_addr = bytearray([self.com_addr])
-        target_bytes = bytes([target])
-        return self.uhf.start_read(com_addr, target_bytes)
 
     #CHECK
     def select_cmd(self, antenna: int, session: int, sel_action: int, mask_mem: int, 

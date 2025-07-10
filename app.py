@@ -674,23 +674,21 @@ def api_start_inventory():
     target = data.get('target', 0)
     
     try:
-        # Lấy session từ param1 (giống C# GetSession)
+        # Lấy session từ param1 (exact C# GetSession logic)
         cfg_num = 0x09  # Configuration number for Param1
         cfg_data = bytearray(256)
         data_len = [0]
         result_param = reader.get_cfg_parameter(cfg_num, cfg_data, data_len)
-        if result_param == 0 and data_len[0] >= 2:
-            session_val = cfg_data[1] if cfg_data[1] < 4 else 0
+        if result_param == 0:
+            session_val = cfg_data[1]  # Return data[1] directly (exact C# logic)
         else:
-            session_val = 0  # fallback nếu lỗi
+            session_val = 1  # Return 1 on error (exact C# logic)
         
         # First, call select_cmd for each antenna (like C# code)
-        sel_action_val = 0     # int = 0 (like C# code: Session, 0, MaskMem, ...)
         mask_mem_val = 1       # int = EPC memory (like C# MaskMem = 1)
         mask_addr_bytes = bytes([0, 0])  # 2 bytes address (like C# MaskAdr = new byte[2])
         mask_len_val = 0       # int = no mask (like C# MaskLen = 0)
         mask_data_bytes = bytes(100)  # 100 bytes array (like C# MaskData = new byte[100])
-        truncate_val = 0       # int = no truncate (like C# code: ..., 0, frmcomportindex)
         select_antenna = 0xFFFF  # SelectAntenna = 0xFFFF (all antennas) like C# code
 
         # Call select_cmd for each antenna (4 antennas like C# code)
@@ -699,12 +697,12 @@ def api_start_inventory():
             result = reader.select_cmd(
                 antenna=select_antenna,  # SelectAntenna = 0xFFFF (all antennas)
                 session=session_val,
-                sel_action=sel_action_val,
+                sel_action=0,
                 mask_mem=mask_mem_val,
                 mask_addr=mask_addr_bytes,
                 mask_len=mask_len_val,
                 mask_data=mask_data_bytes,
-                truncate=truncate_val,
+                truncate=0,
                 antenna_num=1
             )
             print(f"[DEBUG] Antenna {antenna} result: {result} session: {session_val}")
