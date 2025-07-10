@@ -265,7 +265,7 @@ class UHFReader:
     
     def inventory_g2(self, q_value: int = 4, session: int = 0, 
                     scan_time: int = 5, target: int = 0, 
-                    in_ant: int = 0, tid_flag: int = 0, 
+                    in_ant: int = 0, tid_flag: int = 0, fast_flag: int = 0,
                     tid_addr: int = 0, tid_len: int = 0) -> List[RFIDTag]:
         """
         Perform Gen2 inventory operation
@@ -301,7 +301,7 @@ class UHFReader:
         target_bytes = bytes([target])
         in_ant_bytes = bytes([in_ant])
         scan_time_bytes = bytes([scan_time])
-        fast_flag_bytes = bytes([0])
+        fast_flag_bytes = bytes([fast_flag])
         epc_list = bytearray(8192)
         ant = [0]
         total_len = [0]

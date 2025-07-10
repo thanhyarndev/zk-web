@@ -291,12 +291,10 @@ logger = logging.getLogger(__name__)
 
 # Add G2 inventory debug logger
 g2_debug_logger = logging.getLogger('g2_inventory_debug')
-g2_debug_logger.setLevel(logging.DEBUG)
-
+g2_debug_logger.setLevel(logging.CRITICAL)
 # Create file handler for G2 debug logs
 g2_debug_handler = logging.FileHandler('g2_inventory_debug.log')
-g2_debug_handler.setLevel(logging.DEBUG)
-
+g2_debug_logger.setLevel(logging.CRITICAL)
 # Create formatter for G2 debug logs
 g2_debug_formatter = logging.Formatter(
     '%(asctime)s | %(name)s | %(levelname)s | %(funcName)s | %(message)s'
@@ -325,7 +323,7 @@ def log_g2_debug(func_name: str, message: str, level: str = "INFO", **kwargs):
         g2_debug_logger.error(formatted_message)
     
     # Also print to console for immediate feedback
-    print(f"[G2_DEBUG] {func_name}: {formatted_message}")
+    # print(f"[G2_DEBUG] {func_name}: {formatted_message}")
 
 # Khởi tạo controller
 reader = UHFReader()
@@ -912,22 +910,22 @@ def api_start_inventory_g2():
         g2_inventory_vars['Target'] = target
         
         # Debug logging to verify all parameters are set correctly
-        logger.info(f"[DEBUG] api_start_inventory_g2() - Final parameter verification:")
-        logger.info(f"  Mode type: {mode_type}")
-        logger.info(f"  Scan time: {g2_inventory_vars['Scantime']} (={g2_inventory_vars['Scantime']*100}ms)")
-        logger.info(f"  Q value: {g2_inventory_vars['Qvalue']}")
-        logger.info(f"  Session: {g2_inventory_vars['Session']}")
-        logger.info(f"  Target: {g2_inventory_vars['Target']}")
-        logger.info(f"  Target times: {g2_inventory_vars['targettimes']}")
-        logger.info(f"  Enable target times: {g2_inventory_vars.get('enable_target_times', True)}")
-        logger.info(f"  Antennas: {antennas}")
-        logger.info(f"  Ant list: {[i for i, val in enumerate(g2_inventory_vars['antlist']) if val == 1]}")
-        logger.info(f"  InAnt: {g2_inventory_vars['InAnt']} (0x{g2_inventory_vars['InAnt']:02X})")
-        logger.info(f"  TID flag: {g2_inventory_vars['TIDFlag']}")
-        logger.info(f"  TID addr: {g2_inventory_vars['tidAddr']} (0x{g2_inventory_vars['tidAddr']:02X})")
-        logger.info(f"  TID len: {g2_inventory_vars['tidLen']}")
-        logger.info(f"  Scan type: {g2_inventory_vars['scanType']}")
-        logger.info(f"  Read mode: {g2_inventory_vars['readMode']}")
+        # logger.info(f"[DEBUG] api_start_inventory_g2() - Final parameter verification:")
+        # logger.info(f"  Mode type: {mode_type}")
+        # logger.info(f"  Scan time: {g2_inventory_vars['Scantime']} (={g2_inventory_vars['Scantime']*100}ms)")
+        # logger.info(f"  Q value: {g2_inventory_vars['Qvalue']}")
+        # logger.info(f"  Session: {g2_inventory_vars['Session']}")
+        # logger.info(f"  Target: {g2_inventory_vars['Target']}")
+        # logger.info(f"  Target times: {g2_inventory_vars['targettimes']}")
+        # logger.info(f"  Enable target times: {g2_inventory_vars.get('enable_target_times', True)}")
+        # logger.info(f"  Antennas: {antennas}")
+        # logger.info(f"  Ant list: {[i for i, val in enumerate(g2_inventory_vars['antlist']) if val == 1]}")
+        # logger.info(f"  InAnt: {g2_inventory_vars['InAnt']} (0x{g2_inventory_vars['InAnt']:02X})")
+        # logger.info(f"  TID flag: {g2_inventory_vars['TIDFlag']}")
+        # logger.info(f"  TID addr: {g2_inventory_vars['tidAddr']} (0x{g2_inventory_vars['tidAddr']:02X})")
+        # logger.info(f"  TID len: {g2_inventory_vars['tidLen']}")
+        # logger.info(f"  Scan type: {g2_inventory_vars['scanType']}")
+        # logger.info(f"  Read mode: {g2_inventory_vars['readMode']}")
         
         # Start inventory thread (exact C# logic)
         if not g2_inventory_vars['fIsInventoryScan']:
@@ -1288,7 +1286,8 @@ def flash_g2():
         in_ant=g2_inventory_vars['InAnt'],
         tid_flag=g2_inventory_vars['TIDFlag'],
         tid_addr=g2_inventory_vars['tidAddr'],
-        tid_len=g2_inventory_vars['tidLen']
+        tid_len=g2_inventory_vars['tidLen'],
+        fast_flag=g2_inventory_vars['FastFlag']
     )
     
     # C# style error handling - check if tags is a list (success) or error code
@@ -1445,7 +1444,7 @@ def flash_mix_g2():
     g2_inventory_vars['NewCardNum'] = g2_inventory_vars['CardNum']
     
     if g2_inventory_vars['CardNum'] == 0:
-        if g2_inventory_vars['Session'] > 1 and g2_inventory_vars.get('enable_target_times', True):
+        if g2_inventory_vars['Session'] > 1:
             g2_inventory_vars['AA_times'] += 1
     else:
         g2_inventory_vars['AA_times'] = 0
