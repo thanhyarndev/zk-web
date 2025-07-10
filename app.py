@@ -291,10 +291,10 @@ logger = logging.getLogger(__name__)
 
 # Add G2 inventory debug logger
 g2_debug_logger = logging.getLogger('g2_inventory_debug')
-g2_debug_logger.setLevel(logging.CRITICAL)
+g2_debug_logger.setLevel(logging.DEBUG)
 # Create file handler for G2 debug logs
 g2_debug_handler = logging.FileHandler('g2_inventory_debug.log')
-g2_debug_logger.setLevel(logging.CRITICAL)
+g2_debug_logger.setLevel(logging.DEBUG)
 # Create formatter for G2 debug logs
 g2_debug_formatter = logging.Formatter(
     '%(asctime)s | %(name)s | %(levelname)s | %(funcName)s | %(message)s'
@@ -846,8 +846,10 @@ def api_start_inventory_g2():
         
         if reader_mode_type == 2:
             g2_inventory_vars['Profile'] = g2_inventory_vars['RF_Profile'] | 0xC0
-            result = reader.set_profile(profile=g2_inventory_vars['Profile'])
-            if result != 0:
+            result, new_profile = reader.set_profile(profile=g2_inventory_vars['Profile'])
+            if result == 0 and new_profile is not None:
+                g2_inventory_vars['Profile'] = new_profile
+            else:
                 logger.warning(f"Failed to set profile: {result}")
         
         # Set read mode based on session (exact C# logic)
@@ -1057,7 +1059,9 @@ def preset_target(read_mode, select_antenna):
                 g2_inventory_vars['Profile'] = 0xC5
                 log_g2_debug("preset_target", "Setting Profile to 0xC5 for read_mode 254", level="INFO")
             
-            result = reader.set_profile(profile=g2_inventory_vars['Profile'])
+            result, new_profile = reader.set_profile(profile=g2_inventory_vars['Profile'])
+            if result == 0 and new_profile is not None:
+                g2_inventory_vars['Profile'] = new_profile
             log_g2_debug("preset_target", f"Set profile result", level="INFO", 
                          profile=f"0x{g2_inventory_vars['Profile']:02X}", result=result)
             
@@ -1224,7 +1228,9 @@ def inventory_worker():
     
     if reader_mode_type == 2:  # if (ModeType == 2)
         g2_inventory_vars['Profile'] = g2_inventory_vars['RF_Profile'] | 0xC0  # Profile = (byte)(RF_Profile | 0xC0)
-        result = reader.set_profile(profile=g2_inventory_vars['Profile'])
+        result, new_profile = reader.set_profile(profile=g2_inventory_vars['Profile'])
+        if result == 0 and new_profile is not None:
+            g2_inventory_vars['Profile'] = new_profile
         
         log_g2_debug("inventory_worker", f"Profile restoration", level="INFO", 
                      new_profile=g2_inventory_vars['Profile'], result=result)
@@ -1492,7 +1498,9 @@ def preset_profile():
                 if g2_inventory_vars['tagrate'] < 150 or g2_inventory_vars['CardNum'] < 150:
                     old_profile = g2_inventory_vars['Profile']
                     g2_inventory_vars['Profile'] = 0xC5
-                    result = reader.set_profile(profile=g2_inventory_vars['Profile'])
+                    result, new_profile = reader.set_profile(profile=g2_inventory_vars['Profile'])
+                    if result == 0 and new_profile is not None:
+                        g2_inventory_vars['Profile'] = new_profile
                     
                     log_g2_debug("preset_profile", f"Profile changed from 0x01 to 0xC5", level="INFO", 
                                  old_profile=f"0x{old_profile:02X}", new_profile=f"0x{g2_inventory_vars['Profile']:02X}", result=result)
@@ -1508,8 +1516,10 @@ def preset_profile():
                 if g2_inventory_vars['NewCardNum'] < 5:
                     old_profile = g2_inventory_vars['Profile']
                     g2_inventory_vars['Profile'] = 0xCD
-                    result = reader.set_profile(profile=g2_inventory_vars['Profile'])
-                    
+                    result, new_profile = reader.set_profile(profile=g2_inventory_vars['Profile'])
+                    if result == 0 and new_profile is not None:
+                        g2_inventory_vars['Profile'] = new_profile
+                                
                     log_g2_debug("preset_profile", f"Profile changed from 0x05 to 0xCD", level="INFO", 
                                  old_profile=f"0x{old_profile:02X}", new_profile=f"0x{g2_inventory_vars['Profile']:02X}", result=result)
                     
@@ -1527,7 +1537,9 @@ def preset_profile():
                 if g2_inventory_vars['NewCardNum'] > 20:
                     old_profile = g2_inventory_vars['Profile']
                     g2_inventory_vars['Profile'] = 0xC5
-                    result = reader.set_profile(profile=g2_inventory_vars['Profile'])
+                    result, new_profile = reader.set_profile(profile=g2_inventory_vars['Profile'])
+                    if result == 0 and new_profile is not None:
+                        g2_inventory_vars['Profile'] = new_profile
                     
                     log_g2_debug("preset_profile", f"Profile changed from 0x0D to 0xC5 (high card count)", level="INFO", 
                                  old_profile=f"0x{old_profile:02X}", new_profile=f"0x{g2_inventory_vars['Profile']:02X}", result=result)
@@ -1547,8 +1559,10 @@ def preset_profile():
                         g2_inventory_vars['Profile'] = 0xC1
                         log_g2_debug("preset_profile", "Setting profile to 0xC1 for readMode 253", level="INFO")
                     
-                    result = reader.set_profile(profile=g2_inventory_vars['Profile'])
-                    
+                    result, new_profile = reader.set_profile(profile=g2_inventory_vars['Profile'])
+                    if result == 0 and new_profile is not None:
+                        g2_inventory_vars['Profile'] = new_profile
+                                
                     log_g2_debug("preset_profile", f"Profile changed due to AA_times threshold", level="INFO", 
                                  old_profile=f"0x{old_profile:02X}", new_profile=f"0x{g2_inventory_vars['Profile']:02X}", result=result)
                     
