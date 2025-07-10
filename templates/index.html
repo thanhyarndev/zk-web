@@ -842,91 +842,50 @@
               <i class="fas fa-cogs"></i> Configuration
             </div>
 
-            <label for="powerInput" class="form-label">RF Power (dBm)</label>
-            <input
-              type="range"
-              class="form-range"
-              id="powerInput"
-              min="0"
-              max="33"
-              value="20"
-            />
-            <div class="range-value">
-              Current: <span id="powerValue">20</span> dBm
-            </div>
-            <div class="small text-muted mb-2">
-              <span id="currentAntennaPower">--</span>
-            </div>
+            <!-- RF Power Group -->
+            <div class="inventory-mode-section">
+              <div class="mode-title">
+                <i class="fas fa-bolt"></i> RF Power Control
+              </div>
 
-            <label for="profileSelect" class="form-label">Profile</label>
-            <select class="form-select" id="profileSelect">
-              <option value="11">11 - 640kHz, FM0, Tari 7.5μs</option>
-              <option value="1">1 - 640kHz, Miller2, Tari 7.5μs</option>
-              <option value="15">15 - 640kHz, Miller4, Tari 7.5μs</option>
-              <option value="12">12 - 320kHz, Miller2, Tari 15μs</option>
-              <option value="3">3 - 320kHz, Miller2, Tari 20μs</option>
-              <option value="5">5 - 320kHz, Miller4, Tari 20μs</option>
-              <option value="7">7 - 250kHz, Miller4, Tari 20μs</option>
-              <option value="13">13 - 160kHz, Miller8, Tari 20μs</option>
-            </select>
-            <div class="form-check mt-2">
+              <label for="powerInput" class="form-label"
+                >Set Power Level (dBm)</label
+              >
               <input
-                class="form-check-input"
-                type="checkbox"
-                id="saveProfile"
-                checked
+                type="range"
+                class="form-range"
+                id="powerInput"
+                min="0"
+                max="33"
+                value="20"
               />
-              <label class="form-check-label" for="saveProfile">
-                Save to EEPROM
-              </label>
-            </div>
+              <div class="range-value">
+                Selected: <span id="powerValue">20</span> dBm
+              </div>
+              <div class="small text-muted mb-2">
+                <span id="currentAntennaPower">--</span>
+              </div>
 
-            <div class="btn-group">
-              <button
-                class="btn btn-primary"
-                onclick="getReaderInfo()"
-                id="infoBtn"
-                disabled
-                title="Get Reader Info"
-              >
-                <i class="fas fa-info-circle"></i>
-              </button>
-              <button
-                class="btn btn-primary"
-                onclick="getAntennaPower()"
-                id="powerInfoBtn"
-                disabled
-                title="Get Power Info"
-              >
-                <i class="fas fa-bolt"></i>
-              </button>
-              <button
-                class="btn btn-primary"
-                onclick="setPower()"
-                id="powerBtn"
-                disabled
-                title="Set Power"
-              >
-                <i class="fas fa-bolt"></i>
-              </button>
-              <button
-                class="btn btn-primary"
-                onclick="setProfile()"
-                id="profileBtn"
-                disabled
-                title="Set Profile"
-              >
-                <i class="fas fa-save"></i>
-              </button>
-              <button
-                class="btn btn-primary"
-                onclick="getProfile()"
-                id="getProfileBtn"
-                disabled
-                title="Get Profile"
-              >
-                <i class="fas fa-info"></i>
-              </button>
+              <div class="btn-group">
+                <button
+                  class="btn btn-primary"
+                  onclick="getAntennaPower()"
+                  id="powerInfoBtn"
+                  disabled
+                  title="Get Current Power"
+                >
+                  <i class="fas fa-download"></i> Get
+                </button>
+                <button
+                  class="btn btn-primary"
+                  onclick="setPower()"
+                  id="powerBtn"
+                  disabled
+                  title="Set Power"
+                >
+                  <i class="fas fa-upload"></i> Set
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1016,30 +975,7 @@
                     />
                     <label class="form-check-label" for="g2ModeTID">TID</label>
                   </div>
-                  <div class="form-check form-check-inline">
-                    <input
-                      class="form-check-input"
-                      type="radio"
-                      name="g2ModeType"
-                      id="g2ModeMix"
-                      value="mix"
-                      onchange="onG2ModeTypeChange()"
-                    />
-                    <label class="form-check-label" for="g2ModeMix">Mix</label>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input
-                      class="form-check-input"
-                      type="radio"
-                      name="g2ModeType"
-                      id="g2ModeFastID"
-                      value="fastid"
-                      onchange="onG2ModeTypeChange()"
-                    />
-                    <label class="form-check-label" for="g2ModeFastID"
-                      >FastID</label
-                    >
-                  </div>
+                  <!-- Mix and FastID modes hidden as requested -->
                 </div>
               </div>
 
@@ -1466,15 +1402,21 @@
                 >
                   <i class="fas fa-redo"></i>
                 </button>
-                <button
-                  class="btn btn-warning"
-                  onclick="testSelectCmd()"
-                  title="Test Select CMD"
-                >
-                  <i class="fas fa-vial"></i>
-                </button>
               </div>
             </div>
+          </div>
+
+          <!-- Reader Info Button -->
+          <div class="btn-group">
+            <button
+              class="btn btn-info"
+              onclick="getReaderInfo()"
+              id="infoBtn"
+              disabled
+              title="Get Reader Information"
+            >
+              <i class="fas fa-info-circle"></i> Reader Info
+            </button>
           </div>
 
           <!-- Reader Info Section -->
@@ -1907,7 +1849,7 @@
           });
 
           if (result.success) {
-            showAlert(result.message, "success");
+            // Don't show alert here - let the socket connection_status handle it
             updateConnectionStatus(true);
 
             // Automatically load reader information after connection (like C# app)
@@ -1938,7 +1880,7 @@
         try {
           const result = await apiCall("/api/disconnect", "POST");
           if (result.success) {
-            showAlert(result.message, "success");
+            // Don't show alert here - let the socket connection_status handle it
             updateConnectionStatus(false);
 
             // Clear reader information
@@ -2227,8 +2169,29 @@
               }
             </div>
           `;
+
+          // Update antenna selection based on reader capabilities
+          updateAntennaSelection(info.antenna_count);
         } else {
           showAlert(result.message, "warning");
+        }
+      }
+
+      // Update antenna selection based on reader capabilities
+      function updateAntennaSelection(antennaCount) {
+        // Enable/disable antenna checkboxes based on available antennas
+        for (let i = 1; i <= 16; i++) {
+          const antCheckbox = document.getElementById(`check_ant${i}`);
+          if (antCheckbox) {
+            if (i <= antennaCount) {
+              antCheckbox.disabled = false;
+              antCheckbox.parentElement.style.opacity = "1";
+            } else {
+              antCheckbox.disabled = true;
+              antCheckbox.checked = false;
+              antCheckbox.parentElement.style.opacity = "0.5";
+            }
+          }
         }
       }
 
@@ -2785,11 +2748,11 @@
         // Clear session options first
         sessionSelect.innerHTML = "";
 
-        if (modeType === "epc" || modeType === "fastid") {
-          // EPC and FastID modes - hide Mix/TID section
+        if (modeType === "epc") {
+          // EPC mode - hide Mix/TID section
           mixTidSection.style.display = "none";
 
-          // Add session options for EPC/FastID modes
+          // Add session options for EPC mode
           sessionSelect.innerHTML = `
             <option value="0">0</option>
             <option value="1">1</option>
@@ -2819,23 +2782,8 @@
             <option value="2">2</option>
             <option value="3">3</option>
           `;
-        } else if (modeType === "mix") {
-          // Mix mode - show Mix section
-          mixTidSection.style.display = "block";
-          mixTidTitle.textContent = "Mix";
-
-          // Enable controls for Mix mode
-          mixMemSelect.disabled = false;
-          psdInput.disabled = false;
-
-          // Add session options for Mix mode
-          sessionSelect.innerHTML = `
-            <option value="0" selected>0</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-          `;
         }
+        // Note: Mix and FastID modes are hidden as requested
       }
 
       // Initialize the application
