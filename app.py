@@ -2030,6 +2030,159 @@ def api_get_mask_param():
         logger.error(f"Get Mask Param error: {e}")
         return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
 
+@app.route('/api/get_profile', methods=['GET'])
+def api_get_profile():
+    """API lấy current profile - exact C# button1_Click_1 implementation"""
+    try:
+        if not reader.is_connected:
+            return jsonify({"success": False, "message": "Chưa kết nối đến reader"})
+        
+        # Get current profile exactly like C#: byte Profile = 0; RWDev.SetProfile(ref fComAdr, ref Profile, frmcomportindex);
+        profile_result, current_profile = reader.set_profile(profile=0)
+        
+        if profile_result != 0:
+            error_desc = get_return_code_desc(profile_result)
+            logger.error(f"Get RF-Link Profile failed: {error_desc}")
+            return jsonify({"success": False, "message": f"Get RF-Link Profile failed: {error_desc}"})
+        
+        # Map profile to comboBox index based on ModeType (exact C# logic)
+        global reader_mode_type, RF_Profile
+        selected_index = -1
+        
+        if reader_mode_type == 0:  # C6
+            if current_profile == 0x10: selected_index = 0
+            elif current_profile == 0x11: selected_index = 1
+            elif current_profile == 0x12: selected_index = 2
+            elif current_profile == 0x13: selected_index = 3
+            elif current_profile == 0x14: selected_index = 4
+        elif reader_mode_type == 1:  # R2000
+            if current_profile == 0x00: selected_index = 0
+            elif current_profile == 0x01: selected_index = 1
+            elif current_profile == 0x02: selected_index = 2
+            elif current_profile == 0x03: selected_index = 3
+        elif reader_mode_type == 2:  # RRUx180
+            # For RRUx180, the profile may have 0x80 bit set, so mask it out for comparison
+            profile_without_bit7 = current_profile & 0x7F  # Remove bit 7 (0x80)
+            if profile_without_bit7 == 11: selected_index = 0
+            elif profile_without_bit7 == 1: selected_index = 1
+            elif profile_without_bit7 == 15: selected_index = 2
+            elif profile_without_bit7 == 12: selected_index = 3
+            elif profile_without_bit7 == 3: selected_index = 4
+            elif profile_without_bit7 == 5: selected_index = 5
+            elif profile_without_bit7 == 7: selected_index = 6
+            elif profile_without_bit7 == 13: selected_index = 7
+            elif profile_without_bit7 == 50: selected_index = 8
+            elif profile_without_bit7 == 51: selected_index = 9
+            elif profile_without_bit7 == 52: selected_index = 10
+            elif profile_without_bit7 == 53: selected_index = 11
+            RF_Profile = current_profile  # Update global RF_Profile like C#
+        elif reader_mode_type == 4:  # FD
+            # For FD, the profile may have 0x80 bit set, so mask it out for comparison
+            profile_without_bit7 = current_profile & 0x7F  # Remove bit 7 (0x80)
+            if profile_without_bit7 == 0x20: selected_index = 0
+            elif profile_without_bit7 == 0x21: selected_index = 1
+            elif profile_without_bit7 == 0x22: selected_index = 2
+            elif profile_without_bit7 == 0x23: selected_index = 3
+            elif profile_without_bit7 == 0x24: selected_index = 4
+            elif profile_without_bit7 == 0x25: selected_index = 5
+            elif profile_without_bit7 == 0x26: selected_index = 6
+            elif profile_without_bit7 == 0x27: selected_index = 7
+            elif profile_without_bit7 == 0x28: selected_index = 8
+            RF_Profile = current_profile  # Update global RF_Profile like C#
+        
+        logger.info(f"Get RF-Link Profile success: Profile=0x{current_profile:02X}, Index={selected_index}")
+        return jsonify({
+            "success": True,
+            "data": {
+                "profile": current_profile,
+                "profile_hex": f"0x{current_profile:02X}",
+                "selected_index": selected_index,
+                "mode_type": reader_mode_type
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Get profile error: {e}")
+        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
+
+@app.route('/api/set_profile', methods=['POST'])
+def api_set_profile():
+    """API thiết lập profile - exact C# button2_Click_1 implementation"""
+    try:
+        if not reader.is_connected:
+            return jsonify({"success": False, "message": "Chưa kết nối đến reader"})
+        
+        data = request.get_json()
+        selected_index = data.get('selected_index', 0)
+        
+        # Calculate profile value based on ModeType and selected index (exact C# logic)
+        global reader_mode_type, RF_Profile
+        profile_value = 0
+        
+        if reader_mode_type == 0:  # C6
+            if selected_index == 0: profile_value = 0x90
+            elif selected_index == 1: profile_value = 0x91
+            elif selected_index == 2: profile_value = 0x92
+            elif selected_index == 3: profile_value = 0x93
+            elif selected_index == 4: profile_value = 0x94
+        elif reader_mode_type == 1:  # R2000
+            if selected_index == 0: profile_value = 0x80
+            elif selected_index == 1: profile_value = 0x81
+            elif selected_index == 2: profile_value = 0x82
+            elif selected_index == 3: profile_value = 0x83
+        elif reader_mode_type == 2:  # RRUx180
+            if selected_index == 0: profile_value = 11
+            elif selected_index == 1: profile_value = 1
+            elif selected_index == 2: profile_value = 15
+            elif selected_index == 3: profile_value = 12
+            elif selected_index == 4: profile_value = 3
+            elif selected_index == 5: profile_value = 5
+            elif selected_index == 6: profile_value = 7
+            elif selected_index == 7: profile_value = 13
+            elif selected_index == 8: profile_value = 50
+            elif selected_index == 9: profile_value = 51
+            elif selected_index == 10: profile_value = 52
+            elif selected_index == 11: profile_value = 53
+            profile_value |= 0x80  # Profile |= 0x80 like C#
+        elif reader_mode_type == 4:  # FD
+            if selected_index == 0: profile_value = 0x20
+            elif selected_index == 1: profile_value = 0x21
+            elif selected_index == 2: profile_value = 0x22
+            elif selected_index == 3: profile_value = 0x23
+            elif selected_index == 4: profile_value = 0x24
+            elif selected_index == 5: profile_value = 0x25
+            elif selected_index == 6: profile_value = 0x26
+            elif selected_index == 7: profile_value = 0x27
+            elif selected_index == 8: profile_value = 0x28
+            profile_value |= 0x80  # Profile |= 0x80 like C#
+        
+        # Set profile exactly like C#: RWDev.SetProfile(ref fComAdr, ref Profile, frmcomportindex);
+        result, new_profile = reader.set_profile(profile=profile_value)
+        
+        if result != 0:
+            error_desc = get_return_code_desc(result)
+            logger.error(f"Set RF-Link Profile failed: {error_desc}")
+            return jsonify({"success": False, "message": f"Set RF-Link Profile failed: {error_desc}"})
+        
+        # Update global RF_Profile like C#: RF_Profile = Profile;
+        RF_Profile = new_profile if new_profile is not None else profile_value
+        
+        logger.info(f"Set RF-Link Profile success: Profile=0x{RF_Profile:02X}")
+        return jsonify({
+            "success": True,
+            "message": f"Set RF-Link Profile success: 0x{RF_Profile:02X}",
+            "data": {
+                "profile": RF_Profile,
+                "profile_hex": f"0x{RF_Profile:02X}",
+                "selected_index": selected_index,
+                "mode_type": reader_mode_type
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Set profile error: {e}")
+        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
+
 if __name__ == '__main__':
     logger.info(f"Starting RFID Web Control Panel on {config.HOST}:{config.PORT}")
     socketio.run(app, debug=config.DEBUG, host=config.HOST, port=config.PORT) 
