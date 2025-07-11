@@ -26,6 +26,7 @@ detected_tags = []
 inventory_stats = {"read_rate": 0, "total_count": 0}
 connected_clients = set()
 reader_mode_type = None  # Global variable to store reader mode type
+RF_Profile = 0  # Global variable to store RF profile (exact C# equivalent)
 
 def determine_mode_type(reader_type_val: int) -> int:
     """
@@ -536,9 +537,19 @@ def api_reader_info():
             model_name = f"UHF7189MPH--{version_str}"
         
         # Determine mode type like C# code and set global variable
-        global reader_mode_type
+        global reader_mode_type, RF_Profile
         mode_type = determine_mode_type(reader_type_val)
         reader_mode_type = mode_type  # Set global variable for reuse
+        
+        # Get and store RF_Profile exactly like C# code
+        # C#: byte Profile = 0; fCmdRet = RWDev.SetProfile(ref fComAdr, ref Profile, frmcomportindex);
+        # C#: if (fCmdRet == 0) { RF_Profile = Profile; }
+        profile_result, current_profile = reader.set_profile(profile=0)
+        if profile_result == 0 and current_profile is not None:
+            RF_Profile = current_profile
+            logger.info(f"RF_Profile initialized: 0x{RF_Profile:02X}")
+        else:
+            logger.warning(f"Failed to get RF_Profile: {profile_result}")
         
         # Determine antenna count like C# code
         antenna_count = 4  # Default
@@ -650,7 +661,9 @@ def api_reader_info():
             'antenna_config': ant_config,
             'output_config': output_config,
             'beep_status': 'Enabled' if beep_en[0] == 1 else 'Disabled',
-            'antenna_check_status': 'Enabled' if check_ant[0] == 1 else 'Disabled'
+            'antenna_check_status': 'Enabled' if check_ant[0] == 1 else 'Disabled',
+            'rf_profile': RF_Profile,  # Add RF_Profile to response
+            'rf_profile_hex': f"0x{RF_Profile:02X}"
         }
         
         return jsonify({'success': True, 'data': data})
@@ -751,7 +764,6 @@ g2_inventory_vars = {
     'Psd': bytearray(4),
     'ReadLen': 0,
     'ReadMem': 0,
-    'RF_Profile': 0,
     'Profile': 0,
     'readMode': 0,
     'tagrate': 0,
@@ -845,7 +857,7 @@ def api_start_inventory_g2():
                 reader_mode_type = determine_mode_type(reader_type[0])
         
         if reader_mode_type == 2:
-            g2_inventory_vars['Profile'] = g2_inventory_vars['RF_Profile'] | 0xC0
+            g2_inventory_vars['Profile'] = RF_Profile | 0xC0
             result, new_profile = reader.set_profile(profile=g2_inventory_vars['Profile'])
             if result == 0 and new_profile is not None:
                 g2_inventory_vars['Profile'] = new_profile
@@ -912,22 +924,22 @@ def api_start_inventory_g2():
         g2_inventory_vars['Target'] = target
         
         # Debug logging to verify all parameters are set correctly
-        # logger.info(f"[DEBUG] api_start_inventory_g2() - Final parameter verification:")
-        # logger.info(f"  Mode type: {mode_type}")
-        # logger.info(f"  Scan time: {g2_inventory_vars['Scantime']} (={g2_inventory_vars['Scantime']*100}ms)")
-        # logger.info(f"  Q value: {g2_inventory_vars['Qvalue']}")
-        # logger.info(f"  Session: {g2_inventory_vars['Session']}")
-        # logger.info(f"  Target: {g2_inventory_vars['Target']}")
-        # logger.info(f"  Target times: {g2_inventory_vars['targettimes']}")
-        # logger.info(f"  Enable target times: {g2_inventory_vars.get('enable_target_times', True)}")
-        # logger.info(f"  Antennas: {antennas}")
-        # logger.info(f"  Ant list: {[i for i, val in enumerate(g2_inventory_vars['antlist']) if val == 1]}")
-        # logger.info(f"  InAnt: {g2_inventory_vars['InAnt']} (0x{g2_inventory_vars['InAnt']:02X})")
-        # logger.info(f"  TID flag: {g2_inventory_vars['TIDFlag']}")
-        # logger.info(f"  TID addr: {g2_inventory_vars['tidAddr']} (0x{g2_inventory_vars['tidAddr']:02X})")
-        # logger.info(f"  TID len: {g2_inventory_vars['tidLen']}")
-        # logger.info(f"  Scan type: {g2_inventory_vars['scanType']}")
-        # logger.info(f"  Read mode: {g2_inventory_vars['readMode']}")
+        logger.info(f"[DEBUG] api_start_inventory_g2() - Final parameter verification:")
+        logger.info(f"  Mode type: {mode_type}")
+        logger.info(f"  Scan time: {g2_inventory_vars['Scantime']} (={g2_inventory_vars['Scantime']*100}ms)")
+        logger.info(f"  Q value: {g2_inventory_vars['Qvalue']}")
+        logger.info(f"  Session: {g2_inventory_vars['Session']}")
+        logger.info(f"  Target: {g2_inventory_vars['Target']}")
+        logger.info(f"  Target times: {g2_inventory_vars['targettimes']}")
+        logger.info(f"  Enable target times: {g2_inventory_vars.get('enable_target_times', True)}")
+        logger.info(f"  Antennas: {antennas}")
+        logger.info(f"  Ant list: {[i for i, val in enumerate(g2_inventory_vars['antlist']) if val == 1]}")
+        logger.info(f"  InAnt: {g2_inventory_vars['InAnt']} (0x{g2_inventory_vars['InAnt']:02X})")
+        logger.info(f"  TID flag: {g2_inventory_vars['TIDFlag']}")
+        logger.info(f"  TID addr: {g2_inventory_vars['tidAddr']} (0x{g2_inventory_vars['tidAddr']:02X})")
+        logger.info(f"  TID len: {g2_inventory_vars['tidLen']}")
+        logger.info(f"  Scan type: {g2_inventory_vars['scanType']}")
+        logger.info(f"  Read mode: {g2_inventory_vars['readMode']}")
         
         # Start inventory thread (exact C# logic)
         if not g2_inventory_vars['fIsInventoryScan']:
@@ -1227,7 +1239,7 @@ def inventory_worker():
                  mode_type=reader_mode_type)
     
     if reader_mode_type == 2:  # if (ModeType == 2)
-        g2_inventory_vars['Profile'] = g2_inventory_vars['RF_Profile'] | 0xC0  # Profile = (byte)(RF_Profile | 0xC0)
+        g2_inventory_vars['Profile'] = RF_Profile | 0xC0  # Profile = (byte)(RF_Profile | 0xC0)
         result, new_profile = reader.set_profile(profile=g2_inventory_vars['Profile'])
         if result == 0 and new_profile is not None:
             g2_inventory_vars['Profile'] = new_profile
