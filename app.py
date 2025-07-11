@@ -347,8 +347,8 @@ def tag_callback(tag):
         'timestamp': time.strftime("%H:%M:%S")
     }
     
-    print(f"[DEBUG] Real-time tag detected: {tag_data}")
-    print(f"[DEBUG] WebSocket clients connected: {len(socketio.server.manager.rooms)}")
+    log_g2_debug("tag_callback", f"Real-time tag detected: {tag_data}", level="DEBUG")
+    log_g2_debug("tag_callback", f"WebSocket clients connected: {len(socketio.server.manager.rooms)}", level="DEBUG")
     
     # Emit to WebSocket immediately (C# style real-time updates)
     socketio.emit('tag_detected', tag_data)
@@ -716,19 +716,19 @@ def api_start_inventory():
                 truncate=0,
                 antenna_num=1
             )
-            print(f"[DEBUG] Antenna {antenna} result: {result} session: {session_val}")
+            log_g2_debug("api_start_inventory", f"Antenna {antenna} result: {result} session: {session_val}", level="DEBUG")
             time.sleep(0.005)  # 5ms delay like C# Thread.Sleep(5)
         
         # Clear any existing data (like C# code clears dataGridView5, epclist, etc.)
         # This is handled by the frontend when starting new inventory
         
         # Now start inventory with target
-        print(f"[DEBUG] Starting Fast Mode inventory with target: {target}")
+        log_g2_debug("api_start_inventory", f"Starting Fast Mode inventory with target: {target}", level="DEBUG")
         result = reader.start_inventory(target)
-        print(f"[DEBUG] Fast Mode inventory start result: {result}")
+        log_g2_debug("api_start_inventory", f"Fast Mode inventory start result: {result}", level="DEBUG")
         
         if result == 0:
-            print(f"[DEBUG] Fast Mode inventory started successfully")
+            log_g2_debug("api_start_inventory", "Fast Mode inventory started successfully", level="DEBUG")
             return jsonify({'success': True, 'message': f'Inventory đã bắt đầu (Target {"A" if target == 0 else "B"})'})
         elif result == 51:
             return jsonify({'success': False, 'message': 'Inventory is already running'}), 400
@@ -1745,18 +1745,18 @@ def api_reset_reader():
 def handle_connect():
     """Xử lý khi client kết nối WebSocket"""
     logger.info(f"🔌 WebSocket client connected: {request.sid}")
-    print(f"[DEBUG] WebSocket client connected: {request.sid}")
+    log_g2_debug("handle_connect", f"WebSocket client connected: {request.sid}", level="DEBUG")
     socketio.emit('status', {'message': 'Connected to server'})
     connected_clients.add(request.sid)
-    print(f"[DEBUG] Total connected clients: {len(connected_clients)}")
+    log_g2_debug("handle_connect", f"Total connected clients: {len(connected_clients)}", level="DEBUG")
 
 @socketio.on('disconnect')
 def handle_disconnect():
     """Xử lý khi client ngắt kết nối WebSocket"""
     logger.info(f"🔌 WebSocket client disconnected: {request.sid}")
-    print(f"[DEBUG] WebSocket client disconnected: {request.sid}")
+    log_g2_debug("handle_disconnect", f"WebSocket client disconnected: {request.sid}", level="DEBUG")
     connected_clients.remove(request.sid)
-    print(f"[DEBUG] Total connected clients: {len(connected_clients)}")
+    log_g2_debug("handle_disconnect", f"Total connected clients: {len(connected_clients)}", level="DEBUG")
 
 @socketio.on('message')
 def handle_message(message):

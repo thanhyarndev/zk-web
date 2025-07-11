@@ -303,43 +303,105 @@ class Reader:
         try:
             if self.connection_type == self.CONNECTION_SERIAL:
                 if self.serial_port and self.serial_port.is_open:
-                    return self.serial_port.read(1024)
+                    data = self.serial_port.read(1024)
+                    if data:
+                        print(f"[DEBUG] _read_data: Serial read {len(data)} bytes: {data.hex()}")
+                    else:
+                        print(f"[DEBUG] _read_data: Serial read returned empty data")
+                    return data
+                else:
+                    print(f"[DEBUG] _read_data: Serial port not open or not available")
             elif self.connection_type == self.CONNECTION_TCP:
                 if self.tcp_client:
-                    return self.tcp_client.recv(1024)
+                    data = self.tcp_client.recv(1024)
+                    if data:
+                        print(f"[DEBUG] _read_data: TCP read {len(data)} bytes: {data.hex()}")
+                    else:
+                        print(f"[DEBUG] _read_data: TCP read returned empty data")
+                    return data
+                else:
+                    print(f"[DEBUG] _read_data: TCP client not available")
+            else:
+                print(f"[DEBUG] _read_data: Unknown connection type: {self.connection_type}")
             
             return b''
         except Exception as e:
-            print(f"Read data error: {e}")
+            print(f"[DEBUG] _read_data: Exception: {e}")
             return b''
     
     def _get_data_from_port(self, cmd: int, end_time: int) -> int:
-        """Get data from port with timeout"""
-        start_time = time.time()
-        self.recv_length = 0
+        """Get data from port with timeout - exact C# GetDataFromPort implementation"""
+        num = 0  # num2 in C# (buffer position)
+        array = bytearray(2000)  # array in C# (main buffer)
+        num2 = 0  # num2 in C# (remaining bytes from previous read)
+        num3 = int(time.time() * 1000)  # num3 in C# (Environment.TickCount equivalent)
         
-        while time.time() - start_time < end_time / 1000.0:
-            data = self._read_data()
-            if data:
-                # Process received data
-                self.recv_buffer[self.recv_length:self.recv_length + len(data)] = data
-                self.recv_length += len(data)
+        print(f"[DEBUG] _get_data_from_port: cmd=0x{cmd:02X}, end_time={end_time}ms")
+        
+        try:
+            while int(time.time() * 1000) - num3 < end_time:
+                array2 = self.read_data_from_port()  # array2 in C# (ReadDataFromPort)
+                if array2 is None:
+                    continue
                 
-                # Check if we have a complete packet
-                if self.recv_length >= 4:  # Minimum packet size
-                    # For inventory command (cmd=1), we need to handle multiple responses
-                    if cmd == 1:
-                        # Inventory can return multiple packets, so we accept any data
-                        if self.recv_length >= 4:
+                num = len(array2)  # num in C# (array2.Length)
+                if num == 0:
+                    continue
+                
+                print(f"[DEBUG] _get_data_from_port: read {num} bytes: {array2.hex()}")
+                
+                # array3 = new byte[num + num2] (combine previous and new data)
+                array3 = bytearray(num + num2)
+                # Array.Copy(array, 0, array3, 0, num2)
+                array3[0:num2] = array[0:num2]
+                # Array.Copy(array2, 0, array3, num2, num)
+                array3[num2:num2+num] = array2
+                
+                num4 = 0  # num4 in C# (position in array3)
+                while len(array3) - num4 > 4:
+                    # Check for valid packet header: (array3[num4] >= 4 && array3[num4 + 2] == cmd) || (array3[num4] == 5 && array3[num4 + 2] == 0)
+                    if ((array3[num4] >= 4 and array3[num4 + 2] == cmd) or 
+                        (array3[num4] == 5 and array3[num4 + 2] == 0)):
+                        
+                        num5 = array3[num4]  # num5 in C# (packet length)
+                        if len(array3) < num4 + num5 + 1:
+                            break  # Not enough data for complete packet
+                        
+                        # array4 = new byte[num5 + 1] (extract complete packet)
+                        array4 = bytearray(num5 + 1)
+                        # Array.Copy(array3, num4, array4, 0, array4.Length)
+                        array4[0:num5+1] = array3[num4:num4+num5+1]
+                        
+                        print(f"[DEBUG] _get_data_from_port: checking packet: {array4.hex()}")
+                        
+                        # CheckCRC(array4, array4.Length) == 0
+                        if self._check_crc(array4, len(array4)) == 0:
+                            # Array.Copy(array4, 0, RecvBuff, 0, array4.Length)
+                            self.recv_buffer[0:len(array4)] = array4
+                            self.recv_length = len(array4)
+                            print(f"[DEBUG] _get_data_from_port: valid packet found, length={self.recv_length}")
                             return 0  # Success
+                        
+                        num4 += 1
                     else:
-                        # For other commands, check for complete packet
-                        if self.recv_length >= 6:
-                            return 0  # Success
-            
-            time.sleep(0.01)  # Small delay
+                        num4 += 1
+                
+                # Handle remaining data: if (array3.Length > num4)
+                if len(array3) > num4:
+                    num2 = len(array3) - num4  # num2 = array3.Length - num4
+                    # Array.Copy(array3, num4, array, 0, num2)
+                    array[0:num2] = array3[num4:num4+num2]
+                else:
+                    num2 = 0
+                
+                print(f"[DEBUG] _get_data_from_port: remaining bytes: {num2}")
         
-        return 49  # Timeout
+        except Exception as ex:
+            print(f"[DEBUG] _get_data_from_port: exception: {ex}")
+            # ex.ToString() in C# - just log the exception
+        
+        print(f"[DEBUG] _get_data_from_port: timeout after {end_time}ms")
+        return 48  # Return 48 (timeout) like C#
     
     def get_reader_information(self, com_addr: int, version_info: bytearray,
                              reader_type: list, tr_type: list, dmax_fre: list,
@@ -1177,19 +1239,37 @@ class Reader:
         if len(target) != 1:
             raise ValueError("target must be a single byte")
         
+        print(f"[DEBUG] start_read: Starting read with com_addr={com_addr[0]}, target={target[0]}")
+        
         cmd = bytearray([5, com_addr[0], 80, target[0]])
+        print(f"[DEBUG] start_read: Command before CRC: {cmd.hex()}")
+        
         crc = self._get_crc(cmd, len(cmd))
         cmd.extend(crc)
+        print(f"[DEBUG] start_read: Full command with CRC: {cmd.hex()}")
+        
         result = self._send_data(cmd, len(cmd))
         if result != 0:
+            print(f"[DEBUG] start_read: Send failed with result: {result}")
             return result
+        
+        print(f"[DEBUG] start_read: Send successful, waiting for response...")
         result = self._get_data_from_port(80, 1500)
         if result != 0:
+            print(f"[DEBUG] start_read: Response timeout or error: {result}")
             return result
+        
+        print(f"[DEBUG] start_read: Response received, length={self.recv_length}, buffer={self.recv_buffer[:self.recv_length].hex()}")
+        
         if self.recv_length >= 4 and self.recv_buffer[2] == 80:
+            old_com_addr = com_addr[0]
             com_addr[0] = self.recv_buffer[1]  # Update com_addr with response value (C# ComAdr = RecvBuff[1])
-            return self.recv_buffer[3]
-        return 49
+            status = self.recv_buffer[3]
+            print(f"[DEBUG] start_read: Success - com_addr updated from {old_com_addr} to {com_addr[0]}, status={status}")
+            return status
+        else:
+            print(f"[DEBUG] start_read: Invalid response - length={self.recv_length}, expected_cmd=80, got_cmd={self.recv_buffer[2] if self.recv_length >= 3 else 'N/A'}")
+            return 49
 
     def stop_read(self, com_addr: bytearray) -> int:
         """Stop read (C# StopRead method)
@@ -1454,9 +1534,13 @@ class Reader:
         data = self.read_data_from_port()
         if data:
             size = len(data)
+            print(f"[DEBUG] get_rfid_tag_data: Got {size} bytes of data: {data.hex()}")
             output_buffer[:size] = data
             output_length_ref[0] = size
+            print(f"[DEBUG] get_rfid_tag_data: Copied {size} bytes to output buffer, length_ref set to {output_length_ref[0]}")
             return 0
+        else:
+            print(f"[DEBUG] get_rfid_tag_data: No data received, returning 0xFB")
         return 0xFB
 
     def stop_immediately(self, com_addr: int) -> int:
@@ -1484,25 +1568,39 @@ class Reader:
                 if self.serial_port and self.serial_port.is_open:
                     time.sleep(0.005)  # Sleep 5ms
                     bytes_to_read = self.serial_port.in_waiting
+                    print(f"[DEBUG] read_data_from_port: Serial port has {bytes_to_read} bytes waiting")
                     if bytes_to_read > 0:
                         buffer = self.serial_port.read(bytes_to_read)
                         if buffer:
+                            print(f"[DEBUG] read_data_from_port: Read {len(buffer)} bytes: {buffer.hex()}")
                             if self.recv_callback:
                                 self.recv_callback(self._bytes_to_hex_string(buffer).encode())
                             return buffer
+                        else:
+                            print(f"[DEBUG] read_data_from_port: No data read despite {bytes_to_read} bytes available")
+                    else:
+                        print(f"[DEBUG] read_data_from_port: No bytes waiting to read")
+                else:
+                    print(f"[DEBUG] read_data_from_port: Serial port not open or not available")
             elif self.connection_type == self.CONNECTION_TCP:
                 if self.tcp_stream:
                     time.sleep(0.005)
                     try:
                         buffer = self.tcp_stream.recv(1024)
-                    except Exception:
+                        print(f"[DEBUG] read_data_from_port: TCP received {len(buffer)} bytes: {buffer.hex()}")
+                    except Exception as e:
                         buffer = b''
+                        print(f"[DEBUG] read_data_from_port: TCP receive exception: {e}")
                     if buffer:
                         if self.recv_callback:
                             self.recv_callback(self._bytes_to_hex_string(buffer).encode())
                         return buffer
+                else:
+                    print(f"[DEBUG] read_data_from_port: TCP stream not available")
+            else:
+                print(f"[DEBUG] read_data_from_port: Unknown connection type: {self.connection_type}")
         except Exception as ex:
-            print(f"[Read Error] {ex}")
+            print(f"[DEBUG] read_data_from_port: Exception: {ex}")
         return None 
 
     def inventory_mix_g2(self, com_addr: bytearray, q_value: bytes, session: bytes,
