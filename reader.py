@@ -298,37 +298,6 @@ class Reader:
             print(f"Send data error: {e}")
             return 48
     
-    def _read_data(self) -> bytes:
-        """Read data from the connected port"""
-        try:
-            if self.connection_type == self.CONNECTION_SERIAL:
-                if self.serial_port and self.serial_port.is_open:
-                    data = self.serial_port.read(1024)
-                    if data:
-                        print(f"[DEBUG] _read_data: Serial read {len(data)} bytes: {data.hex()}")
-                    else:
-                        print(f"[DEBUG] _read_data: Serial read returned empty data")
-                    return data
-                else:
-                    print(f"[DEBUG] _read_data: Serial port not open or not available")
-            elif self.connection_type == self.CONNECTION_TCP:
-                if self.tcp_client:
-                    data = self.tcp_client.recv(1024)
-                    if data:
-                        print(f"[DEBUG] _read_data: TCP read {len(data)} bytes: {data.hex()}")
-                    else:
-                        print(f"[DEBUG] _read_data: TCP read returned empty data")
-                    return data
-                else:
-                    print(f"[DEBUG] _read_data: TCP client not available")
-            else:
-                print(f"[DEBUG] _read_data: Unknown connection type: {self.connection_type}")
-            
-            return b''
-        except Exception as e:
-            print(f"[DEBUG] _read_data: Exception: {e}")
-            return b''
-    
     def _get_data_from_port(self, cmd: int, end_time: int) -> int:
         """Get data from port with timeout - exact C# GetDataFromPort implementation"""
         num = 0  # num2 in C# (buffer position)
@@ -466,7 +435,7 @@ class Reader:
         print(f"[DEBUG] Starting inventory read loop, timeout: {timeout_ms}ms")
         
         while time.time() - start_time < timeout_ms / 1000.0:
-            data = self._read_data()
+            data = self.read_data_from_port()
             if not data:
                 time.sleep(0.001)  # 1ms sleep like C# Thread.Sleep(1)
                 continue
@@ -1685,7 +1654,7 @@ class Reader:
         
         try:
             while (time.time() - start_time) * 1000 < scan_time * 2 + 2000:  # Convert to milliseconds
-                array2 = self._read_data()
+                array2 = self.read_data_from_port()
                 if array2 is not None:
                     num = len(array2)
                     if num == 0:
