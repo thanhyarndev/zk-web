@@ -424,95 +424,90 @@ class Reader:
         return 49
     
     def _get_inventory_g1(self, scan_time: int, epc_list: bytearray, ant: list, total_len: list, card_num: list, cmd: int, rssi_list: list = None) -> int:
-        """Get inventory data (private method like C# GetInventoryG1)"""
         epcNum = 0
         dlen = 0
-        start_time = time.time()
-        # C# SDK: GetInventoryG1(Scantime * 100, ...) then uses (Scantime * 2 + 2000) ms
-        # So timeout = (scan_time * 2 + 2000) milliseconds
+        num = 0
+        array = bytearray(4096)
+        num2 = 0
+        start_tick = int(time.time() * 1000)
+        last_packet_tick = start_tick
         timeout_ms = scan_time * 2 + 2000
-        
-        print(f"[DEBUG] Starting inventory read loop, timeout: {timeout_ms}ms")
-        
-        while time.time() - start_time < timeout_ms / 1000.0:
-            data = self.read_data_from_port()
-            if not data:
-                time.sleep(0.001)  # 1ms sleep like C# Thread.Sleep(1)
-                continue
-            print(f"[DEBUG] Raw data received: {data.hex()}")
-            
-            # Process received data like C# GetInventoryG1
-            buf = bytearray(data)
-            idx = 0
-            while idx + 5 < len(buf):
-                pkt_len = buf[idx]
-                if pkt_len < 5 or idx + pkt_len + 1 > len(buf):
-                    idx += 1
-                    continue
-                pkt = buf[idx:idx+pkt_len+1]
-                print(f"[DEBUG] Packet: {pkt.hex()}")
-                
-                if self._check_crc(pkt, len(pkt)) != 0:
-                    print("[DEBUG] CRC check failed for packet")
-                    idx += 1
-                    continue
-                
-                if pkt[2] != cmd:
-                    print(f"[DEBUG] Skipping packet with cmd={pkt[2]}")
-                    idx += pkt_len + 1
-                    continue
-                
-                # Reset timeout timer like C#: num3 = Environment.TickCount
-                start_time = time.time()
-                
-                status = pkt[3]
-                print(f"[DEBUG] Inventory status: {status}")
-                
-                if status in (1, 2, 3, 4):
-                    num_tags = pkt[5]
-                    print(f"[DEBUG] Number of tags in packet: {num_tags}")
-                    if num_tags > 0:
-                        tag_idx = 6
-                        for _ in range(num_tags):
-                            epc_len = pkt[tag_idx] & 0x3F
-                            has_extra = (pkt[tag_idx] & 0x40) > 0
-                            tag_start = tag_idx  # Remember the start position
-                            
-                            if not has_extra:
-                                tag_bytes = pkt[tag_idx:tag_idx+epc_len+2]
-                                epc_list[dlen:dlen+epc_len+2] = tag_bytes
-                                dlen += epc_len + 2
-                                tag_idx += epc_len + 2
+
+        try:
+            while int(time.time() * 1000) - last_packet_tick < timeout_ms:
+                array2 = self.read_data_from_port()
+                if array2 is not None:
+                    num = len(array2)
+                    if num == 0:
+                        continue
+                    array3 = bytearray(num2 + num)
+                    array3[:num2] = array[:num2]
+                    array3[num2:num2+num] = array2
+                    num4 = 0
+                    while len(array3) - num4 > 5:
+                        if array3[num4] >= 5 and array3[num4 + 2] == cmd:
+                            num5 = array3[num4]
+                            if len(array3) < num4 + num5 + 1:
+                                break
+                            array4 = array3[num4:num4+num5+1]
+                            if self._check_crc(array4, len(array4)) == 0:
+                                last_packet_tick = int(time.time() * 1000)
+                                num7 = array4[3]
+                                if num7 in (1, 2, 3, 4):
+                                    num8 = array4[5]
+                                    if num8 > 0:
+                                        num9 = 6
+                                        for i in range(num8):
+                                            num10 = array4[num9] & 0x3F
+                                            flag = (array4[num9] & 0x40) > 0
+                                            phase_begin = phase_end = freqkhz = 0
+                                            if not flag:
+                                                epc_list[dlen:dlen+num10+2] = array4[num9:num9+num10+2]
+                                                dlen += num10 + 2
+                                            else:
+                                                epc_list[dlen:dlen+num10+6] = array4[num9:num9+num10+6]
+                                                # Extract phase/freq as in C#
+                                                phase_begin = array4[num9+num10+2] * 256 + array4[num9+num10+3]
+                                                phase_end = array4[num9+num10+4] * 256 + array4[num9+num10+5]
+                                                freqkhz = (array4[num9+num10+6] << 16) + (array4[num9+num10+7] << 8) + array4[num9+num10+8]
+                                                dlen += num10 + 9
+                                            epcNum += 1
+                                            ant[0] = array4[4]
+                                            # Call callback if available
+                                            if self.receive_callback:
+                                                tag = RFIDTag()
+                                                tag.device_name = getattr(self, 'dev_name', 'Unknown')
+                                                tag.antenna = array4[4]
+                                                tag.len = array4[num9]
+                                                tag.phase_begin = phase_begin
+                                                tag.phase_end = phase_end
+                                                tag.packet_param = 0
+                                                tag.rssi = array4[num9 + 1 + num10]
+                                                tag.freqkhz = freqkhz
+                                                tag.epc = self._bytes_to_hex_string(array4[num9+1:num9+1+num10])
+                                                self.receive_callback(tag)
+                                            num9 = num9 + (9 + num10 if flag else 2 + num10)
+                                if num7 != 3:
+                                    total_len[0] = dlen
+                                    card_num[0] = epcNum
+                                    return num7
+                                num4 += array4[0] + 1
                             else:
-                                tag_bytes = pkt[tag_idx:tag_idx+epc_len+6]
-                                epc_list[dlen:dlen+epc_len+6] = tag_bytes
-                                dlen += epc_len + 6
-                                tag_idx += epc_len + 9
-                            epcNum += 1
-                            ant[0] = pkt[4]
-                            
-                            # Extract RSSI - C# SDK: RSSI = array4[num9 + 1 + num10]
-                            # where num9 = tag_start, num10 = epc_len
-                            rssi_pos = tag_start + 1 + epc_len
-                            if rssi_pos < len(pkt):
-                                rssi = pkt[rssi_pos]
-                            else:
-                                rssi = 0
-                            if rssi_list:
-                                rssi_list.append(rssi)
-                    # else: no tags in this packet
-                
-                idx += pkt_len + 1
-                if status != 3:
-                    total_len[0] = dlen
-                    card_num[0] = epcNum
-                    print(f"[DEBUG] Inventory done. Tags: {epcNum}, TotalLen: {dlen}")
-                    return status
-        
+                                num4 += 1
+                        else:
+                            num4 += 1
+                    if len(array3) > num4:
+                        num2 = len(array3) - num4
+                        array[:num2] = array3[num4:num4+num2]
+                    else:
+                        num2 = 0
+                else:
+                    time.sleep(0.001)
+        except Exception as ex:
+            print(f"[DEBUG] Exception: {ex}")
         total_len[0] = dlen
         card_num[0] = epcNum
-        print(f"[DEBUG] Inventory timeout. Tags: {epcNum}, TotalLen: {dlen}")
-        return 48  # Timeout
+        return 48
 
     def inventory_g2(self, com_addr: bytearray, q_value: bytes, session: bytes,
                     mask_mem: bytes, mask_addr: bytearray, mask_len: bytes,
