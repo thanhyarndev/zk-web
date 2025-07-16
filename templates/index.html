@@ -1424,6 +1424,45 @@
               </div>
             </div>
 
+            <!-- Write Section-->
+            <div class="inventory-mode-section">
+              <div class="mode-title">
+                <i class="fas fa-bolt"></i> Write EPC
+              </div>
+
+              <label for="writeEPC" class="form-label">EPC</label>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                id="writeEPC"
+                value="0000"
+                placeholder="0000"
+                maxlength="60"
+              />
+
+              <label for="password" class="form-label">Password</label>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                id="password"
+                value="00000000"
+                placeholder="00000000"
+              />
+
+              <div class="mode-controls">
+                <div class="btn-group-vertical">
+                  <button
+                    class="btn btn-primary"
+                    onclick="writeEPC_G2()"
+                    id="writeEPCBtn"
+                    disabled
+                  >
+                    <i class="fa-solid fa-pen"></i> Write EPC
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <!-- General Control Buttons -->
             <div class="general-controls">
               <div class="btn-group">
@@ -1981,6 +2020,9 @@
         safeEnable("profileGetBtn");
         safeEnable("profileSetBtn");
 
+        // Enable write control
+        safeEnable("writeEPCBtn");
+
         // Enable antenna controls
         const antennaCheckboxes = document.querySelectorAll(
           'input[id^="check_ant"]'
@@ -2036,6 +2078,9 @@
         safeDisable("profileSelect");
         safeDisable("profileGetBtn");
         safeDisable("profileSetBtn");
+
+        // Disbale write control
+        safeDisable("writeEPCBtn");
 
         // Disable antenna controls
         const antennaCheckboxes = document.querySelectorAll(
@@ -2163,7 +2208,7 @@
                     .toUpperCase()}</span>
                 </div>
               </div>
-              
+
               <!-- Frequency Info (if not auto) -->
               ${
                 info.frequency_info.band !== "Auto"
@@ -2188,7 +2233,7 @@
               `
                   : ""
               }
-              
+
               <!-- Antenna Details (if enabled antennas) -->
               ${
                 info.antenna_config.enabled_antennas.length > 0
@@ -2693,6 +2738,22 @@
         }
       }
 
+      // Write EPC Tag
+      async function writeEPC_G2() {
+        try {
+          const writeEPC = document.getElementById("writeEPC").value;
+          const password = document.getElementById("password").value;
+          console.log(writeEPC);
+          console.log(password);
+          // const result = await apiCall("/api/write_epc_g2", "POST", {
+          //   epc: writeEPC,
+          //   password: password,
+          // });
+        } catch (error) {
+          showAlert(`Write EPC error: ${error}`, "danger");
+        }
+      }
+
       // Show loading state
       function showLoading(button, loading) {
         const loadingSpan = button.querySelector(".loading");
@@ -2996,6 +3057,38 @@
         onG2ModeTypeChange();
 
         console.log("✅ Initialization complete");
+      });
+
+      const input = document.getElementById("writeEPC");
+
+      input.addEventListener("keypress", function (e) {
+        const allowedChars = "0123456789abcdefABCDEF";
+        const key = e.key;
+
+        if (!allowedChars.includes(key)) {
+          e.preventDefault(); // Block invalid keys
+        } else {
+          // Delay to let the key be inserted, then uppercase it
+          setTimeout(() => {
+            input.value = input.value.toUpperCase();
+          }, 0);
+        }
+      });
+
+      const input_two = document.getElementById("password");
+
+      input_two.addEventListener("keypress", function (e) {
+        const allowedChars = "0123456789abcdefABCDEF";
+        const key = e.key;
+
+        if (!allowedChars.includes(key)) {
+          e.preventDefault(); // Block invalid keys
+        } else {
+          // Delay to let the key be inserted, then uppercase it
+          setTimeout(() => {
+            input_two.value = input_two.value.toUpperCase();
+          }, 0);
+        }
       });
     </script>
   </body>
