@@ -2665,31 +2665,32 @@
           return;
         }
 
-        // Clear table
         tagsTableBody.innerHTML = "";
-
-        // Sort tags by count (descending)
         const sortedTags = Array.from(tagsData.entries()).sort(
           (a, b) => b[1].count - a[1].count
         );
-
-        // Add rows
         sortedTags.forEach(([epc, data]) => {
           const row = document.createElement("tr");
-
-          // Format phase display (show range if different)
           const phaseDisplay =
             data.phase_begin === data.phase_end
               ? data.phase_begin
               : `${data.phase_begin}-${data.phase_end}`;
-
-          // Format frequency display
           const freqDisplay = data.freqkhz > 0 ? data.freqkhz : "-";
-
+          // Format antenna display (deduplicated, sorted)
+          let antennaDisplay = "-";
+          if (Array.isArray(data.antennas) && data.antennas.length > 0) {
+            // Deduplicate and sort
+            const uniqueAntennas = Array.from(new Set(data.antennas)).sort(
+              (a, b) => a - b
+            );
+            antennaDisplay = uniqueAntennas.map((a) => `Ant ${a}`).join(", ");
+          } else if (data.antenna !== undefined) {
+            antennaDisplay = `Ant ${data.antenna}`;
+          }
           row.innerHTML = `
                     <td><span class="tag-epc">${epc}</span></td>
                     <td><span class="badge bg-primary">${data.count}</span></td>
-                    <td><span class="antenna-badge">Ant ${data.antenna}</span></td>
+                    <td><span class="antenna-badge">${antennaDisplay}</span></td>
                     <td><span class="rssi-badge">${data.rssi} dBm</span></td>
                     <td><span class="phase-badge">${phaseDisplay}</span></td>
                     <td><span class="freq-badge">${freqDisplay}</span></td>
@@ -2697,11 +2698,7 @@
                 `;
           tagsTableBody.appendChild(row);
         });
-
-        // Update unique tags count
         document.getElementById("uniqueTags").textContent = tagsData.size;
-
-        // Tính lại Total Tags (tổng count)
         let totalCount = 0;
         tagsData.forEach((data) => {
           totalCount += data.count;
@@ -2798,40 +2795,46 @@
       });
 
       socket.on("tag_detected", function (tagData) {
-        console.log("🔍 WebSocket tag_detected received:", tagData);
-
-        // Use new RFIDTag structure: epc, antenna, rssi, phase_begin, phase_end, freqkhz
-        const epc = tagData.epc || tagData.uid; // Backward compatibility
-        const antenna = tagData.antenna || tagData.ant; // Backward compatibility
+        const epc = tagData.epc || tagData.uid;
+        const antenna = tagData.antenna || tagData.ant;
         const rssi = tagData.rssi || 0;
 
+        // Debug log: show incoming tag info and antennas
+        console.log(`[DEBUG] tag_detected: epc=${epc}, antenna=${antenna}`);
+
         if (tagsData.has(epc)) {
-          // Update existing tag
           const existing = tagsData.get(epc);
           existing.count++;
           existing.lastSeen = tagData.timestamp;
-          // Update RSSI if new one is stronger
           if (rssi > existing.rssi) {
             existing.rssi = rssi;
           }
-          // Update antenna if different
-          if (existing.antenna !== antenna) {
-            existing.antenna = `${existing.antenna}, ${antenna}`;
+          // Store antennas as an array of unique numbers
+          if (!Array.isArray(existing.antennas)) {
+            existing.antennas = [antenna];
+          } else {
+            if (!existing.antennas.includes(antenna)) {
+              existing.antennas.push(antenna);
+            }
           }
-          // Update phase and frequency data if available (for InventoryMix_G2)
+          // Debug log: show updated antennas array
+          console.log(
+            `[DEBUG] Updated antennas for ${epc}:`,
+            existing.antennas
+          );
+          // Update phase and frequency data if available
           if (tagData.phase_begin !== undefined) {
             existing.phase_begin = tagData.phase_begin;
             existing.phase_end = tagData.phase_end;
             existing.freqkhz = tagData.freqkhz;
           }
         } else {
-          // Add new tag with enhanced data structure
           tagsData.set(epc, {
             count: 1,
             antenna: antenna,
+            antennas: [antenna],
             rssi: rssi,
             lastSeen: tagData.timestamp,
-            // New fields for InventoryMix_G2
             phase_begin: tagData.phase_begin || 0,
             phase_end: tagData.phase_end || 0,
             freqkhz: tagData.freqkhz || 0,
@@ -2839,9 +2842,9 @@
             len: tagData.len || 0,
             device_name: tagData.device_name || "Unknown",
           });
+          // Debug log: show new tag antennas array
+          console.log(`[DEBUG] New tag ${epc} antennas:`, [antenna]);
         }
-
-        // Update table display
         updateTagsTable();
       });
 

@@ -28,6 +28,9 @@ connected_clients = set()
 reader_mode_type = None  # Global variable to store reader mode type
 RF_Profile = 0  # Global variable to store RF profile (exact C# equivalent)
 
+# Global variable to store antenna count
+antenna_count = 4  # Default, will be updated by api_reader_info
+
 def determine_mode_type(reader_type_val: int) -> int:
     """
     Determine mode type from reader type value
@@ -329,14 +332,38 @@ def log_g2_debug(func_name: str, message: str, level: str = "INFO", **kwargs):
 # Khởi tạo controller
 reader = UHFReader()
 
+def get_antenna_number(ant, antenna_num):
+    """
+    Decode antenna value to antenna number.
+    For >8 antennas: direct index (ant + 1).
+    For <=8 antennas: bitmask, only one bit set.
+    """
+    if antenna_num > 8:
+        return ant + 1
+    else:
+        mapping = {
+            0x01: 1,
+            0x02: 2,
+            0x04: 3,
+            0x08: 4,
+            0x10: 5,
+            0x20: 6,
+            0x40: 7,
+            0x80: 8,
+        }
+        return mapping.get(ant, 1)
+
 def tag_callback(tag):
     """C# style real-time tag callback - processes tags immediately as they're detected"""
     import time
     
+    global antenna_count
+    antenna_num = get_antenna_number(tag.antenna, antenna_count)
+    
     # Convert RFIDTag object to dictionary with all properties
     tag_data = {
         'epc': tag.epc,
-        'antenna': tag.antenna,
+        'antenna': antenna_num,  # send the correct antenna number
         'rssi': tag.rssi,
         'packet_param': tag.packet_param,
         'len': tag.len,
@@ -402,6 +429,7 @@ def api_disconnect():
 @app.route('/api/reader_info', methods=['GET'])
 def api_reader_info():
     """API lấy thông tin reader - follows C# btGetInformation_Click logic"""
+    global antenna_count
     try:
         # Create parameters like C# version
         com_addr = reader.com_addr
@@ -552,7 +580,7 @@ def api_reader_info():
             logger.warning(f"Failed to get RF_Profile: {profile_result}")
         
         # Determine antenna count like C# code
-        antenna_count = 4  # Default
+        antenna_count = 4
         if reader_type_val in [0x11, 0x8A, 0x8B, 0x0C, 0x20, 0x62, 0x67, 0x73, 0x53, 
                               0x75, 0x55, 0x7B, 0x5B, 0x3B, 0x35, 0x33, 0x92, 0x40]:
             antenna_count = 4
