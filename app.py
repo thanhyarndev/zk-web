@@ -1680,11 +1680,7 @@ def api_write_epc_g2():
         data = request.get_json()
         write_epc = data.get("epc", "")
         password = data.get("password", "")
-
-        print(write_epc)
-        print(password)
-
-
+        
         # Validation: Password must be 8 hex digits
         if len(password) < 8:
             return jsonify({"success": False, "message": "Access Password Less Than 8 digit!"}), 400

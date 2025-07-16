@@ -711,7 +711,7 @@ class UHFReader:
         if result == 0:
             return 0
         else:
-            raise UHFReaderError(f"Write EPC failed: {result}, error_code: {error_code[0]}")
+            raise UHFReaderError(f"Write EPC failed: {result}")
 
     def write_rf_power(self, power_dbm: int) -> int:
         if not self.is_connected:
