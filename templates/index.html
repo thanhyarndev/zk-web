@@ -2743,12 +2743,15 @@
         try {
           const writeEPC = document.getElementById("writeEPC").value;
           const password = document.getElementById("password").value;
-          console.log(writeEPC);
-          console.log(password);
-          // const result = await apiCall("/api/write_epc_g2", "POST", {
-          //   epc: writeEPC,
-          //   password: password,
-          // });
+          const result = await apiCall("/api/write_epc_g2", "POST", {
+            epc: writeEPC,
+            password: password,
+          });
+          if (result.success) {
+            showAlert(result.message, "success");
+          } else {
+            showAlert(result.message, "danger");
+          }
         } catch (error) {
           showAlert(`Write EPC error: ${error}`, "danger");
         }

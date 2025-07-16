@@ -1672,6 +1672,44 @@ def api_get_tags():
         "stats": inventory_stats
     })
 
+@app.route('/api/write_epc_g2', methods=['POST'])
+def api_write_epc_g2():
+    """API to write EPC to a tag (G2) - matches C# btWriteEPC_G2_Click logic"""
+    try:
+
+        data = request.get_json()
+        write_epc = data.get("epc", "")
+        password = data.get("password", "")
+
+        print(write_epc)
+        print(password)
+
+
+        # Validation: Password must be 8 hex digits
+        if len(password) < 8:
+            return jsonify({"success": False, "message": "Access Password Less Than 8 digit!"}), 400
+
+        # Validation: EPC must be non-empty and length is a multiple of 4
+        if (len(write_epc) % 4) != 0 or len(write_epc) == 0:
+            return jsonify({
+                "success": False,
+                "message": "Please input Data by words in hexadecimal form! For example: 1234, 12345678"
+            }), 400
+
+        # Call backend write_epc_g2 (UHFReader)
+        try:
+            result = reader.write_epc_g2(password, write_epc)
+            if result == 0:
+                return jsonify({"success": True, "message": "Write EPC success"})
+            else:
+                return jsonify({"success": False, "message": f"Write EPC failed: code {result}"}), 400
+        except Exception as e:
+            return jsonify({"success": False, "message": f"Write EPC failed: {str(e)}"}), 400
+
+    except Exception as e:
+        logger.error(f"/api/write_epc_g2 error: {e}")
+        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"}), 500
+
 @app.route('/api/debug', methods=['GET'])
 def api_debug():
     """API debug info"""
