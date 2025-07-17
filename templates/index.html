@@ -1720,7 +1720,7 @@
               disabled
               title="Get Reader Information"
             >
-              <i class="fas fa-info-circle"></i> Reader Info
+              <i class="fas fa-info-circle"></i> Get Reader Info
             </button>
           </div>
 
@@ -2209,7 +2209,7 @@
       }
 
       // Enable controls that require connection
-      function enableConnectedControls() {
+      async function enableConnectedControls() {
         // Helper function to safely enable element
         const safeEnable = (id) => {
           const element = document.getElementById(id);
@@ -2247,24 +2247,11 @@
         safeEnable("profileGetBtn");
         safeEnable("profileSetBtn");
 
-        safeEnable("setAntMulti");
-        safeEnable("saveAnt");
-
         // Enable write control
         safeEnable("writeEPCBtn");
 
-        // Enable antenna controls
-        const antennaCheckboxes = document.querySelectorAll(
-          'input[id^="check_ant"]'
-        );
-        antennaCheckboxes.forEach((checkbox) => {
-          checkbox.disabled = false;
-        });
-
-        const mutCheckboxes = document.querySelectorAll('input[id^="mux_ant"]');
-        mutCheckboxes.forEach((checkbox) => {
-          checkbox.disabled = false;
-        });
+        safeEnable("setAntMulti");
+        safeEnable("saveAnt");
 
         // Enable get reader info button
         safeEnable("infoBtn");
@@ -2274,7 +2261,7 @@
       }
 
       // Disable controls that require connection
-      function disableConnectedControls() {
+      async function disableConnectedControls() {
         // Helper function to safely disable element
         const safeDisable = (id) => {
           const element = document.getElementById(id);
@@ -2495,7 +2482,7 @@
               }
             </div>
           `;
-
+          enableConnectedControls();
           // Update antenna selection based on reader capabilities
           updateAntennaSelection(info.antenna_count);
 
@@ -2556,6 +2543,10 @@
               document.getElementById("profileSelect").value = selectedIndex;
             }
           }
+
+          const enabledAntennas = info.antenna_config.enabled_antennas;
+          setMuxAntennaCheckboxesFromArray(enabledAntennas);
+          await getAntennaPower();
         } else {
           showAlert(result.message, "warning");
         }
@@ -2566,7 +2557,8 @@
         // Enable/disable antenna checkboxes based on available antennas
         for (let i = 1; i <= 16; i++) {
           const antCheckbox = document.getElementById(`check_ant${i}`);
-          const mutCheckbox = document.getElementById(`mux_ant${i}`);
+          const muxCheckbox = document.getElementById(`mux_ant${i}`);
+
           if (antCheckbox) {
             if (i <= antennaCount) {
               antCheckbox.disabled = false;
@@ -2577,14 +2569,15 @@
               antCheckbox.parentElement.style.opacity = "0.5";
             }
           }
-          if (mutCheckbox) {
+
+          if (muxCheckbox) {
             if (i <= antennaCount) {
-              mutCheckbox.disabled = false;
-              mutCheckbox.parentElement.style.opacity = "1";
+              muxCheckbox.disabled = false;
+              muxCheckbox.parentElement.style.opacity = "1";
             } else {
-              mutCheckbox.disabled = true;
-              mutCheckbox.checked = false;
-              mutCheckbox.parentElement.style.opacity = "0.5";
+              muxCheckbox.disabled = true;
+              muxCheckbox.checked = false;
+              muxCheckbox.parentElement.style.opacity = "0.5";
             }
           }
         }
@@ -3369,6 +3362,15 @@
           }, 0);
         }
       });
+
+      function setMuxAntennaCheckboxesFromArray(enabledAntArray) {
+        for (let i = 1; i <= 16; i++) {
+          const checkbox = document.getElementById(`mux_ant${i}`);
+          if (checkbox) {
+            checkbox.checked = enabledAntArray.includes(i);
+          }
+        }
+      }
     </script>
   </body>
 </html>
