@@ -66,225 +66,53 @@ def get_return_code_desc(result_code: int) -> str:
     Returns:
         Human-readable description of the error code
     """
-    error_descriptions = {
-        0: "Success",
-        1: "Inventory completed successfully",
-        2: "Inventory completed with tags found",
-        3: "Inventory continuing",
-        4: "Inventory completed with errors",
-        0xFB: "CRC error",
-        0x26: "Command not supported",
-        0x30: "No tags found",
-        0x31: "Communication error",
-        0x32: "Parameter error",
-        0x33: "Memory error",
-        0x34: "Antenna error",
-        0x35: "Power error",
-        0x36: "Frequency error",
-        0x37: "Protocol error",
-        0x38: "Timeout error",
-        0x39: "Buffer overflow",
-        0x3A: "Authentication error",
-        0x3B: "Access denied",
-        0x3C: "Device busy",
-        0x3D: "Device not ready",
-        0x3E: "Device not found",
-        0x3F: "Device error",
-        0x40: "Invalid command",
-        0x41: "Invalid parameter",
-        0x42: "Invalid address",
-        0x43: "Invalid length",
-        0x44: "Invalid data",
-        0x45: "Invalid checksum",
-        0x46: "Invalid response",
-        0x47: "Invalid state",
-        0x48: "Operation timeout",
-        0x49: "Operation failed",
-        0x4A: "Operation cancelled",
-        0x4B: "Operation not supported",
-        0x4C: "Operation in progress",
-        0x4D: "Operation completed",
-        0x4E: "Operation aborted",
-        0x4F: "Operation suspended",
-        0x50: "Operation resumed",
-        0x51: "Operation already in progress",
-        0x52: "Operation not in progress",
-        0x53: "Already connected",
-        0x54: "Not connected",
-        0x55: "Connection failed",
-        0x56: "Connection lost",
-        0x57: "Connection timeout",
-        0x58: "Connection refused",
-        0x59: "Connection reset",
-        0x5A: "Connection closed",
-        0x5B: "Connection error",
-        0x5C: "Port not available",
-        0x5D: "Port in use",
-        0x5E: "Port error",
-        0x5F: "Port timeout",
-        0x60: "Port not found",
-        0x61: "Port access denied",
-        0x62: "Port busy",
-        0x63: "Port not ready",
-        0x64: "Port not open",
-        0x65: "Port already open",
-        0x66: "Port configuration error",
-        0x67: "Port communication error",
-        0x68: "Port hardware error",
-        0x69: "Port software error",
-        0x6A: "Port driver error",
-        0x6B: "Port firmware error",
-        0x6C: "Port protocol error",
-        0x6D: "Port format error",
-        0x6E: "Port parity error",
-        0x6F: "Port stop bits error",
-        0x70: "Port data bits error",
-        0x71: "Port baud rate error",
-        0x72: "Port flow control error",
-        0x73: "Port handshake error",
-        0x74: "Port buffer error",
-        0x75: "Port queue error",
-        0x76: "Port interrupt error",
-        0x77: "Port DMA error",
-        0x78: "Port memory error",
-        0x79: "Port register error",
-        0x7A: "Port status error",
-        0x7B: "Port control error",
-        0x7C: "Port mode error",
-        0x7D: "Port type error",
-        0x7E: "Port version error",
-        0x7F: "Port revision error",
-        0x80: "Port serial number error",
-        0x81: "Port model error",
-        0x82: "Port manufacturer error",
-        0x83: "Port description error",
-        0x84: "Port location error",
-        0x85: "Port class error",
-        0x86: "Port subclass error",
-        0x87: "Port interface error",
-        0x88: "Port endpoint error",
-        0x89: "Port configuration descriptor error",
-        0x8A: "Port interface descriptor error",
-        0x8B: "Port endpoint descriptor error",
-        0x8C: "Port string descriptor error",
-        0x8D: "Port device descriptor error",
-        0x8E: "Port setup packet error",
-        0x8F: "Port data packet error",
-        0x90: "Port status packet error",
-        0x91: "Port token packet error",
-        0x92: "Port handshake packet error",
-        0x93: "Port special packet error",
-        0x94: "Port reserved packet error",
-        0x95: "Port vendor specific packet error",
-        0x96: "Port class specific packet error",
-        0x97: "Port standard packet error",
-        0x98: "Port extended packet error",
-        0x99: "Port isochronous packet error",
-        0x9A: "Port bulk packet error",
-        0x9B: "Port interrupt packet error",
-        0x9C: "Port control packet error",
-        0x9D: "Port data toggle error",
-        0x9E: "Port sequence error",
-        0x9F: "Port stall error",
-        0xA0: "Port nak error",
-        0xA1: "Port ack error",
-        0xA2: "Port nyet error",
-        0xA3: "Port split error",
-        0xA4: "Port ping error",
-        0xA5: "Port pong error",
-        0xA6: "Port prepare error",
-        0xA7: "Port complete error",
-        0xA8: "Port start split error",
-        0xA9: "Port middle split error",
-        0xAA: "Port end split error",
-        0xAB: "Port short packet error",
-        0xAC: "Port long packet error",
-        0xAD: "Port zero length packet error",
-        0xAE: "Port maximum packet size error",
-        0xAF: "Port minimum packet size error",
-        0xB0: "Port packet size error",
-        0xB1: "Port packet count error",
-        0xB2: "Port packet interval error",
-        0xB3: "Port packet delay error",
-        0xB4: "Port packet timeout error",
-        0xB5: "Port packet retry error",
-        0xB6: "Port packet abort error",
-        0xB7: "Port packet cancel error",
-        0xB8: "Port packet suspend error",
-        0xB9: "Port packet resume error",
-        0xBA: "Port packet reset error",
-        0xBB: "Port packet clear error",
-        0xBC: "Port packet flush error",
-        0xBD: "Port packet purge error",
-        0xBE: "Port packet close error",
-        0xBF: "Port packet open error",
-        0xC0: "Port packet read error",
-        0xC1: "Port packet write error",
-        0xC2: "Port packet control error",
-        0xC3: "Port packet status error",
-        0xC4: "Port packet configuration error",
-        0xC5: "Port packet interface error",
-        0xC6: "Port packet endpoint error",
-        0xC7: "Port packet descriptor error",
-        0xC8: "Port packet setup error",
-        0xC9: "Port packet data error",
-        0xCA: "Port packet token error",
-        0xCB: "Port packet handshake error",
-        0xCC: "Port packet special error",
-        0xCD: "Port packet reserved error",
-        0xCE: "Port packet vendor specific error",
-        0xCF: "Port packet class specific error",
-        0xD0: "Port packet standard error",
-        0xD1: "Port packet extended error",
-        0xD2: "Port packet isochronous error",
-        0xD3: "Port packet bulk error",
-        0xD4: "Port packet interrupt error",
-        0xD5: "Port packet control error",
-        0xD6: "Port packet data toggle error",
-        0xD7: "Port packet sequence error",
-        0xD8: "Port packet stall error",
-        0xD9: "Port packet nak error",
-        0xDA: "Port packet ack error",
-        0xDB: "Port packet nyet error",
-        0xDC: "Port packet split error",
-        0xDD: "Port packet ping error",
-        0xDE: "Port packet pong error",
-        0xDF: "Port packet prepare error",
-        0xE0: "Port packet complete error",
-        0xE1: "Port packet start split error",
-        0xE2: "Port packet middle split error",
-        0xE3: "Port packet end split error",
-        0xE4: "Port packet short error",
-        0xE5: "Port packet long error",
-        0xE6: "Port packet zero length error",
-        0xE7: "Port packet maximum size error",
-        0xE8: "Port packet minimum size error",
-        0xE9: "Port packet size mismatch error",
-        0xEA: "Port packet count mismatch error",
-        0xEB: "Port packet interval mismatch error",
-        0xEC: "Port packet delay mismatch error",
-        0xED: "Port packet timeout mismatch error",
-        0xEE: "Port packet retry mismatch error",
-        0xEF: "Port packet abort mismatch error",
-        0xF0: "Port packet cancel mismatch error",
-        0xF1: "Port packet suspend mismatch error",
-        0xF2: "Port packet resume mismatch error",
-        0xF3: "Port packet reset mismatch error",
-        0xF4: "Port packet clear mismatch error",
-        0xF5: "Port packet flush mismatch error",
-        0xF6: "Port packet purge mismatch error",
-        0xF7: "Port packet close mismatch error",
-        0xF8: "Port packet open mismatch error",
-        0xF9: "Port packet read mismatch error",
-        0xFA: "Port packet write mismatch error",
-        0xFB: "Port packet control mismatch error",
-        0xFC: "Port packet status mismatch error",
-        0xFD: "Port packet configuration mismatch error",
-        0xFE: "Port packet interface mismatch error",
-        0xFF: "Port packet endpoint mismatch error"
+    # Reader error codes
+    reader_error_descriptions = {
+        0x00: "API is called successfully.",
+        0x01: "Tag inventory completed successfully; data delivered within inventory time.",
+        0x02: "Inventory timeout.",
+        0x05: "Access password error.",
+        0x09: "Kill password error.",
+        0x0A: "All-zero tag killing password is invalid.",
+        0x0B: "Command is not supported by the tag.",
+        0x0C: "All-zero tag access password is invalid for this command.",
+        0x0D: "Failed to set up read protection for a protection-enabled tag.",
+        0x0E: "Failed to unlock a protection-disabled tag.",
+        0x10: "Some bytes stored in the tag are locked.",
+        0x11: "Lock operation failed.",
+        0x12: "Already locked; lock operation failed.",
+        0x13: "Failed to store some preserved parameters. Configuration valid until shutdown.",
+        0x14: "Modification failed.",
+        0x15: "Response within the predefined inventory time.",
+        0x17: "Further data is waiting to be delivered.",
+        0x18: "Reader memory is full.",
+        0x19: "All-zero access password is invalid or command not supported by tag.",
+        0xF8: "Error detected in antenna check.",
+        0xF9: "Operation failed.",
+        0xFA: "Tag detected, but operation failed due to poor communication.",
+        0xFB: "No tag detected.",
+        0xFC: "Error code returned from tags.",
+        0xFD: "Command length error.",
+        0xFE: "Illegal command.",
+        0xFF: "Parameter error.",
+        0x30: "Communication error.",
+        0x33: "Reader is busy, operation in process.",
+        0x35: "Port is already opened.",
+        0x37: "Invalid handle.",
     }
-    
-    return error_descriptions.get(result_code, f"Unknown error code: 0x{result_code:02X}")
+    # Tag error codes
+    tag_error_descriptions = {
+        0x00: "Other errors; non-specified error.",
+        0x03: "Memory overload, location not found, or unsupported PC value.",
+        0x04: "Memory is locked; unable to perform write operation.",
+        0x0B: "Insufficient power supply to tag; cannot write.",
+        0x0F: "Undefined or tag unsupported errors.",
+    }
+    if result_code in reader_error_descriptions:
+        return reader_error_descriptions[result_code]
+    if result_code in tag_error_descriptions:
+        return tag_error_descriptions[result_code]
+    return f"Unknown error code: 0x{result_code:02X}"
 
 # Configure logging
 logging.basicConfig(
@@ -761,11 +589,11 @@ def api_start_inventory():
         elif result == 51:
             return jsonify({'success': False, 'message': 'Inventory is already running'}), 400
         else:
-            return jsonify({'success': False, 'message': f'Không thể bắt đầu inventory (code: {result})'}), 400
+            return jsonify({'success': False, 'message': f'Failed to start inventory (code: {result})'}), 400
             
     except Exception as e:
         logger.error(f"Start inventory error: {e}")
-        return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'}), 500
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
 
 # Global variables for G2 inventory (matching C# variables)
 g2_inventory_vars = {
@@ -992,7 +820,7 @@ def api_start_inventory_g2():
             
     except Exception as e:
         logger.error(f"Start G2 inventory error: {e}")
-        return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'}), 500
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
 
 def preset_target(read_mode, select_antenna):
     """Exact C# PresetTarget implementation"""
@@ -1623,13 +1451,13 @@ def api_stop_inventory():
         result = reader.stop_inventory()
         if result == 0:
             logger.info("Tags inventory stopped successfully")
-            return {"success": True, "message": "Đã dừng tags inventory thành công"}
+            return {"success": True, "message": "Tags inventory stopped successfully"}
         else:
-            logger.error(f"Không thể dừng tags inventory (code: {result})")
-            return {"success": False, "message": f'Không thể dừng tags inventory (code: {result})'}
+            logger.error(f"Failed to stop tags inventory (code: {result})")
+            return {"success": False, "message": f'Failed to stop tags inventory (code: {result})'}
     except Exception as e:
         logger.error(f"Stop tags inventory error: {e}")
-        return {"success": False, "message": f"Lỗi: {str(e)}"}
+        return {"success": False, "message": f"Error: {str(e)}"}
 
 @app.route('/api/stop_inventory_g2', methods=['POST'])
 def api_stop_inventory_g2():
@@ -1670,9 +1498,9 @@ def api_set_power():
     # UHFReader.set_rf_power does not support preserve_config
     result = reader.set_rf_power(power)
     if result == 0:
-        return jsonify({'success': True, 'message': f'Đã thiết lập công suất: {power} dBm'})
+        return jsonify({'success': True, 'message': f'Power set successfully: {power} dBm'})
     else:
-        return jsonify({'success': False, 'message': f'Không thể thiết lập công suất (code: {result})'})
+        return jsonify({'success': False, 'message': f'Failed to set power: {get_return_code_desc(result)} (code: {result})'}), 400
 
 @app.route('/api/get_antenna_power', methods=['GET'])
 def api_get_antenna_power():
@@ -1720,13 +1548,13 @@ def api_write_epc_g2():
             if result == 0:
                 return jsonify({"success": True, "message": "Write EPC success"})
             else:
-                return jsonify({"success": False, "message": f"Write EPC failed: code {result}"}), 400
+                return jsonify({"success": False, "message": f"Write EPC failed: {get_return_code_desc(result)} (code: {result})"}), 400
         except Exception as e:
             return jsonify({"success": False, "message": f"Write EPC failed: {str(e)}"}), 400
 
     except Exception as e:
         logger.error(f"/api/write_epc_g2 error: {e}")
-        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"}), 500
+        return jsonify({"success": False, "message": f"Error: {str(e)}"}), 500
 
 @app.route('/api/debug', methods=['GET'])
 def api_debug():
@@ -1743,7 +1571,7 @@ def api_debug():
         return {"success": True, "data": data}
     except Exception as e:
         logger.error(f"Debug API error: {e}")
-        return {"success": False, "message": f"Lỗi: {str(e)}"}
+        return {"success": False, "message": f"Error: {str(e)}"}
 
 @app.route('/api/reset_reader', methods=['POST'])
 def api_reset_reader():
@@ -1795,7 +1623,7 @@ def api_reset_reader():
         return {"success": True, "message": "Đã reset reader thành công"}
     except Exception as e:
         logger.error(f"Reset reader error: {e}")
-        return {"success": False, "message": f"Lỗi: {str(e)}"}
+        return {"success": False, "message": f"Error: {str(e)}"}
 
 @socketio.on('connect')
 def handle_connect():
@@ -1825,7 +1653,7 @@ def api_set_param1():
     """API thiết lập parameter 1 (Q-value, Session, Phase) - cfgNum = 0x09"""
     try:
         if not reader.is_connected:
-            return jsonify({"success": False, "message": "Chưa kết nối đến reader"})
+            return jsonify({"success": False, "message": "Not connected to reader"})
         
         data = request.get_json()
         q_value = int(data.get("q_value", 4))
@@ -1855,18 +1683,18 @@ def api_set_param1():
             })
         else:
             logger.error(f"Param1 set failed with code: {result}")
-            return jsonify({"success": False, "message": f"Set failed with error code: {result}"})
+            return jsonify({"success": False, "message": f"Set failed: {get_return_code_desc(result)} (code: {result})"})
             
     except Exception as e:
         logger.error(f"Set Param1 error: {e}")
-        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
+        return jsonify({"success": False, "message": f"Error: {str(e)}"})
 
 @app.route('/api/get_param1', methods=['GET'])
 def api_get_param1():
     """API lấy parameter 1 (Q-value, Session, Phase) - cfgNum = 0x09"""
     try:
         if not reader.is_connected:
-            return jsonify({"success": False, "message": "Chưa kết nối đến reader"})
+            return jsonify({"success": False, "message": "Not connected to reader"})
         
         cfg_num = 0x09  # Configuration number for Param1
         cfg_data = bytearray(256)  # Buffer for configuration data
@@ -1892,18 +1720,18 @@ def api_get_param1():
             })
         else:
             logger.error(f"Param1 get failed with code: {result}")
-            return jsonify({"success": False, "message": f"Get failed with error code: {result}"})
+            return jsonify({"success": False, "message": f"Get failed: {get_return_code_desc(result)} (code: {result})"})
             
     except Exception as e:
         logger.error(f"Get Param1 error: {e}")
-        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
+        return jsonify({"success": False, "message": f"Error: {str(e)}"})
 
 @app.route('/api/set_tid_param', methods=['POST'])
 def api_set_tid_param():
     """API thiết lập TID parameter - cfgNum = 0x0A"""
     try:
         if not reader.is_connected:
-            return jsonify({"success": False, "message": "Chưa kết nối đến reader"})
+            return jsonify({"success": False, "message": "Not connected to reader"})
         
         data = request.get_json()
         start_addr = data.get("start_addr", "00")
@@ -1934,18 +1762,18 @@ def api_set_tid_param():
             })
         else:
             logger.error(f"TID Param set failed with code: {result}")
-            return jsonify({"success": False, "message": f"Set failed with error code: {result}"})
+            return jsonify({"success": False, "message": f"Set failed: {get_return_code_desc(result)} (code: {result})"})
             
     except Exception as e:
         logger.error(f"Set TID Param error: {e}")
-        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
+        return jsonify({"success": False, "message": f"Error: {str(e)}"})
 
 @app.route('/api/get_tid_param', methods=['GET'])
 def api_get_tid_param():
     """API lấy TID parameter - cfgNum = 0x0A"""
     try:
         if not reader.is_connected:
-            return jsonify({"success": False, "message": "Chưa kết nối đến reader"})
+            return jsonify({"success": False, "message": "Not connected to reader"})
         
         cfg_num = 0x0A  # Configuration number for TID Param
         cfg_data = bytearray(256)  # Buffer for configuration data
@@ -1969,18 +1797,18 @@ def api_get_tid_param():
             })
         else:
             logger.error(f"TID Param get failed with code: {result}")
-            return jsonify({"success": False, "message": f"Get failed with error code: {result}"})
+            return jsonify({"success": False, "message": f"Get failed: {get_return_code_desc(result)} (code: {result})"})
             
     except Exception as e:
         logger.error(f"Get TID Param error: {e}")
-        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
+        return jsonify({"success": False, "message": f"Error: {str(e)}"})
 
 @app.route('/api/set_mask_param', methods=['POST'])
 def api_set_mask_param():
     """API thiết lập Mask parameter - cfgNum = 0x0B"""
     try:
         if not reader.is_connected:
-            return jsonify({"success": False, "message": "Chưa kết nối đến reader"})
+            return jsonify({"success": False, "message": "Not connected to reader"})
         
         data = request.get_json()
         mask_type = int(data.get("mask_type", 1))  # 1=EPC, 2=TID, 3=User
@@ -2032,18 +1860,18 @@ def api_set_mask_param():
             })
         else:
             logger.error(f"Mask Param set failed with code: {result}")
-            return jsonify({"success": False, "message": f"Set failed with error code: {result}"})
+            return jsonify({"success": False, "message": f"Set failed: {get_return_code_desc(result)} (code: {result})"})
             
     except Exception as e:
         logger.error(f"Set Mask Param error: {e}")
-        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
+        return jsonify({"success": False, "message": f"Error: {str(e)}"})
 
 @app.route('/api/get_mask_param', methods=['GET'])
 def api_get_mask_param():
     """API lấy Mask parameter - cfgNum = 0x0B"""
     try:
         if not reader.is_connected:
-            return jsonify({"success": False, "message": "Chưa kết nối đến reader"})
+            return jsonify({"success": False, "message": "Not connected to reader"})
         
         cfg_num = 0x0B  # Configuration number for Mask Param
         cfg_data = bytearray(256)  # Buffer for configuration data
@@ -2080,18 +1908,18 @@ def api_get_mask_param():
             })
         else:
             logger.error(f"Mask Param get failed with code: {result}")
-            return jsonify({"success": False, "message": f"Get failed with error code: {result}"})
+            return jsonify({"success": False, "message": f"Get failed: {get_return_code_desc(result)} (code: {result})"})
             
     except Exception as e:
         logger.error(f"Get Mask Param error: {e}")
-        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
+        return jsonify({"success": False, "message": f"Error: {str(e)}"})
 
 @app.route('/api/get_profile', methods=['GET'])
 def api_get_profile():
     """API lấy current profile - exact C# button1_Click_1 implementation"""
     try:
         if not reader.is_connected:
-            return jsonify({"success": False, "message": "Chưa kết nối đến reader"})
+            return jsonify({"success": False, "message": "Not connected to reader"})
         
         # Get current profile exactly like C#: byte Profile = 0; RWDev.SetProfile(ref fComAdr, ref Profile, frmcomportindex);
         profile_result, current_profile = reader.set_profile(profile=0)
@@ -2159,14 +1987,14 @@ def api_get_profile():
         
     except Exception as e:
         logger.error(f"Get profile error: {e}")
-        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
+        return jsonify({"success": False, "message": f"Error: {str(e)}"})
 
 @app.route('/api/set_profile', methods=['POST'])
 def api_set_profile():
     """API thiết lập profile - exact C# button2_Click_1 implementation"""
     try:
         if not reader.is_connected:
-            return jsonify({"success": False, "message": "Chưa kết nối đến reader"})
+            return jsonify({"success": False, "message": "Not connected to reader"})
         
         data = request.get_json()
         selected_index = data.get('selected_index', 0)
@@ -2237,7 +2065,7 @@ def api_set_profile():
         
     except Exception as e:
         logger.error(f"Set profile error: {e}")
-        return jsonify({"success": False, "message": f"Lỗi: {str(e)}"})
+        return jsonify({"success": False, "message": f"Error: {str(e)}"})
 
 if __name__ == '__main__':
     logger.info(f"Starting RFID Web Control Panel on {config.HOST}:{config.PORT}")
