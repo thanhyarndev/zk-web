@@ -1199,16 +1199,8 @@ def inventory_worker():
                 # Use global reader_mode_type to determine antenna number
                 
                 # Determine antenna number based on mode type (AntennaNum in C#)
-                if reader_mode_type == 0:  # C6
-                    antenna_num = 4
-                elif reader_mode_type == 2:  # RRUx180
-                    antenna_num = 1  # Default for RRUx180
-                elif reader_mode_type == 3:  # 9810
-                    antenna_num = 4
-                elif reader_mode_type == 4:  # FD
-                    antenna_num = 16  # Default for FD
-                else:  # R2000
-                    antenna_num = 1
+                global antenna_count
+                antenna_num = antenna_count
                 
                 log_g2_debug("inventory_worker", f"Antenna cycling", level="INFO", 
                              antenna_num=antenna_num, session=g2_inventory_vars['Session'], mode_type=reader_mode_type)
@@ -1346,10 +1338,12 @@ def flash_g2():
         
         # Process detected tags
         for i, tag in enumerate(tags):
+            global antenna_count
+            antenna_num = get_antenna_number(tag.antenna, antenna_count)
             tag_data = {
                 'epc': tag.epc,
                 'rssi': tag.rssi,
-                'antenna': tag.antenna,
+                'antenna': antenna_num,
                 'timestamp': time.strftime("%H:%M:%S"),
                 'phase_begin': getattr(tag, 'phase_begin', 0),
                 'phase_end': getattr(tag, 'phase_end', 0),
