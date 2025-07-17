@@ -693,6 +693,15 @@ class UHFReader:
         com_addr = bytearray([self.com_addr])
         ant_bytes = bytes([ant])
         return self.uhf.set_antenna_multiplexing(com_addr, ant_bytes)
+    
+    def set_ant(self, set_once: int, ant1: int, ant: int) -> int:
+        if not self.is_connected:
+            raise ReaderNotConnectedError("Reader is not connected")
+        com_addr = bytearray([self.com_addr])
+        ant_bytes = bytes([ant])
+        ant1_bytes = bytes([ant1])
+        set_once_bytes = bytes([set_once])
+        return self.uhf.set_ant(com_addr, set_once_bytes, ant1_bytes, ant_bytes)
 
     def set_inventory_interval(self, read_pause_time: int) -> int:
         if not self.is_connected:

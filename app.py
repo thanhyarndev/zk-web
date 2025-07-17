@@ -1502,6 +1502,55 @@ def api_set_power():
     else:
         return jsonify({'success': False, 'message': f'Failed to set power: {get_return_code_desc(result)} (code: {result})'}), 400
 
+@app.route('/api/set_ant_multiplexing', methods=['POST'])
+def api_set_ant_multiplexing():
+    """
+    Configure antenna settings based on selected antennas list
+    """
+    
+    data = request.get_json()
+    antennas = data.get('selectedAntennas')
+    save = data.get('save')
+    global antenna_count
+
+    ant = 0
+    ant1 = 0
+    set_once = 0
+
+    for antenna_num in antennas:
+        if 1 <= antenna_num <= 8:
+            ant |= (1 << (antenna_num - 1))
+        elif 9 <= antenna_num <= 16:
+            ant1 |= (1 << (antenna_num - 9))
+
+    if antenna_count == 4:
+        if not save:
+            set_once = 0x80
+        
+        result = reader.set_antenna_multiplexing(ant | set_once)
+        
+    elif antenna_count == 8:
+        if save:
+            set_once = 0  
+        else:
+            set_once = 1 
+        
+        result = reader.set_antenna(set_once, ant1, ant)
+        
+    elif antenna_count == 16:
+        if save:
+            set_once = 0  
+        else:
+            set_once = 1  
+        
+        result = reader.set_antenna(set_once, ant1, ant)
+        
+    if result == 0:
+        return jsonify({'success': True, 'message': f'Set  successfully'})
+    else:
+        return jsonify({'success': False, 'message': f'Failed to set antenna multiplexing: {get_return_code_desc(result)} (code: {result})'}), 400
+
+
 @app.route('/api/get_antenna_power', methods=['GET'])
 def api_get_antenna_power():
     """API lấy công suất antennas"""

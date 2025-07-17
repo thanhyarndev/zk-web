@@ -988,7 +988,7 @@ class Reader:
             return self.recv_buffer[3]
         return 49
 
-    def set_antenna_multiplexing(self, com_addr: bytearray, set_once: bytes, ant_cfg1: bytes, ant_cfg2: bytes) -> int:
+    def set_ant(self, com_addr: bytearray, set_once: bytes, ant_cfg1: bytes, ant_cfg2: bytes) -> int:
         """Set antenna multiplexing extended (C# SetAntennaMultiplexing overload 2)
         
         Args:
