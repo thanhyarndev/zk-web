@@ -305,8 +305,6 @@ class Reader:
         num2 = 0  # num2 in C# (remaining bytes from previous read)
         num3 = int(time.time() * 1000)  # num3 in C# (Environment.TickCount equivalent)
         
-        print(f"[DEBUG] _get_data_from_port: cmd=0x{cmd:02X}, end_time={end_time}ms")
-        
         try:
             while int(time.time() * 1000) - num3 < end_time:
                 array2 = self.read_data_from_port()  # array2 in C# (ReadDataFromPort)
@@ -316,8 +314,6 @@ class Reader:
                 num = len(array2)  # num in C# (array2.Length)
                 if num == 0:
                     continue
-                
-                print(f"[DEBUG] _get_data_from_port: read {num} bytes: {array2.hex()}")
                 
                 # array3 = new byte[num + num2] (combine previous and new data)
                 array3 = bytearray(num + num2)
@@ -341,14 +337,11 @@ class Reader:
                         # Array.Copy(array3, num4, array4, 0, array4.Length)
                         array4[0:num5+1] = array3[num4:num4+num5+1]
                         
-                        print(f"[DEBUG] _get_data_from_port: checking packet: {array4.hex()}")
-                        
                         # CheckCRC(array4, array4.Length) == 0
                         if self._check_crc(array4, len(array4)) == 0:
                             # Array.Copy(array4, 0, RecvBuff, 0, array4.Length)
                             self.recv_buffer[0:len(array4)] = array4
                             self.recv_length = len(array4)
-                            print(f"[DEBUG] _get_data_from_port: valid packet found, length={self.recv_length}")
                             return 0  # Success
                         
                         num4 += 1
@@ -362,14 +355,11 @@ class Reader:
                     array[0:num2] = array3[num4:num4+num2]
                 else:
                     num2 = 0
-                
-                print(f"[DEBUG] _get_data_from_port: remaining bytes: {num2}")
         
         except Exception as ex:
             print(f"[DEBUG] _get_data_from_port: exception: {ex}")
             # ex.ToString() in C# - just log the exception
         
-        print(f"[DEBUG] _get_data_from_port: timeout after {end_time}ms")
         return 48  # Return 48 (timeout) like C#
     
     def get_reader_information(self, com_addr: int, version_info: bytearray,
@@ -518,7 +508,6 @@ class Reader:
         """Perform Gen2 inventory operation (C# SDK logic)"""
         # C# SDK defaults scan_time to 20 if 0 is passed
         scan_time_val = scan_time[0] if scan_time[0] != 0 else 20
-        print(f"[DEBUG] Inventory parameters: com_addr={com_addr[0]}, q_value={q_value[0]}, session={session[0]}, scan_time={scan_time_val}")
         
         # Build command exactly like C# SDK
         cmd = bytearray()
@@ -577,18 +566,12 @@ class Reader:
         else:
             cmd.insert(0, 6)       # SendBuff[0] = 6
         
-        print(f"[DEBUG] Command before CRC: {cmd.hex()}")
-        print(f"[DEBUG] Command length: {cmd[0]}")
-        
         # Add CRC - C# uses GetCRC(SendBuff, SendBuff[0] - 1)
         crc = self._get_crc(cmd, cmd[0] - 1)
         cmd.extend(crc)
         
-        print(f"[DEBUG] Full command with CRC: {cmd.hex()}")
-        
         result = self._send_data(cmd, len(cmd))
         if result != 0:
-            print(f"[DEBUG] Send failed: {result}")
             return result
         
         # C# calls GetInventoryG1(Scantime * 100, ...) - scan_time is in 10ms units
@@ -637,61 +620,46 @@ class Reader:
         # Insert length at the beginning
         cmd.insert(0, total_len)
         
-        print(f"[DEBUG] Read command before CRC: {cmd.hex()}")
-        print(f"[DEBUG] Read command length: {cmd[0]}")
-        print(f"[DEBUG] Command array length: {len(cmd)}")
-        print(f"[DEBUG] Expected length: {total_len}")
-        
         # Add CRC - C# uses GetCRC(SendBuff, SendBuff[0] - 1)
         try:
             crc = self._get_crc(cmd, cmd[0] - 1)
             cmd.extend(crc)
-            print(f"[DEBUG] Full read command with CRC: {cmd.hex()}")
         except Exception as e:
             print(f"[DEBUG] CRC calculation error: {e}")
             return 49
         
         result = self._send_data(cmd, len(cmd))
         if result != 0:
-            print(f"[DEBUG] Read send failed: {result}")
             return result
         
         # Wait for response - C# uses GetDataFromPort(2, 3000)
         result = self._get_data_from_port(2, 3000)
         if result != 0:
-            print(f"[DEBUG] Read response timeout: {result}")
             return result
-        
-        print(f"[DEBUG] Read response received: {self.recv_buffer[:self.recv_length].hex()}")
         
         # Parse response
         if self.recv_length >= 4:
             # Check CRC
             if self._check_crc(self.recv_buffer, self.recv_length) != 0:
-                print("[DEBUG] Read response CRC check failed")
                 return 49
             
             # Check command response
             if self.recv_buffer[2] == 2:
                 status = self.recv_buffer[3]
-                print(f"[DEBUG] Read status: {status}")
                 if status == 0:
                     # Success - extract data
                     data_len = self.recv_length - 6  # Total - header - CRC
                     if data_len > 0:
                         data[0:data_len] = self.recv_buffer[4:4+data_len]
-                        print(f"[DEBUG] Read data extracted: {data[:data_len].hex()}")
-                    error_code[0] = 0
+                        error_code[0] = 0
                     return 0
                 elif status == 252:
                     # Error with error code
                     error_code[0] = self.recv_buffer[4]
-                    print(f"[DEBUG] Read error code: {error_code[0]}")
                     return status
                 else:
                     return status
             else:
-                print(f"[DEBUG] Read response command mismatch: expected 2, got {self.recv_buffer[2]}")
                 return 49
         
         return 49
@@ -1203,36 +1171,24 @@ class Reader:
         if len(target) != 1:
             raise ValueError("target must be a single byte")
         
-        print(f"[DEBUG] start_read: Starting read with com_addr={com_addr[0]}, target={target[0]}")
-        
         cmd = bytearray([5, com_addr[0], 80, target[0]])
-        print(f"[DEBUG] start_read: Command before CRC: {cmd.hex()}")
-        
         crc = self._get_crc(cmd, len(cmd))
         cmd.extend(crc)
-        print(f"[DEBUG] start_read: Full command with CRC: {cmd.hex()}")
         
         result = self._send_data(cmd, len(cmd))
         if result != 0:
-            print(f"[DEBUG] start_read: Send failed with result: {result}")
             return result
         
-        print(f"[DEBUG] start_read: Send successful, waiting for response...")
         result = self._get_data_from_port(80, 1500)
         if result != 0:
-            print(f"[DEBUG] start_read: Response timeout or error: {result}")
             return result
-        
-        print(f"[DEBUG] start_read: Response received, length={self.recv_length}, buffer={self.recv_buffer[:self.recv_length].hex()}")
         
         if self.recv_length >= 4 and self.recv_buffer[2] == 80:
             old_com_addr = com_addr[0]
             com_addr[0] = self.recv_buffer[1]  # Update com_addr with response value (C# ComAdr = RecvBuff[1])
             status = self.recv_buffer[3]
-            print(f"[DEBUG] start_read: Success - com_addr updated from {old_com_addr} to {com_addr[0]}, status={status}")
             return status
         else:
-            print(f"[DEBUG] start_read: Invalid response - length={self.recv_length}, expected_cmd=80, got_cmd={self.recv_buffer[2] if self.recv_length >= 3 else 'N/A'}")
             return 49
 
     def stop_read(self, com_addr: bytearray) -> int:
@@ -1309,35 +1265,24 @@ class Reader:
             cmd.extend(mask_data[:mask_bytes])
         cmd.append(truncate[0])
         
-        print(f"[DEBUG] Select command before CRC: {cmd.hex()}")
-        print(f"[DEBUG] Select command length: {cmd[0]}")
-        
-        # Add CRC
         crc = self._get_crc(cmd, cmd[0] - 1)
         cmd.extend(crc)
-        print(f"[DEBUG] Full select command with CRC: {cmd.hex()}")
         
         result = self._send_data(cmd, len(cmd))
         if result != 0:
-            print(f"[DEBUG] Select send failed: {result}")
             return result
         
         result = self._get_data_from_port(opcode, 1500)
         if result != 0:
-            print(f"[DEBUG] Select response timeout: {result}")
             return result
-        
-        print(f"[DEBUG] Select response received: {self.recv_buffer[:self.recv_length].hex()}")
         
         if self.recv_length >= 4:
             if self._check_crc(self.recv_buffer, self.recv_length) != 0:
-                print("[DEBUG] Select response CRC check failed")
                 return 49
             if self.recv_buffer[2] == opcode:
                 com_addr[0] = self.recv_buffer[1]
                 return self.recv_buffer[3]
             else:
-                print(f"[DEBUG] Select response command mismatch: expected {opcode}, got {self.recv_buffer[2]}")
                 return self.recv_buffer[3]
         return 49
 
@@ -1372,33 +1317,21 @@ class Reader:
         # Set length: SendBuff[0] = (byte)(6 + len)
         cmd[0] = 6 + len(data)
         
-        print(f"[DEBUG] SetCfgParameter command before CRC: {cmd.hex()}")
-        print(f"[DEBUG] SetCfgParameter command length: {cmd[0]}")
-        
-        # Add CRC - C# uses GetCRC(SendBuff, SendBuff[0] - 1)
         crc = self._get_crc(cmd, cmd[0] - 1)
         cmd.extend(crc)
         
-        print(f"[DEBUG] Full SetCfgParameter command with CRC: {cmd.hex()}")
-        
         result = self._send_data(cmd, len(cmd))
         if result != 0:
-            print(f"[DEBUG] SetCfgParameter send failed: {result}")
             return result
         
         # Wait for response - C# uses GetDataFromPort(234, 1500)
         result = self._get_data_from_port(234, 1500)
         if result != 0:
-            print(f"[DEBUG] SetCfgParameter response timeout: {result}")
             return result
         
-        print(f"[DEBUG] SetCfgParameter response received: {self.recv_buffer[:self.recv_length].hex()}")
-        
-        # Parse response exactly like C# SDK
         if self.recv_length >= 4:
             # Check CRC
             if self._check_crc(self.recv_buffer, self.recv_length) != 0:
-                print("[DEBUG] SetCfgParameter response CRC check failed")
                 return 49
             
             # Check command response
@@ -1406,7 +1339,6 @@ class Reader:
                 com_addr[0] = self.recv_buffer[1]  # Update com_addr with response value (C# ComAdr = RecvBuff[1])
                 return self.recv_buffer[3]  # Return status code
             else:
-                print(f"[DEBUG] SetCfgParameter response command mismatch: expected 234, got {self.recv_buffer[2]}")
                 return self.recv_buffer[3]  # Return status code even if command doesn't match
         
         return 49
@@ -1433,33 +1365,21 @@ class Reader:
         cmd.append(235)          # SendBuff[2] = command code 235
         cmd.append(cfg_no[0])    # SendBuff[3]
         
-        print(f"[DEBUG] GetCfgParameter command before CRC: {cmd.hex()}")
-        print(f"[DEBUG] GetCfgParameter command length: {cmd[0]}")
-        
-        # Add CRC - C# uses GetCRC(SendBuff, SendBuff[0] - 1)
         crc = self._get_crc(cmd, len(cmd))
         cmd.extend(crc)
         
-        print(f"[DEBUG] Full GetCfgParameter command with CRC: {cmd.hex()}")
-        
         result = self._send_data(cmd, len(cmd))
         if result != 0:
-            print(f"[DEBUG] GetCfgParameter send failed: {result}")
             return result, 0
         
         # Wait for response - C# uses GetDataFromPort(235, 1500)
         result = self._get_data_from_port(235, 1500)
         if result != 0:
-            print(f"[DEBUG] GetCfgParameter response timeout: {result}")
             return result, 0
         
-        print(f"[DEBUG] GetCfgParameter response received: {self.recv_buffer[:self.recv_length].hex()}")
-        
-        # Parse response exactly like C# SDK
         if self.recv_length >= 4:
             # Check CRC
             if self._check_crc(self.recv_buffer, self.recv_length) != 0:
-                print("[DEBUG] GetCfgParameter response CRC check failed")
                 return 49, 0
             
             # Check command response
@@ -1473,13 +1393,11 @@ class Reader:
                     if data_len > 0:
                         # Copy data to cfg_data buffer
                         cfg_data[:data_len] = self.recv_buffer[4:4+data_len]  # C#: Array.Copy(RecvBuff, 4, cfgData, 0, len)
-                        print(f"[DEBUG] GetCfgParameter data extracted: {cfg_data[:data_len].hex()}")
                     
                     return status, data_len
                 else:
                     return status, 0
             else:
-                print(f"[DEBUG] GetCfgParameter response command mismatch: expected 235, got {self.recv_buffer[2]}")
                 return self.recv_buffer[3], 0  # Return status code even if command doesn't match
         
         return 49, 0
@@ -1498,14 +1416,11 @@ class Reader:
         data = self.read_data_from_port()
         if data:
             size = len(data)
-            print(f"[DEBUG] get_rfid_tag_data: Got {size} bytes of data: {data.hex()}")
             output_buffer[:size] = data
             output_length_ref[0] = size
-            print(f"[DEBUG] get_rfid_tag_data: Copied {size} bytes to output buffer, length_ref set to {output_length_ref[0]}")
             return 0
         else:
-            print(f"[DEBUG] get_rfid_tag_data: No data received, returning 0xFB")
-        return 0xFB
+            return 0xFB
 
     def stop_immediately(self, com_addr: int) -> int:
         """
@@ -1532,40 +1447,36 @@ class Reader:
                 if self.serial_port and self.serial_port.is_open:
                     time.sleep(0.005)  # Sleep 5ms
                     bytes_to_read = self.serial_port.in_waiting
-                    print(f"[DEBUG] read_data_from_port: Serial port has {bytes_to_read} bytes waiting")
                     if bytes_to_read > 0:
                         buffer = self.serial_port.read(bytes_to_read)
                         if buffer:
-                            print(f"[DEBUG] read_data_from_port: Read {len(buffer)} bytes: {buffer.hex()}")
                             if self.recv_callback:
                                 self.recv_callback(self._bytes_to_hex_string(buffer).encode())
                             return buffer
                         else:
-                            print(f"[DEBUG] read_data_from_port: No data read despite {bytes_to_read} bytes available")
+                            return None
                     else:
-                        print(f"[DEBUG] read_data_from_port: No bytes waiting to read")
+                        return None
                 else:
-                    print(f"[DEBUG] read_data_from_port: Serial port not open or not available")
+                    return None
             elif self.connection_type == self.CONNECTION_TCP:
                 if self.tcp_stream:
                     time.sleep(0.005)
                     try:
                         buffer = self.tcp_stream.recv(1024)
-                        print(f"[DEBUG] read_data_from_port: TCP received {len(buffer)} bytes: {buffer.hex()}")
                     except Exception as e:
                         buffer = b''
-                        print(f"[DEBUG] read_data_from_port: TCP receive exception: {e}")
                     if buffer:
                         if self.recv_callback:
                             self.recv_callback(self._bytes_to_hex_string(buffer).encode())
                         return buffer
                 else:
-                    print(f"[DEBUG] read_data_from_port: TCP stream not available")
+                    return None
             else:
-                print(f"[DEBUG] read_data_from_port: Unknown connection type: {self.connection_type}")
+                return None
         except Exception as ex:
             print(f"[DEBUG] read_data_from_port: Exception: {ex}")
-        return None 
+            return None 
 
     def inventory_mix_g2(self, com_addr: bytearray, q_value: bytes, session: bytes,
                         mask_mem: bytes, mask_addr: bytearray, mask_len: bytes,
@@ -1576,7 +1487,6 @@ class Reader:
         """Perform Gen2 inventory mix operation (C# SDK InventoryMix_G2 logic)"""
         # C# SDK defaults scan_time to 20 if 0 is passed
         scan_time_val = scan_time[0] if scan_time[0] != 0 else 20
-        print(f"[DEBUG] InventoryMix_G2 parameters: com_addr={com_addr[0]}, q_value={q_value[0]}, session={session[0]}, scan_time={scan_time_val}")
         
         # Build command exactly like C# SDK
         cmd = bytearray()
@@ -1620,18 +1530,11 @@ class Reader:
             else:
                 cmd.insert(0, 14)        # SendBuff[0] = 14
         
-        print(f"[DEBUG] InventoryMix_G2 command before CRC: {cmd.hex()}")
-        print(f"[DEBUG] Command length: {cmd[0]}")
-        
-        # Add CRC - C# uses GetCRC(SendBuff, SendBuff[0] - 1)
         crc = self._get_crc(cmd, cmd[0] - 1)
         cmd.extend(crc)
         
-        print(f"[DEBUG] Full InventoryMix_G2 command with CRC: {cmd.hex()}")
-        
         result = self._send_data(cmd, len(cmd))
         if result != 0:
-            print(f"[DEBUG] InventoryMix_G2 send failed: {result}")
             return result
         
         # C# calls GetInventoryMixG1(Scantime * 100, ...) - scan_time is in 10ms units
